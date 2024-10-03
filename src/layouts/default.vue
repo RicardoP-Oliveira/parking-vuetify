@@ -99,6 +99,7 @@ export default {
           if (timeRemaining <= 0) {
             clearInterval(this.interval); // Para o relógio quando o tempo expirar
             this.expToken = `Token expirado em ${expirationTime.toLocaleDateString()} às ${expirationTime.toLocaleTimeString()}`;
+            alert('Seu token expirou. Sendo redirecionado para a tela de login!')
             this.logout();
           } else {
             // Cálculo das horas, minutos e segundos restantes
@@ -131,7 +132,6 @@ export default {
         this.dataTable = false;
         this.isLoggedin = false;
         this.$router.push({ name: '/login' })
-        alert('Seu token expirou. Sendo redirecionado para a tela de login!')
       }
     },
   }

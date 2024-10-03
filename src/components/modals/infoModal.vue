@@ -144,10 +144,11 @@ export default {
           this.$ceicsservice.getParking(this.search, this.token)
         ]);
 
-        if (!parkingRes.erro && parkingRes.dados) {
-          this.setParkingData(parkingRes.dados,infoRes);
-        } else if (!infoRes.erro && infoRes.dados) {
+        if (!infoRes.erro && infoRes.dados) {
           this.processInfo(infoRes.dados);
+        } else if (!parkingRes.erro && parkingRes.dados) {
+          console.log('parking ', parkingRes)
+          this.setParkingData(parkingRes.dados,infoRes);
         } else if (infoRes.erro) {
           if (infoRes.dados && !infoRes.dados.visitante) {
             alert(`${infoRes.msg}`)
