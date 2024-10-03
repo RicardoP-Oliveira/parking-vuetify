@@ -200,7 +200,7 @@ export default {
     },
     async getUser(value) {
       try {
-        const res = await this.$userservice.getId(`rg${value.trim()}`.trim());
+        const res = await this.$userservice.getId(`rg${value.trim()}`.trim(), this.token);
         if (!res.erro) {
           this.condutor = !res.dados.orgaoU.sigla
           ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
