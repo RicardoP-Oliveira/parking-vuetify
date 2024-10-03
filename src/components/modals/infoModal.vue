@@ -144,10 +144,11 @@ export default {
           this.$ceicsservice.getParking(this.search, this.token)
         ]);
 
-        if (!parkingRes.erro && parkingRes.dados) {
-          this.setParkingData(parkingRes.dados,infoRes);
-        } else if (!infoRes.erro && infoRes.dados) {
+        if (!infoRes.erro && infoRes.dados) {
           this.processInfo(infoRes.dados);
+        } else if (!parkingRes.erro && parkingRes.dados) {
+          console.log('parking ', parkingRes)
+          this.setParkingData(parkingRes.dados,infoRes);
         } else if (infoRes.erro) {
           if (infoRes.dados && !infoRes.dados.visitante) {
             alert(`${infoRes.msg}`)
@@ -199,7 +200,7 @@ export default {
     },
     async getUser(value) {
       try {
-        const res = await this.$userservice.getId(`rg${value.trim()}`.trim());
+        const res = await this.$userservice.getId(`rg${value.trim()}`.trim(), this.token);
         if (!res.erro) {
           this.condutor = !res.dados.orgaoU.sigla
           ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
