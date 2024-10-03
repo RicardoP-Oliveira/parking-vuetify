@@ -1,0 +1,24 @@
+{
+  "doc": [
+    {
+      "sigla": "RG",
+      "nome": "Registro Geral"
+    },
+    {
+      "sigla": "CPF",
+      "nome": "Cadastro de Pessoa Física"
+    },
+    {
+      "sigla": "Id Func",
+      "nome": "Identificação Funcional"
+    },
+    {
+      "sigla": "Mat",
+      "nome": "Matrícula"
+    },
+    {
+      "sigla": "CNH",
+      "nome": "Cadastro Nacional de Habilitação"
+    }
+  ]
+}
