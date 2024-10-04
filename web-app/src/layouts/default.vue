@@ -11,6 +11,7 @@
         <v-btn
          class="text-none"
          @click="logout"
+         ref="myButton"
         >
           Logout
       </v-btn>  
@@ -58,6 +59,7 @@
 
 import { ref } from 'vue'
 import { jwtDecode } from 'jwt-decode'
+import { nextTick } from 'vue';
 const drawer  = ref(null)
 export default {
     provide() {

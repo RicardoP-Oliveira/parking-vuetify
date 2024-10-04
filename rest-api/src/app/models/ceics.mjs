@@ -27,7 +27,7 @@ import  { Model, DataTypes } from "sequelize";
     static async findCar(car) {
 
       const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
-      const vtrRegex = /^[A-Z0-9]{1,4}-\d{3}$/;
+      const vtrRegex = /^[A-Z]{1,4}[0-9]?-\d{3}$/;
       let searchCriteria = { saida: null };
 
       if (!isNaN(car)) {
@@ -43,6 +43,7 @@ import  { Model, DataTypes } from "sequelize";
       try {
         const veiculo = await this.findOne({
           where: searchCriteria,
+          order: [['createdAt', 'DESC']]
         });
 
         return(veiculo);

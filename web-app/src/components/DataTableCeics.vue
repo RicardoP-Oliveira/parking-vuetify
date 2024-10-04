@@ -28,6 +28,7 @@
               variant="outlined"
               :rules="pRules"
               clearable
+              :maxlength="getLength()"
               @click:clear="ident=''"
               @keyup="upper"
               @keypress.enter.prevent="selectModal()"
@@ -60,7 +61,7 @@
     data: () => ({
       pRules: [
         value => {
-          const pattern = /^([0-9]{2,4}$|^[A-Z0-9]{2,4}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
+          const pattern = /^([0-9]{2,4}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
           if (value.length > 0) {
             return pattern.test(value) ||'Identificador inválido'
           } 
@@ -155,11 +156,26 @@
           // Tratar o erro se o carregamento falhar
         }
       },
+      getLength() {
+        const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/
+        const vtrRegex = /^[A-Z]{1,4}\d?-\d{3}$/
+        const identRegex = /^[0-9]{2,4}$/ 
+
+        if (placaRegex.test(this.ident)) {
+          return 7 
+        } else if (vtrRegex.test(this.ident)) {
+          return this.ident.length 
+        } else if (identRegex.test(this.ident)) {
+          return 4 
+        } else {
+          return 10
+        }
+      },  
     },
     computed: {
       upper() {
         if(this.ident) {
-          return this.ident = this.ident.toUpperCase()
+          this.ident = this.ident.toUpperCase()
         }
       }
     },

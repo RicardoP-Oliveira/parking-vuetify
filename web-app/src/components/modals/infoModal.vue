@@ -7,7 +7,7 @@
     >
       <v-card>
         <v-card-title class="text-center">
-          Controle de Veículos
+          Controle de acesso
           <v-divider class="mt-4"></v-divider>
         </v-card-title>
         <v-card-text>
@@ -97,11 +97,13 @@
             Cancelar
           </v-btn>
           <v-btn
+            isSelected
             @click.enter.prevent="salvar()"
             color="blue-darken-4"
             variant="flat"
+            min-width="115"
+            :text="isAction || 'Confirmar'"
           >
-            Confirmar
           </v-btn>
         </template>
       </v-card>
@@ -120,6 +122,7 @@ export default {
   data(){
     return {
       btn: null,
+      isAction: '',
       isDialog: this.dialog.isDialog,
       placa: '',
       search: this.dialog.idPlaca,
@@ -143,37 +146,42 @@ export default {
       this.isDialog = this.dialog.isDialog
       
     },
+    
     async getDados() {
-      // Cria um array de promessas para buscar na tabela geral e na tabela parking
       try {        
         const [infoRes, parkingRes] = await Promise.all([
           this.$ceicsservice.getInfo(this.search, this.token),
           this.$ceicsservice.getParking(this.search, this.token)
         ]);
-        if (infoRes.erro && parkingRes.erro) {
-          if (infoRes.dados && !infoRes.dados.visitante ) {
-              alert(`${infoRes.msg}`)
-              this.close();
-            } else {
-  
-              this.placa = this.search
-            } 
-        } else if (!infoRes.erro && infoRes.dados) {
+
+        console.log({parkingRes, infoRes})
+        if (!parkingRes.erro && parkingRes.dados) {
+          this.isAction = "Saída"
+          this.setParkingData(parkingRes.dados, infoRes);  
+        } 
+        
+        else if (!infoRes.erro && infoRes.dados) {
+          this.isAction = "Entrada"
           this.processInfo(infoRes.dados);
-        } else if (!parkingRes.erro && parkingRes.dados) {
-          this.setParkingData(parkingRes.dados,infoRes);
-        } else  {
-          alert(`Viatura não cadastrada!n\nContate o Administrador.`)
+        } 
+
+        else if (infoRes.dados.visitante) {
+            this.isAction = "Entrada"
+            this.placa = this.search;
+        }
+        
+        else {
+
+          alert(infoRes.msg);
           this.close();
         }
-      } catch (error) {
-        console.error('Erro ao processar as buscas: ', error)
-      }
-    },
 
+      } catch (error) {
+        console.error('Erro ao processar as buscas: ', error);
+      } 
+    },
     setParkingData(dados, info) {
-      // console.log(dados)
-      // Define dados do estacionamento
+
       this.placa = dados.placa;
       this.condutor = dados.condutor;
       this.documento = dados.eRg;
@@ -196,7 +204,7 @@ export default {
     },
 
     processInfo(res) {
-      // Atualiza os dados do componente com base na resposta
+      
       this.placa = this.placa || res.placa;
       this.modelo = this.modelo || res.marcaModelo;
       this.documento = res.user ? res.user.documento : '';

@@ -62,17 +62,25 @@ class CeicsController {
 
     try {
        const buscaCar = await Carro.findCar(placa);
-      if (!buscaCar.veiculo && buscaCar.searchCriteria.id) {
+       const { veiculo, searchCriteria } = buscaCar;
+
+      if (!veiculo && (searchCriteria.id || searchCriteria.marcaModelo)) {
         resposta.erro = true;
         resposta.msg = 'Veículo não cadastrado!\nContate o Administrador.';
         resposta.dados = { visitante: false }
-      } else if (!buscaCar.veiculo && buscaCar.searchCriteria.placa){
+      } else if (!veiculo && searchCriteria.placa){
         resposta.erro = true;
         resposta.msg = 'Veículo visitante.';
         resposta.dados = { visitante: true }
-      } else {
+      }  else {
         resposta.dados = buscaCar.veiculo;
       }
+
+      // else if (!buscaCar.veiculo && buscaCar.searchCriteria.marcaModelo){
+      //   resposta.erro = true;
+      //   resposta.msg = 'Viatura não cadastrado!\nContate o Administrador.';
+      //   resposta.dados = { visitante: false}
+      // }
 
     } catch (error) {
       resposta.erro = true;
@@ -89,6 +97,7 @@ class CeicsController {
     const { placa } = req.params;
     try {
        const buscaCar = await Ceics.findCar(placa);
+
       if (buscaCar) {
         resposta.dados = buscaCar;
       } else {
