@@ -31,11 +31,7 @@ import  { Model, DataTypes } from "sequelize";
       let searchCriteria = { saida: null };
 
       if (!isNaN(car)) {
-        const resposta = {
-          erro: true,
-          msg: 'Não é permitido pesquisa pelo identificador!'
-        }
-        return (resposta)
+        return false;
       }
       
       if (placaRegex.test(car)) {

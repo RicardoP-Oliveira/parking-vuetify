@@ -90,16 +90,16 @@ class CeicsController {
     try {
        const buscaCar = await Ceics.findCar(placa);
       if (buscaCar) {
-        resposta.dados = buscaCar.veiculo;
+        resposta.dados = buscaCar;
       } else {
         resposta.erro = true;
         resposta.msg = 'Veículo não encontrado';
       }
 
     } catch (error) {
+      console.log('Aqui')
       resposta.erro = true;
       resposta.msg = `Error: ${error}`;
-      resposta.dados = error;
     }
 
     return res.json(resposta);
