@@ -3,6 +3,7 @@
       v-model="isDialog"
       width="600"
       persistent
+      @after-leave="onDialog()"
     >
       <v-card>
         <v-card-title class="text-center">
@@ -32,7 +33,6 @@
             </v-col>
             <v-col class="px-2 py-1">
               <v-text-field
-                autofocus
                 density="confortable"
                 v-model="documento"
                 hide-details
@@ -97,7 +97,7 @@
             Cancelar
           </v-btn>
           <v-btn
-            @click="salvar()"
+            @click.enter.prevent="salvar()"
             color="blue-darken-4"
             variant="flat"
           >
@@ -119,6 +119,7 @@ export default {
   },
   data(){
     return {
+      btn: null,
       isDialog: this.dialog.isDialog,
       placa: '',
       search: this.dialog.idPlaca,
@@ -132,10 +133,16 @@ export default {
       destino: '',
       dados: [],
       form: {},
+      dataTests: '',
       token: `Bearer ${localStorage.getItem('token')}` ,
     }
   },
   methods:{
+    onDialog(isOpen){
+      this.dataTests = isOpen
+      this.isDialog = this.dialog.isDialog
+      
+    },
     async getDados() {
       // Cria um array de promessas para buscar na tabela geral e na tabela parking
       try {        
@@ -143,20 +150,19 @@ export default {
           this.$ceicsservice.getInfo(this.search, this.token),
           this.$ceicsservice.getParking(this.search, this.token)
         ]);
-
-        if (!infoRes.erro && infoRes.dados) {
+        if (infoRes.erro && parkingRes.erro) {
+          if (infoRes.dados && !infoRes.dados.visitante ) {
+              alert(`${infoRes.msg}`)
+              this.close();
+            } else {
+  
+              this.placa = this.search
+            } 
+        } else if (!infoRes.erro && infoRes.dados) {
           this.processInfo(infoRes.dados);
         } else if (!parkingRes.erro && parkingRes.dados) {
-          console.log('parking ', parkingRes)
           this.setParkingData(parkingRes.dados,infoRes);
-        } else if (infoRes.erro) {
-          if (infoRes.dados && !infoRes.dados.visitante) {
-            alert(`${infoRes.msg}`)
-            this.close();
-          } else {
-            this.placa = this.search
-          } 
-        } else {
+        } else  {
           alert(`Viatura não cadastrada!n\nContate o Administrador.`)
           this.close();
         }
@@ -166,6 +172,7 @@ export default {
     },
 
     setParkingData(dados, info) {
+      // console.log(dados)
       // Define dados do estacionamento
       this.placa = dados.placa;
       this.condutor = dados.condutor;
@@ -230,9 +237,7 @@ export default {
         this.close();
       })
     },
-    action() {
-      
-    },
+
     close(){
       this.isDialog = false
       this.placa = ''
