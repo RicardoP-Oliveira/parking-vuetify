@@ -67,20 +67,12 @@ class CeicsController {
       if (!veiculo && (searchCriteria.id || searchCriteria.marcaModelo)) {
         resposta.erro = true;
         resposta.msg = 'Veículo não cadastrado!\nContate o Administrador.';
-        resposta.dados = { visitante: false }
       } else if (!veiculo && searchCriteria.placa){
-        resposta.erro = true;
         resposta.msg = 'Veículo visitante.';
-        resposta.dados = { visitante: true }
+        resposta.visitor = true;
       }  else {
         resposta.dados = buscaCar.veiculo;
       }
-
-      // else if (!buscaCar.veiculo && buscaCar.searchCriteria.marcaModelo){
-      //   resposta.erro = true;
-      //   resposta.msg = 'Viatura não cadastrado!\nContate o Administrador.';
-      //   resposta.dados = { visitante: false}
-      // }
 
     } catch (error) {
       resposta.erro = true;
@@ -102,7 +94,7 @@ class CeicsController {
         resposta.dados = buscaCar;
       } else {
         resposta.erro = true;
-        resposta.msg = 'Veículo não encontrado';
+        resposta.msg = 'Não contas saída em aberto para este veículo!';
       }
 
     } catch (error) {

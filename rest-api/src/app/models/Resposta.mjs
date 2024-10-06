@@ -3,5 +3,6 @@ export default class Resposta {
     this.erro = false;
     this.msg = null;
     this.dados = null;
+    this.visitor = false;
   }
 }

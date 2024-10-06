@@ -3,7 +3,6 @@
       v-model="isDialog"
       width="600"
       persistent
-      @after-leave="onDialog()"
     >
       <v-card>
         <v-card-title class="text-center">
@@ -97,7 +96,7 @@
             Cancelar
           </v-btn>
           <v-btn
-            isSelected
+            ref="myButton"
             @click.enter.prevent="salvar()"
             color="blue-darken-4"
             variant="flat"
@@ -111,6 +110,8 @@
 </template>
 
 <script>
+import { info } from 'sass';
+
 
 export default {
   props:{
@@ -136,57 +137,110 @@ export default {
       destino: '',
       dados: [],
       form: {},
-      dataTests: '',
       token: `Bearer ${localStorage.getItem('token')}` ,
     }
   },
-  methods:{
-    onDialog(isOpen){
-      this.dataTests = isOpen
-      this.isDialog = this.dialog.isDialog
-      
-    },
-    
+  methods:{    
+    // async getDados() {
+    //   try {        
+       
+    //     const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
+    //     let searchPlaca = null;
+    //     console.log(infoRes)
+    //     if (!isNaN(this.search) && !infoRes.erro) {
+    //       if (!infoRes.visitor) {
+    //         searchPlaca = infoRes.dados.placa || '';
+    //       }
+    //     } else {
+    //       searchPlaca = this.search;
+    //     }
+
+    //     const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
+
+    //     console.log('Car ',infoRes, 'Paking ',parkingRes)
+        
+    //     if (!parkingRes.erro && parkingRes.dados) {
+    //       this.isAction = "Saída"
+    //       this.setParkingData(parkingRes.dados, infoRes);
+    //     } 
+        
+    //     else if (!infoRes.erro && infoRes.dados) {
+    //       this.isAction = "Entrada"
+    //       this.processInfo(infoRes.dados);
+    //     } 
+
+    //     else if (infoRes.visitor) {
+    //         this.isAction = "Entrada"
+    //         this.placa = this.search;
+    //     }
+        
+    //     else {
+
+    //       alert(infoRes.msg);
+    //       this.close();
+    //     }
+
+    //   } catch (error) {
+    //     console.error('Erro ao processar as buscas: ', error);
+    //   } 
+  
+    // },
+
     async getDados() {
-      try {        
-        const [infoRes, parkingRes] = await Promise.all([
-          this.$ceicsservice.getInfo(this.search, this.token),
-          this.$ceicsservice.getParking(this.search, this.token)
-        ]);
+      try {
+        // Busca as informações na tabela geral
+        const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
 
-        console.log({parkingRes, infoRes})
-        if (!parkingRes.erro && parkingRes.dados) {
-          this.isAction = "Saída"
-          this.setParkingData(parkingRes.dados, infoRes);  
-        } 
-        
-        else if (!infoRes.erro && infoRes.dados) {
-          this.isAction = "Entrada"
-          this.processInfo(infoRes.dados);
-        } 
+        // Determina qual placa usar na busca
+        const searchPlaca = this.getSearchPlaca(infoRes);
 
-        else if (infoRes.dados.visitante) {
-            this.isAction = "Entrada"
-            this.placa = this.search;
-        }
-        
-        else {
+        // Busca as informações na tabela parking
+        const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
 
-          alert(infoRes.msg);
-          this.close();
-        }
+        // Processa os resultados da busca
+        this.processResults(infoRes, parkingRes);
 
       } catch (error) {
         console.error('Erro ao processar as buscas: ', error);
+      }
+   },
+
+    getSearchPlaca(infoRes) {
+      // Verifica se a busca é numérica e se não há erro no resultado
+      if (!isNaN(this.search) && !infoRes.erro) {
+        return infoRes.visitor ? this.search : infoRes.dados.placa || '';
+      }
+      return this.search;
+    },
+
+    processResults(infoRes, parkingRes) {
+      // Processa os dados de parking se disponíveis
+      if (!parkingRes.erro && parkingRes.dados) {
+        this.isAction = "Saída";
+        this.setParkingData(parkingRes.dados, infoRes);
       } 
+      // Processa os dados de infoRes se disponíveis
+      else if (!infoRes.erro && infoRes.dados) {
+        this.isAction = "Entrada";
+        this.processInfo(infoRes.dados);
+      } 
+      // Verifica se o usuário é um visitante
+      else if (infoRes.visitor) {
+        this.isAction = "Entrada";
+        this.placa = this.search;
+      } 
+      // Caso contrário, exibe mensagem de erro
+      else {
+        alert(infoRes.msg);
+        this.close();
+      }
     },
     setParkingData(dados, info) {
-
       this.placa = dados.placa;
-      this.condutor = dados.condutor;
+      this.condutor = dados.eCondutor;
       this.documento = dados.eRg;
       this.modelo = dados.marcaModelo;
-      if (!info.erro) {
+      if (!info.visitor) {
         this.getOwner(info.dados)
       }
       this.getUser(this.documento);
@@ -253,13 +307,22 @@ export default {
       this.gradua = ''
       this.proprietario =  ''
       this.condutor = ''
+      this.loading = false
       this.$emit('fecha')
+    },
+
+    focusConfirm() {
+      const button = this.$refs.myButton.$el;
+      if (button) {
+        button.focus()
+      }
     }
   },
   mounted() {
     this.dbDest = this.$dbTarget;
     this.dbDest.target.map((element) => this.dados.push(element.local));
     this.getDados();
+    this.focusConfirm()
   },
 }
 </script>
