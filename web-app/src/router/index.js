@@ -37,16 +37,16 @@ async function myGuard(to, from, next) {
           if (decoded.role === 1) {
             next()
           } else {
-            next('/home')
+            next({ name: '/home' })
           }
         } else {
-          next('/login')
+          next({ name: '/login' })
         }
       } catch (err) {
-        next('/login')
+        next({ name: '/login' })
     }
   } else {
-      next('/login')
+      next({ name: '/login' })
   }
 }
 
@@ -70,22 +70,13 @@ async function myLogin(to, from, next) {
 }
 
 // Adicionar proteção à rota '/'
-const protectedRoutes = setupLayouts(routes).map(route => {
-  if (route.path === '/') {
-    return {
-      ...route,
-      meta: { requiresAuth: true }, // Protege a rota adicionando meta
-    };
+const protectedRoutes = setupLayouts(routes).map(route => ({
+  ...route,
+  meta: {
+    ...route.meta,
+    requiresAuth: route.path === '/',
   }
-
-  if (route.path === '/login') {
-    return {
-      ...route,
-    }
-
-  }
-  return route;
-});
+}));
 
 // Configuração do router
 const router = createRouter({
@@ -98,7 +89,7 @@ router.beforeEach((to, from, next) => {
   // Verifica se a rota requer autenticação
   if (to.meta.requiresAuth && to.path === '/') {
     myGuard(to, from, next); // Chama a função que verifica o token
-  } else if (to.path === '/login'){
+  } else if (to.name === '/login'){
     myLogin(to, from, next);
   } else {
     next();

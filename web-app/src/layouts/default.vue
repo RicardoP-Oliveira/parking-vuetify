@@ -4,9 +4,6 @@
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
       <v-app-bar-title class="text-center me-15 text-h5">Controle de Acesso CEICS</v-app-bar-title>
       <template v-slot:append v-if="isLoggedin">
-        <v-div class="me-5">
-          {{ expToken }}
-        </v-div>
         <v-divider vertical></v-divider>
         <v-btn
          class="text-none"
@@ -75,50 +72,50 @@ export default {
     methods: {
       async updateBtn(info) {
         if (this.dataTable) {
-          await this.$router.push('/')
+          await this.$router.push({path:'/' })
         } else if (info && info.from.name == 'Table') {
           this.dataTable = true;
           this.isLoggedin = true;
         } else {
           this.isLoggedin = true;
         }
-        this.getExpirationToken(localStorage.getItem('token'));
+        // this.getExpirationToken(localStorage.getItem('token'));
       },
 
-      getExpirationToken(value) {
-        const expDecoded = jwtDecode(value);
-        const expirationTime = new Date(expDecoded.exp * 1000); // Convertendo expiração para data
+      // getExpirationToken(value) {
+      //   const expDecoded = jwtDecode(value);
+      //   const expirationTime = new Date(expDecoded.exp * 1000); // Convertendo expiração para data
 
-        this.interval = setInterval(() => {
-          const now = new Date();  // Obtém a hora atual
-          const timeRemaining = expirationTime - now; // Diferença em milissegundos
+      //   this.interval = setInterval(() => {
+      //     const now = new Date();  // Obtém a hora atual
+      //     const timeRemaining = expirationTime - now; // Diferença em milissegundos
 
-          // Hora atual formatada
-          const formattedTime = now.toLocaleTimeString(); // Atualiza a cada segundo
+      //     // Hora atual formatada
+      //     const formattedTime = now.toLocaleTimeString(); // Atualiza a cada segundo
 
-          if (timeRemaining <= 0) {
-            clearInterval(this.interval); // Para o relógio quando o tempo expirar
-            this.expToken = `Token expirado em ${expirationTime.toLocaleDateString()} às ${expirationTime.toLocaleTimeString()}`;
-            alert('Seu token expirou. Sendo redirecionado para a tela de login!')
-            this.logout();
-          } else {
-            // Cálculo das horas, minutos e segundos restantes
-            const hours = Math.floor(timeRemaining / (1000 * 60 * 60)); // Converte para horas
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60)); // Minutos restantes
-            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000); // Segundos restantes
+      //     if (timeRemaining <= 0) {
+      //       clearInterval(this.interval); // Para o relógio quando o tempo expirar
+      //       this.expToken = `Token expirado em ${expirationTime.toLocaleDateString()} às ${expirationTime.toLocaleTimeString()}`;
+      //       alert('Seu token expirou. Sendo redirecionado para a tela de login!')
+      //       this.logout();
+      //     } else {
+      //       // Cálculo das horas, minutos e segundos restantes
+      //       const hours = Math.floor(timeRemaining / (1000 * 60 * 60)); // Converte para horas
+      //       const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60)); // Minutos restantes
+      //       const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000); // Segundos restantes
 
-            // Zeros à esquerda para minutos e segundos
-            const formattedHours = String(hours).padStart(2, '0');
-            const formattedMinutes = String(minutes).padStart(2, '0');
-            const formattedSeconds = String(seconds).padStart(2, '0');
+      //       // Zeros à esquerda para minutos e segundos
+      //       const formattedHours = String(hours).padStart(2, '0');
+      //       const formattedMinutes = String(minutes).padStart(2, '0');
+      //       const formattedSeconds = String(seconds).padStart(2, '0');
 
-            // Data de Expiração Formatada
-            const formattedExpirationDate = expirationTime.toLocaleDateString();
+      //       // Data de Expiração Formatada
+      //       const formattedExpirationDate = expirationTime.toLocaleDateString();
 
-            // Exibe a contagem regressiva no formato HH:mm:ss
-            this.expToken = `O token expira em ${formattedExpirationDate} - ${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-        }}, 1000);
-      },
+      //       // Exibe a contagem regressiva no formato HH:mm:ss
+      //       this.expToken = `O token expira em ${formattedExpirationDate} - ${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+      //   }}, 1000);
+      // },
 
       beforeUnmount() {
         clearInterval(this.interval)
@@ -131,8 +128,9 @@ export default {
         this.tab = 'car';
         this.dataTable = false;
         this.isLoggedin = false;
-        this.$router.push({ name: '/login' })
-      },
+        this.$router.push('/login')
+      }
+
     },
   }
 </script>

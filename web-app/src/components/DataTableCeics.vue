@@ -56,15 +56,18 @@
  import { jwtDecode } from 'jwt-decode'
    
   export default {
+    emits: ['updateBtn'],
     inject: ['dataTable'],
     name: 'Table',
     data: () => ({
       pRules: [
         value => {
-          const pattern = /^([0-9]{2,4}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
+          const pattern = /^([0-9]{2,4}$|^[A-Z0-9]{2,4}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
           if (value.length > 0) {
-            return pattern.test(value) ||'Identificador inválido'
-          } 
+            return pattern.test(value) || 'Identificador inválido'
+          } else {
+            return true
+          }
         }
       ],
       token: `Bearer ${localStorage.getItem('token')}` ,
@@ -114,7 +117,7 @@
             try {
               const decoded = jwtDecode(this.token);
               if (decoded.isLoggedin && !this.dataTable) {
-                this.$emit('update-btn', { from: this.$options });
+                this.$emit('updateBtn', { from: this.$options });
               }
             } catch (error) {
               console.error('Token inválido ou expirado: ', error);
