@@ -6,7 +6,7 @@
     >
       <v-card>
         <v-card-title class="text-center">
-          Controle de Veículos
+          Controle de acesso
           <v-divider class="mt-4"></v-divider>
         </v-card-title>
         <v-card-text>
@@ -34,6 +34,7 @@
               <v-text-field
                 autofocus
                 density="comfortable"
+
                 v-model="documento"
                 hide-details
                 variant="underlined"
@@ -97,11 +98,13 @@
             Cancelar
           </v-btn>
           <v-btn
-            @click="salvar()"
+            ref="myButton"
+            @click.enter.prevent="salvar()"
             color="blue-darken-4"
             variant="flat"
+            min-width="115"
+            :text="isAction || 'Confirmar'"
           >
-            Confirmar
           </v-btn>
         </template>
       </v-card>
@@ -109,6 +112,8 @@
 </template>
 
 <script>
+import { info } from 'sass';
+
 
 export default {
   props:{
@@ -119,6 +124,8 @@ export default {
   },
   data(){
     return {
+      btn: null,
+      isAction: '',
       isDialog: this.dialog.isDialog,
       placa: '',
       search: this.dialog.idPlaca,
@@ -135,43 +142,107 @@ export default {
       token: `Bearer ${localStorage.getItem('token')}` ,
     }
   },
-  methods:{
-    async getDados() {
-      // Cria um array de promessas para buscar na tabela geral e na tabela parking
-      try {        
-        const [infoRes, parkingRes] = await Promise.all([
-          this.$ceicsservice.getInfo(this.search, this.token),
-          this.$ceicsservice.getParking(this.search, this.token)
-        ]);
+  methods:{    
+    // async getDados() {
+    //   try {        
+       
+    //     const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
+    //     let searchPlaca = null;
+    //     console.log(infoRes)
+    //     if (!isNaN(this.search) && !infoRes.erro) {
+    //       if (!infoRes.visitor) {
+    //         searchPlaca = infoRes.dados.placa || '';
+    //       }
+    //     } else {
+    //       searchPlaca = this.search;
+    //     }
 
-        if (!infoRes.erro && infoRes.dados) {
-          this.processInfo(infoRes.dados);
-        } else if (!parkingRes.erro && parkingRes.dados) {
-          console.log('parking ', parkingRes)
-          this.setParkingData(parkingRes.dados,infoRes);
-        } else if (infoRes.erro) {
-          if (infoRes.dados && !infoRes.dados.visitante) {
-            alert(`${infoRes.msg}`)
-            this.close();
-          } else {
-            this.placa = this.search
-          } 
-        } else {
-          alert(`Viatura não cadastrada!n\nContate o Administrador.`)
-          this.close();
-        }
+    //     const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
+
+    //     console.log('Car ',infoRes, 'Paking ',parkingRes)
+        
+    //     if (!parkingRes.erro && parkingRes.dados) {
+    //       this.isAction = "Saída"
+    //       this.setParkingData(parkingRes.dados, infoRes);
+    //     } 
+        
+    //     else if (!infoRes.erro && infoRes.dados) {
+    //       this.isAction = "Entrada"
+    //       this.processInfo(infoRes.dados);
+    //     } 
+
+    //     else if (infoRes.visitor) {
+    //         this.isAction = "Entrada"
+    //         this.placa = this.search;
+    //     }
+        
+    //     else {
+
+    //       alert(infoRes.msg);
+    //       this.close();
+    //     }
+
+    //   } catch (error) {
+    //     console.error('Erro ao processar as buscas: ', error);
+    //   } 
+  
+    // },
+
+    async getDados() {
+      try {
+        // Busca as informações na tabela geral
+        const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
+
+        // Determina qual placa usar na busca
+        const searchPlaca = this.getSearchPlaca(infoRes);
+
+        // Busca as informações na tabela parking
+        const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
+
+        // Processa os resultados da busca
+        this.processResults(infoRes, parkingRes);
+
       } catch (error) {
-        console.error('Erro ao processar as buscas: ', error)
+        console.error('Erro ao processar as buscas: ', error);
       }
+   },
+
+    getSearchPlaca(infoRes) {
+      // Verifica se a busca é numérica e se não há erro no resultado
+      if (!isNaN(this.search) && !infoRes.erro) {
+        return infoRes.visitor ? this.search : infoRes.dados.placa || '';
+      }
+      return this.search;
     },
 
+    processResults(infoRes, parkingRes) {
+      // Processa os dados de parking se disponíveis
+      if (!parkingRes.erro && parkingRes.dados) {
+        this.isAction = "Saída";
+        this.setParkingData(parkingRes.dados, infoRes);
+      } 
+      // Processa os dados de infoRes se disponíveis
+      else if (!infoRes.erro && infoRes.dados) {
+        this.isAction = "Entrada";
+        this.processInfo(infoRes.dados);
+      } 
+      // Verifica se o usuário é um visitante
+      else if (infoRes.visitor) {
+        this.isAction = "Entrada";
+        this.placa = this.search;
+      } 
+      // Caso contrário, exibe mensagem de erro
+      else {
+        alert(infoRes.msg);
+        this.close();
+      }
+    },
     setParkingData(dados, info) {
-      // Define dados do estacionamento
       this.placa = dados.placa;
-      this.condutor = dados.condutor;
+      this.condutor = dados.eCondutor;
       this.documento = dados.eRg;
       this.modelo = dados.marcaModelo;
-      if (!info.erro) {
+      if (!info.visitor) {
         this.getOwner(info.dados)
       }
       this.getUser(this.documento);
@@ -189,7 +260,7 @@ export default {
     },
 
     processInfo(res) {
-      // Atualiza os dados do componente com base na resposta
+      
       this.placa = this.placa || res.placa;
       this.modelo = this.modelo || res.marcaModelo;
       this.documento = res.user ? res.user.documento : '';
@@ -230,9 +301,7 @@ export default {
         this.close();
       })
     },
-    action() {
-      
-    },
+
     close(){
       this.isDialog = false
       this.placa = ''
@@ -241,13 +310,22 @@ export default {
       this.proprietario =  ''
       this.condutor = ''
       this.destino = ''
+      this.loading = false
       this.$emit('fecha')
+    },
+
+    focusConfirm() {
+      const button = this.$refs.myButton.$el;
+      if (button) {
+        button.focus()
+      }
     }
   },
   mounted() {
     this.dbDest = this.$dbTarget;
     this.dbDest.target.map((element) => this.dados.push(element.local));
     this.getDados();
+    this.focusConfirm()
   },
 }
 </script>

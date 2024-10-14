@@ -130,6 +130,7 @@ export default {
         this.isLoggedin = false;
         this.$router.push('/login')
       }
+
     },
   }
 </script>

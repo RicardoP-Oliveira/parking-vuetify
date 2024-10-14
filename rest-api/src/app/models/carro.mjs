@@ -35,8 +35,6 @@ import Ubm from './ubm.mjs';
       } else {
         searchCriteria.marcaModelo = car;
       }
-      
-      console.log(searchCriteria)
 
       try {
         const veiculo = await this.findOne({
