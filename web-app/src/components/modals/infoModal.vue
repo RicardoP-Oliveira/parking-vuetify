@@ -33,7 +33,7 @@
             <v-col class="px-2 py-1">
               <v-text-field
                 autofocus
-                density="confortable"
+                density="comfortable"
                 v-model="documento"
                 hide-details
                 variant="underlined"
@@ -73,7 +73,7 @@
             <v-col class="px-2 py-1">
               <v-select
                 :items="dados"
-                density="confortable"
+                density="comfortable"
                 variant="outlined"
                 v-model="destino"
               >
@@ -240,6 +240,7 @@ export default {
       this.gradua = ''
       this.proprietario =  ''
       this.condutor = ''
+      this.destino = ''
       this.$emit('fecha')
     }
   },

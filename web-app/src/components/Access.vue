@@ -53,7 +53,7 @@
         Log In
       </v-btn>
 
-      <v-card-text class="text-center">
+      <!-- <v-card-text class="text-center">
         <a
           class="text-blue text-decoration-none"
           href="#"
@@ -62,12 +62,13 @@
         >
           Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
         </a>
-      </v-card-text>
+      </v-card-text> -->
     </v-card>
 </template>
 <script>
 
 export default {
+  emits: ['updateBtn'],
   data: () => ({
     hide: false,
     visible: false,
@@ -84,11 +85,11 @@ export default {
         if (res.error) { 
           this.error = res.error;
           this.hide = true;
-          this.$router.push({name: '/login' }); 
+          this.$router.push('/login'); 
         } else {
             if (res.token) {
               localStorage.setItem('token', res.token)
-              this.$router.push({ name: '/' } ) 
+              this.$router.push({ path: '/' }); 
             } else {
               this.$router.push(from)
             }
