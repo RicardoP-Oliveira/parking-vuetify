@@ -14,6 +14,11 @@ import ConfigClass from '@/class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/sessions/validate`;
 
+// Função para capitalizar a primeira letra
+const capitalize = (string) =>{
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 // Função de guard para verificar autenticação
 async function myGuard(to, from, next) {
   const token = localStorage.getItem('token');
@@ -72,10 +77,15 @@ async function myLogin(to, from, next) {
 // Adicionar proteção à rota '/'
 const protectedRoutes = setupLayouts(routes).map(route => ({
   ...route,
-  meta: {
-    ...route.meta,
-    requiresAuth: route.path === '/',
-  }
+    meta: {
+      ...route.meta,
+      requiresAuth: route.path === '/',
+    },
+    children: route.children?.map(child => ({
+      ...child,
+      name:  (child.path === '/') ? 'Estacionamento' 
+        : capitalize(child.name.substring(child.name.indexOf('/') + 1))
+    })) 
 }));
 
 // Configuração do router

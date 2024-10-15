@@ -29,6 +29,7 @@ class SessionController {
             id: user.id,
             documento: user.documento,
             role: user.role,
+            gradua: user.gradua,
             nGuerra: user.nGuerra,
             orgao: user.orgaoU.sigla,
             isLoggedin: true

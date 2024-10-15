@@ -1,54 +1,143 @@
 <template>
-  <v-card>
-    <v-app-bar permanent>
-      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-app-bar-title class="text-center me-15 text-h5">Controle de Acesso CEICS</v-app-bar-title>
+   <!-- Navigation Drawer fixo à esquerda -->
+   <v-navigation-drawer
+      v-if="isLoggedin"
+      v-model="drawer"
+      class="bg-deep-purple"
+    >
+      <v-list>
+        <v-list-item nav class="mx-auto px-auto text-center">
+          <template v-slot:prepend>
+            <v-avatar color="" theme="dark" size="36px">
+              <v-icon size="40px" icon="mdi-account-circle"></v-icon>
+            </v-avatar>
+          </template>
+            <v-list-item-title>{{ cmte }}</v-list-item-title>
+            <v-list-item-subtitle>{{ documento }}</v-list-item-subtitle>
+        </v-list-item>
+      </v-list>
+
+      <v-divider></v-divider>
+
+      <!-- Listas de navegação -->
+      <v-list density="compact" nav>
+        <v-list-item title="Dashboard" value="mydashboard" >
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-view-dashboard"></v-icon>
+              </template>
+              Dashboard
+            </v-tooltip>
+          </template>
+        </v-list-item>
+        <v-list-item title="Usuários" value="mysusers" >
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-account"></v-icon>
+              </template>
+              Usuários
+            </v-tooltip>
+          </template>
+        </v-list-item>
+        <v-list-item title="Veículos" value="mycars" >
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-car"></v-icon>
+              </template>
+              Veículos
+            </v-tooltip>
+          </template>
+        </v-list-item>
+        <v-list-item title="Militares" value="militarys" >
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-shield-account"></v-icon>
+              </template>
+              Militares
+            </v-tooltip>
+          </template>
+        </v-list-item>
+        <v-list-item title="Estacionamento" value="parking" to="/">
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-car-brake-parking"></v-icon>
+              </template>
+              Estacionamento
+            </v-tooltip>
+          </template>
+        </v-list-item>
+        <v-list-item title="Relatórios" value="report" >
+          <template v-slot:prepend>
+            <v-tooltip location="bottom">
+              <template v-slot:activator="{ props }">
+                <v-icon v-bind="props" icon="mdi-chart-line"></v-icon>
+              </template>
+              Relatórios
+            </v-tooltip>
+          </template>
+        </v-list-item>
+      </v-list>
+
       <template v-slot:append v-if="isLoggedin">
-        <v-divider vertical></v-divider>
-        <v-btn
-         class="text-none"
-         @click="logout"
-        >
-          Logout
-      </v-btn>  
+        <v-list density="compact">
+          <v-list-item title="Logout" value="exit" @click="logout">
+            <template v-slot:prepend>
+              <v-tooltip location="bottom">
+                <template v-slot:activator="{ props }">
+                  <v-icon v-bind="props" icon="mdi-logout"></v-icon>
+                </template>
+                Sair
+              </v-tooltip>
+            </template>
+          </v-list-item>
+        </v-list>
       </template>
-      <template v-slot:extension v-if="dataTable">
+    </v-navigation-drawer>
+
+    <!-- App Bar fixo no topo -->
+    <v-app-bar color="bg-greey-light" flat height="75" elevation="2">
+      <v-app-bar-nav-icon
+        icon="mdi-dots-vertical"
+        @click="drawer = !drawer"
+        elevation="1"
+        size="small"
+        class="mr-3 ms-3"
+      />
+      <v-app-bar-title :text="$route.name" />
+
+      <template v-slot:extension v-if="true">
         <v-col>
-          <v-tabs 
-            v-model="tab"
-            fixed-tabs
-          >
-            <v-tab  prepend-icon="mdi-car" value="car">Veículos</v-tab>
+          <v-tabs v-model="tab" fixed-tabs>
+            <v-tab prepend-icon="mdi-car" value="car">Veículos</v-tab>
             <v-tab prepend-icon="mdi-walk" value="pedestrian">Pedestres</v-tab>
           </v-tabs>
-        </v-col>      
+        </v-col>
       </template>
-      
     </v-app-bar>
-    <v-navigation-drawer app permanent v-model="drawer">
-        <v-list>
-          <v-list-item title="Dashboard"></v-list-item>
-          <v-list-item title=""></v-list-item>
-        </v-list>
-      </v-navigation-drawer>
-    <v-app>
-      
+  <v-layout>
+   
+
+    <!-- Conteúdo principal -->
     <v-main>
-      <v-card-text>
-        
-        <v-tabs-window v-model="tab">
-          <v-tabs-window-item value="car">
-            <router-view @update-btn="updateBtn"/>         
-          </v-tabs-window-item>
-          <v-tabs-window-item value="pedestrian" class="mx-auto my-auto">
-            <p class="text-h2">TRANSEUNTES</p>
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-card-text>
-      
+      <v-card>
+        <v-card-text>
+          <v-tabs-window v-model="tab">
+            <v-tabs-window-item value="car">
+              <router-view @update-btn="updateBtn" />
+            </v-tabs-window-item value="pedestrian">
+            <v-tabs-window-item value="pedestrian" class="mx-auto my-auto">
+              <p class="text-h2">TRANSEUNTES</p>
+            </v-tabs-window-item>
+          </v-tabs-window>
+        </v-card-text>
+      </v-card>
     </v-main>
-    </v-app>
-  </v-card>
+  </v-layout>
 </template>
 
 <script>
@@ -65,6 +154,7 @@ export default {
     data: () => ({ 
       drawer: false,
       tab: 'car',
+      pedestrian: 'pedestrian',
       dataTable: false,
       isLoggedin: false,
       expToken: '',
@@ -79,7 +169,24 @@ export default {
         } else {
           this.isLoggedin = true;
         }
+
+        this.getCmte();
         // this.getExpirationToken(localStorage.getItem('token'));
+      },
+
+      getCmte() {
+        if(localStorage.getItem('token')) {
+          const decoded = jwtDecode(localStorage.getItem('token'));
+
+          if(decoded.isLoggedin) {
+            this.documento = decoded.documento;
+            this.gradua = decoded.gradua;
+            this.orgao = decoded.orgao;
+            this.nGuerra = decoded.nGuerra;
+            this.cmte = `${this.gradua} ${this.orgao} ${this.nGuerra}`;
+          }
+          
+        }
       },
 
       // getExpirationToken(value) {
