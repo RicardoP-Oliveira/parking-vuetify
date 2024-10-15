@@ -23,7 +23,7 @@ class CeicsController {
         perPage = await Ceics.count();
       }
 
-      const whereCondition = query
+      const whereCondition = query && (query !== 'car' && query !== 'pedestrian')
         ? {
           [Op.or]: [
             {placa : { [Op.iLike]: `%${query}%`}},
@@ -34,7 +34,8 @@ class CeicsController {
             {marcaModelo: { [Op.iLike]: `%${query}%`}}
           ]
         }
-        : {};
+        : query === 'car' ? { placa: { [Op.ne]: 'PEDESTRE'}}
+        : { placa: { [Op.eq]: 'PEDESTRE'} }
 
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],

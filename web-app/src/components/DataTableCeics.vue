@@ -54,8 +54,12 @@
 <script>
  import {ref} from 'vue'
  import { jwtDecode } from 'jwt-decode'
+
    
   export default {
+    props: {
+      tab: String,
+    },
     emits: ['updateBtn'],
     inject: ['dataTable'],
     name: 'Table',
@@ -112,7 +116,7 @@
     methods: {
       async loadItems({ page, itemsPerPage }) {
         try {
-          const res = await this.$ceicsservice.getTodos(page, itemsPerPage, this.token);
+          const res = await this.$ceicsservice.getTodos(page, itemsPerPage, this.token, this.tab);
           if (this.token) {
             try {
               const decoded = jwtDecode(this.token);
@@ -128,11 +132,9 @@
           this.serverItems = res[0].dados;
           this.totalItems = res[1];
 
-          if (this.$refs.rico) {
-            this.$refs.rico.focus();
-          } else {
-            console.warn('Referência "rico" não encontrada.');
-          }
+          
+            this.$refs.rico?.focus();
+          
         } catch (error) {
           console.error('Erro ao carregar itens do servidor:', error);
           // Tratar o erro adequadamente (ex.: exibir mensagem de erro)

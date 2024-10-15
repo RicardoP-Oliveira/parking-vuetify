@@ -12,7 +12,7 @@ export default class CeicsService {
         }
       }).then( (res) => res.json() );
     } 
-    return fetch(`${caminho}?query=${key}&page=${currentPage.pageNumber}&perPage=${currentPage.pageSize}`, {
+    return fetch(`${caminho}?query=${key}&page=${page}&perPage=${perPage}`, {
       headers: {
         Authorization: token,
       },

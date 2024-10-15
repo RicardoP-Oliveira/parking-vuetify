@@ -42,16 +42,16 @@ async function myGuard(to, from, next) {
           if (decoded.role === 1) {
             next()
           } else {
-            next({ name: '/home' })
+            next({ name: 'Home' })
           }
         } else {
-          next({ name: '/login' })
+          next({ name: 'Login' })
         }
       } catch (err) {
-        next({ name: '/login' })
+        next({ name: 'Login' })
     }
   } else {
-      next({ name: '/login' })
+      next({ name: 'Login' })
   }
 }
 

@@ -143,51 +143,7 @@ export default {
     }
   },
   methods:{    
-    // async getDados() {
-    //   try {        
-       
-    //     const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
-    //     let searchPlaca = null;
-    //     console.log(infoRes)
-    //     if (!isNaN(this.search) && !infoRes.erro) {
-    //       if (!infoRes.visitor) {
-    //         searchPlaca = infoRes.dados.placa || '';
-    //       }
-    //     } else {
-    //       searchPlaca = this.search;
-    //     }
-
-    //     const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
-
-    //     console.log('Car ',infoRes, 'Paking ',parkingRes)
-        
-    //     if (!parkingRes.erro && parkingRes.dados) {
-    //       this.isAction = "Saída"
-    //       this.setParkingData(parkingRes.dados, infoRes);
-    //     } 
-        
-    //     else if (!infoRes.erro && infoRes.dados) {
-    //       this.isAction = "Entrada"
-    //       this.processInfo(infoRes.dados);
-    //     } 
-
-    //     else if (infoRes.visitor) {
-    //         this.isAction = "Entrada"
-    //         this.placa = this.search;
-    //     }
-        
-    //     else {
-
-    //       alert(infoRes.msg);
-    //       this.close();
-    //     }
-
-    //   } catch (error) {
-    //     console.error('Erro ao processar as buscas: ', error);
-    //   } 
-  
-    // },
-
+    
     async getDados() {
       try {
         // Busca as informações na tabela geral

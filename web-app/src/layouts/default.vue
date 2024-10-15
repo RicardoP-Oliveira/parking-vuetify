@@ -110,9 +110,9 @@
       />
       <v-app-bar-title :text="$route.name" />
 
-      <template v-slot:extension v-if="true">
+      <template v-slot:extension v-if="dataTable">
         <v-col>
-          <v-tabs v-model="tab" fixed-tabs>
+          <v-tabs v-model="tab" fixed-tabs >
             <v-tab prepend-icon="mdi-car" value="car">Veículos</v-tab>
             <v-tab prepend-icon="mdi-walk" value="pedestrian">Pedestres</v-tab>
           </v-tabs>
@@ -128,10 +128,10 @@
         <v-card-text>
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="car">
-              <router-view @update-btn="updateBtn" />
+              <router-view @update-btn="updateBtn"  :tab="tab"/>
             </v-tabs-window-item value="pedestrian">
             <v-tabs-window-item value="pedestrian" class="mx-auto my-auto">
-              <p class="text-h2">TRANSEUNTES</p>
+              <router-view @update-btn="updateBtn"  :tab="tab"/>
             </v-tabs-window-item>
           </v-tabs-window>
         </v-card-text>
@@ -142,9 +142,7 @@
 
 <script>
 
-import { ref } from 'vue'
 import { jwtDecode } from 'jwt-decode'
-const drawer  = ref(null)
 export default {
     provide() {
       return {
@@ -154,6 +152,7 @@ export default {
     data: () => ({ 
       drawer: false,
       tab: 'car',
+      focusRico: false,
       pedestrian: 'pedestrian',
       dataTable: false,
       isLoggedin: false,
@@ -162,12 +161,14 @@ export default {
     methods: {
       async updateBtn(info) {
         if (this.dataTable) {
+           
           await this.$router.push({path:'/' })
         } else if (info && info.from.name == 'Table') {
           this.dataTable = true;
           this.isLoggedin = true;
         } else {
           this.isLoggedin = true;
+
         }
 
         this.getCmte();
