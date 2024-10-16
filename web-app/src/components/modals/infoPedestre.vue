@@ -110,9 +110,7 @@ export default {
   props:{
     pedestre: Boolean,
   },
-  emits:{
-    fecha: '',
-  },
+  emits:['closeModal', 'update:options'],
   data() {
     return {
       isPedestre: this.pedestre,
@@ -132,69 +130,57 @@ export default {
     }
   },
   methods: {
-    getUser(value){
-      this.$ubmservice.getTodos().then((res) => {
-        if (!res.erro) {
-          this.unidades = res.dados;
-        } else {
-          console.log(res.msg);
+    async getUser(value){
+      try {
+        const userRes = await this.$userservice.getId(`rg${value}`, this.token);
+        console.log(userRes)
+        if (!userRes.erro) {
+          this.tipoDoc = userRes.dados.tipo_doc;
+          this.idOrgao = userRes.dados.orgaoId;
+          this.nome = userRes.dados.nGuerra;
+          this.idUbm = userRes.dados.ubmId;
+          this.trato = userRes.dados.gradua;
+          this.destino = this.dadosDestino.includes(userRes.dados.ubm.name) 
+            ? userRes.dados.ubm.name
+            : 'OUTRO';
+          this.orgaoSigla = userRes.dados.orgaoU.sigla || '';  
         }
-      })
-      this.$orgaoservice.getOrgaos().then((res) => {
-        if (!res.erro) {
-          this.orgaos = res.dados;
-        } else {
-          console.log(res.msg);
-        }
-      })
-      this.$userservice.getId(`rg${value}`).then((res) => {
-        if (!res.erro) {
-          this.tipoDoc = res.dados.tipo_doc;
-          this.idOrgao = res.dados.orgaoId;
-          this.nome = res.dados.nGuerra;
-          this.idUbm = res.dados.ubmId;
-          this.trato = res.dados.gradua;
-          this.destino = (this.dadosDestino.includes(res.dados.ubm.name)) 
-          ? res.dados.ubm.name : 'OUTRO';
-          if (!res.dados.orgaoU.sigla){
-            this.orgaoSigla = '';
-          } else {
-            this.orgaoSigla = res.dados.orgaoU.sigla.toUpperCase();
-          }      
-        }
-      
-      })
+      } catch (error) {
+        console.log('Erro ao buscar usuário', error);
+      }
     },
-    salvar(){
-      // if (!user) {
-      //   this.newUserForm = new FormData();
-      //   this.newUserForm.append('documento', this.documento.trim());
-      //   this.newUserForm.append('nGuerra', this.nGuerra.toUpperCase().trim());
-      //   this.newUserForm.append('gradua', this.gradua.trim());
-      //   this.newUserForm.append('ubmId', this.ubmId);
-      //   this.newUserForm.append('orgaoId', this.orgaoId);
-      //   this.newUserForm.append('tipo_doc', this.tDoc);
-      //   if (this.tDoc === 'CNH') {
-      //     this.newUserForm.append('cnh', this.documento.trim());
-      //   }
-      //   this.newUserForm.append('foto', this.arquivoFoto);
-      //   this.$userService.adicionar(this.newUserForm);
-      // }
-
-      // estacionamento
+    async getUnidades() {
+      const ubmRes = await this.$ubmservice.getTodos();
+      if (!ubmRes.erro) {
+        this.unidades = ubmRes.dados;
+      } else {
+        console.log(ubmRes.msg);
+      }
+    },
+    async getOrgaos() {
+      const orgaoRes = await this.$orgaoservice.getOrgaos();
+      if (!orgaoRes.erro) {
+        this.orgaos = orgaoRes.dados;
+      } else {
+        console.log(orgaoRes.msg);
+      }
+    },
+    async salvar(){
       this.form = {
         placa: 'PEDESTRE',
         documento: this.documento.trim(),
         condutor: `${this.trato} ${this.orgaoSigla} ${this.nome.toUpperCase()}`,
         destino: this.destino.toUpperCase()
       }
-      this.$ceicsservice.adicionarPedestre(this.form, this.token).then((res) => {
-        this.close();
-      });
+      const salved = await this.$ceicsservice.adicionarPedestre(this.form, this.token)
+        if (salved) {
+          this.$emit('update:options', {from: this.$props});
+          this.close();
+        }
     },
     close(){
       this.isPedestre = false;
-      this.$emit('fecha');
+      this.$emit('closeModal')
     }
   },
   computed: {
@@ -210,6 +196,10 @@ export default {
     tratoOptions() {
       return this.$dbPgt.pgt.map(t => ({trato: t.trato, name: t.name}))
     }
+  },
+  mounted() {
+    this.getUnidades();
+    this.getOrgaos();
   }
 }
 </script>
