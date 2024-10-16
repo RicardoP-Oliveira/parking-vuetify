@@ -128,10 +128,10 @@
         <v-card-text>
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="car">
-              <router-view @update-btn="updateBtn"  :tab="tab"/>
+              <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
             </v-tabs-window-item value="pedestrian">
             <v-tabs-window-item value="pedestrian" class="mx-auto my-auto">
-              <router-view @update-btn="updateBtn"  :tab="tab"/>
+              <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
             </v-tabs-window-item>
           </v-tabs-window>
         </v-card-text>
@@ -188,6 +188,10 @@ export default {
           }
           
         }
+      },
+
+      changeTable(value) {
+        this.tab = value
       },
 
       // getExpirationToken(value) {
