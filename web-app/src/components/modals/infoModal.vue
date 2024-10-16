@@ -27,18 +27,17 @@
             </v-col>  
           </v-row>
           <v-row> 
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
+            <v-col class="px-0 pt-2 font-weight-bold" align="end">
                 Documento:
             </v-col>
-            <v-col class="px-2 py-1">
+            <v-col class="px-2 py-0">
               <v-text-field
                 autofocus
-                density="comfortable"
-
+                density="compact"
                 v-model="documento"
-                hide-details
                 variant="underlined"
-                width="150px"
+                hide-details
+                width="100px"
                 @keyup="getUser(documento)"
               />
             </v-col> 
@@ -119,9 +118,11 @@ export default {
   props:{
     dialog: Object,
   },
-  emits:{
-    fecha: '',
-  },
+  emits:[
+    'closeModal',
+    'update:options',
+    'changeTable'
+  ],
   data(){
     return {
       btn: null,
@@ -146,48 +147,30 @@ export default {
     
     async getDados() {
       try {
-        // Busca as informações na tabela geral
         const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
-
-        // Determina qual placa usar na busca
         const searchPlaca = this.getSearchPlaca(infoRes);
-
-        // Busca as informações na tabela parking
         const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
-
-        // Processa os resultados da busca
         this.processResults(infoRes, parkingRes);
-
       } catch (error) {
         console.error('Erro ao processar as buscas: ', error);
       }
    },
-
     getSearchPlaca(infoRes) {
-      // Verifica se a busca é numérica e se não há erro no resultado
-      if (!isNaN(this.search) && !infoRes.erro) {
-        return infoRes.visitor ? this.search : infoRes.dados.placa || '';
-      }
-      return this.search;
+      return !isNaN(this.search) && !infoRes.erro
+        ? infoRes.visitor ? this.search : infoRes.dados.placa || ''
+        : this.search;
     },
-
     processResults(infoRes, parkingRes) {
-      // Processa os dados de parking se disponíveis
       if (!parkingRes.erro && parkingRes.dados) {
         this.isAction = "Saída";
         this.setParkingData(parkingRes.dados, infoRes);
-      } 
-      // Processa os dados de infoRes se disponíveis
-      else if (!infoRes.erro && infoRes.dados) {
+      } else if (!infoRes.erro && infoRes.dados) {
         this.isAction = "Entrada";
         this.processInfo(infoRes.dados);
-      } 
-      // Verifica se o usuário é um visitante
-      else if (infoRes.visitor) {
+      } else if (infoRes.visitor) {
         this.isAction = "Entrada";
         this.placa = this.search;
       } 
-      // Caso contrário, exibe mensagem de erro
       else {
         alert(infoRes.msg);
         this.close();
@@ -203,7 +186,6 @@ export default {
       }
       this.getUser(this.documento);
     },
-
     getOwner(value) {
       if (value.userId) {
          const orgao = value.user.orgaoU.sigla || '';
@@ -214,7 +196,6 @@ export default {
           this.proprietario = value.orgao.orgao || 'Desconhecido';
       }
     },
-
     processInfo(res) {
       
       this.placa = this.placa || res.placa;
@@ -232,7 +213,6 @@ export default {
           this.condutor = !res.dados.orgaoU.sigla
           ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
           : `${res.dados.gradua.trim()} ${res.dados.orgaoU.sigla.trim()} ${res.dados.nGuerra.trim()}`;
-          
           this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'OUTRO';
           this.obm = res.dados.ubm.name;
         } else {
@@ -242,9 +222,8 @@ export default {
         console.log('Erro ao buscar usuário', error);
         this.condutor = '';
       }
-         
     },
-    salvar(){
+    async salvar(){
       this.form = {
         'placa': this.placa.toUpperCase().trim(),
         'documento': this.documento.trim(),
@@ -253,35 +232,31 @@ export default {
         'destino': this.destino.toUpperCase().trim(),
         'owner': this.proprietario ? this.proprietario.toUpperCase().trim() : this.proprietario,
       }
-      this.$ceicsservice.adicionar(this.form, this.token).then((res) => {
-        this.close();
-      })
+      const salved = await this.$ceicsservice.adicionar(this.form, this.token)
+        if (salved) {
+          this.$emit('update:options', {from: this.$props});
+          this.close();
+        }
     },
-
     close(){
       this.isDialog = false
-      this.placa = ''
-      this.documento =  ''
-      this.gradua = ''
-      this.proprietario =  ''
-      this.condutor = ''
-      this.destino = ''
-      this.loading = false
-      this.$emit('fecha')
+      this.$emit('closeModal')
     },
 
-    focusConfirm() {
+    setFocus() {
       const button = this.$refs.myButton.$el;
-      if (button) {
+      setInterval(() => {
         button.focus()
-      }
+      },100)
     }
   },
-  mounted() {
+  async mounted() {
     this.dbDest = this.$dbTarget;
     this.dbDest.target.map((element) => this.dados.push(element.local));
-    this.getDados();
-    this.focusConfirm()
+    await this.getDados();
+    if (this.documento) {
+      this.setFocus();
+    }
   },
 }
 </script>
