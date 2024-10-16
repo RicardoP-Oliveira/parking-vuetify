@@ -68,7 +68,10 @@
 <script>
 
 export default {
-  emits: ['updateBtn'],
+  props: {
+    tab: String
+  },
+  emits: ['updateBtn', 'changeTable'],
   data: () => ({
     hide: false,
     visible: false,
