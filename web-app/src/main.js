@@ -16,6 +16,7 @@ import ceicsService from '@/services/CeicsServices';
 import userService from '@/services/UserServices';
 import ubmService from '@/services/UbmServices';
 import orgaoService from '@/services/OrgaoServices';
+import pedestreService from '@/services/PedestreService';
 
 
 // Bancos de dados
@@ -41,6 +42,7 @@ app.config.globalProperties.$ceicsservice = ceicsService;
 app.config.globalProperties.$userservice = userService;
 app.config.globalProperties.$ubmservice = ubmService;
 app.config.globalProperties.$orgaoservice = orgaoService;
+app.config.globalProperties.$pedestreService = pedestreService;
 
 registerPlugins(app)
 
