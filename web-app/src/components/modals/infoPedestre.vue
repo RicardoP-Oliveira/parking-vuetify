@@ -1,112 +1,95 @@
 <template>
- <v-dialog
-    v-model="isPedestre"
-    width="600"
-    persistent
+  <BaseModal
+    :isOpen="pedestre"
+    :documento="documento"
+    title="Controle de Pedestres"
+    @close="close"
+    @confirm="salvar"
   >
-    <v-card>
-      <v-card-title align="center">
-        Controle de Pedestre
-        <v-divider class="mt-4"></v-divider>
-      </v-card-title>
-      <v-card-text>
-        <v-row >
-            <v-col class="px-2 py-1">
-                <v-text-field
-                  label="Documento"
-                  autofocus
-                  variant="underlined"
-                  v-model="documento"
-                  @focusout="getUser(documento)"
-                >
-                </v-text-field>
-            </v-col>
-            <v-col class="px-2 py-1">
-                <v-select
-                  label="Tipo Doc"
-                  variant="underlined"
-                  v-model="tipoDoc"
-                >
-                </v-select>
-            </v-col>
-            <v-col class="px-2 py-1">
-                <v-select
-                  :items="orgaosOptions"
-                  item-title="orgao"
-                  item-value="id"
-                  label="Órgão"
-                  variant="underlined"
-                  v-model="idOrgao"
-                >
-                </v-select>
-            </v-col>   
-          </v-row>
-          <v-row >
-            <v-col cols="4" class="px-2 py-1">
-                <v-select
-                  :items="tratoOptions"
-                  item-title="name"
-                  item-value="trato"
-                  label="Posto/Grad/Tratam"
-                  variant="underlined"
-                  v-model="trato"
-                >
-                </v-select>
-            </v-col>
-            <v-col class="px-2 py-1">
-                <v-text-field
-                  label="Nome"
-                  variant="underlined"
-                  v-model="nome"
-                >
-                </v-text-field>
-            </v-col> 
-          </v-row>
-          <v-row >
-            <v-col cols="4" class="px-2 py-1">
-                <v-select
-                  :items="unidadesOptions"
-                  item-value="id"
-                  item-title="name"
-                  label="UBM"
-                  variant="underlined"
-                  v-model="idUbm"
-                >
-                </v-select>
-            </v-col>
-            <v-col cols="4" class="px-2 py-1">
-                <v-select
-                  :items="destinoOptions"
-                  label="Destino"
-                  variant="underlined"
-                  v-model="destino"
-                >
-                </v-select>
-            </v-col> 
-          </v-row>
-      </v-card-text>
-      <template v-slot:actions>
-        <v-spacer></v-spacer>
-        <v-btn
-          class="ms-auto"
-          text="Cancelar"
-          variant="tonal"
-          @click="close()"
-        ></v-btn>
-        <v-btn
-          class="ms-auto"
-          text="Salvar"
-          color="blue-darken-4"
-          variant="flat"
-          @click="salvar()"
-        ></v-btn>
-      </template>
-    </v-card>
-  </v-dialog>
+  <v-row >
+    <v-col class="px-2 py-1">
+        <v-text-field
+          label="Documento"
+          autofocus
+          variant="underlined"
+          v-model="documento"
+          @keyup="getUser(documento)"
+        >
+        </v-text-field>
+    </v-col>
+    <v-col class="px-2 py-1">
+        <v-select
+          label="Tipo Doc"
+          variant="underlined"
+          v-model="tipoDoc"
+        >
+        </v-select>
+    </v-col>
+    <v-col class="px-2 py-1">
+        <v-select
+          :items="orgaosOptions"
+          item-title="orgao"
+          item-value="id"
+          label="Órgão"
+          variant="underlined"
+          v-model="idOrgao"
+        >
+        </v-select>
+    </v-col>   
+  </v-row>
+  <v-row >
+    <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="tratoOptions"
+          item-title="name"
+          item-value="trato"
+          label="Posto/Grad/Tratam"
+          variant="underlined"
+          v-model="trato"
+        >
+        </v-select>
+    </v-col>
+    <v-col class="px-2 py-1">
+        <v-text-field
+          label="Nome"
+          variant="underlined"
+          v-model="nome"
+        >
+        </v-text-field>
+    </v-col>
+  </v-row>
+  <v-row >
+    <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="unidadesOptions"
+          item-value="id"
+          item-title="name"
+          label="UBM"
+          variant="underlined"
+          v-model="idUbm"
+        >
+        </v-select>
+    </v-col>
+    <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="destinoOptions"
+          label="Destino"
+          variant="underlined"
+          v-model="destino"
+        >
+        </v-select>
+    </v-col> 
+  </v-row>
+</BaseModal>
 </template>
 
 <script>
+import BaseModal from '@/components/modals/BaseModal.vue';
+
 export default {
+  components:{
+    BaseModal
+  },
   props:{
     pedestre: Boolean,
   },
@@ -133,7 +116,6 @@ export default {
     async getUser(value){
       try {
         const userRes = await this.$userservice.getId(`rg${value}`, this.token);
-        console.log(userRes)
         if (!userRes.erro) {
           this.tipoDoc = userRes.dados.tipo_doc;
           this.idOrgao = userRes.dados.orgaoId;

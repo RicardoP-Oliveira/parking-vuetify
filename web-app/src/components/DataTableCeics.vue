@@ -67,9 +67,15 @@
 <script>
  import {ref} from 'vue'
  import { jwtDecode } from 'jwt-decode'
+ import infoPedestre from '@/components/modals/infoPedestre.vue';
+ import infoModal from '@/components/modals/infoModal.vue';
 
    
   export default {
+    components: {
+      infoModal,
+      infoPedestre
+    },
     props: {
       tab: String,
     },

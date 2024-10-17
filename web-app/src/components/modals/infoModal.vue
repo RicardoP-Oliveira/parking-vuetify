@@ -1,120 +1,98 @@
 <template>
-    <v-dialog
-      v-model="isDialog"
-      width="600"
-      persistent
-    >
-      <v-card>
-        <v-card-title class="text-center">
-          Controle de acesso
-          <v-divider class="mt-4"></v-divider>
-        </v-card-title>
-        <v-card-text>
-          <v-row >
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                UBM:
-            </v-col>
-            <v-col class="px-2 py-1">
-                {{ obm }}
-            </v-col>  
-          </v-row>
-          <v-row>
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                Proprietário:
-            </v-col>
-            <v-col class="px-2 py-1">
-                {{ proprietario }}
-            </v-col>  
-          </v-row>
-          <v-row> 
-            <v-col class="px-0 pt-2 font-weight-bold" align="end">
-                Documento:
-            </v-col>
-            <v-col class="px-2 py-0">
-              <v-text-field
-                autofocus
-                density="compact"
-                v-model="documento"
-                variant="underlined"
-                hide-details
-                width="100px"
-                @keyup="getUser(documento)"
-              />
-            </v-col> 
-          </v-row>
-          <v-row>
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                Condutor:
-            </v-col>
-            <v-col class="px-2 py-1">
-                {{ condutor }}
-            </v-col>  
-          </v-row>
-          <v-row>
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                Placa:
-            </v-col>
-            <v-col class="px-2 py-1">
-                {{ placa }}
-            </v-col>  
-          </v-row>
-          <v-row >
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                Modelo:
-            </v-col>
-            <v-col class="px-2 py-1">
-                {{ modelo }}
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="px-0 py-1 font-weight-bold" align="end">
-                Destino:
-            </v-col>
-            <v-col class="px-2 py-1">
-              <v-select
-                :items="dados"
-                density="comfortable"
-                variant="outlined"
-                v-model="destino"
-              >
-              </v-select>  
-            </v-col>  
-          </v-row>
-          <v-divider class="my-4"></v-divider>
-          <v-row>
-            <v-col align="center">
-              <vue-barcode :value=placa v-if="placa"></vue-barcode>
-            </v-col>
-          </v-row>
-          <v-divider class="mt-4"></v-divider>
-        </v-card-text>
-        <template v-slot:actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            @click="close()"
-            variant="tonal"
-          >
-            Cancelar
-          </v-btn>
-          <v-btn
-            ref="myButton"
-            @click.enter.prevent="salvar()"
-            color="blue-darken-4"
-            variant="flat"
-            min-width="115"
-            :text="isAction || 'Confirmar'"
-          >
-          </v-btn>
-        </template>
-      </v-card>
-    </v-dialog>
+  <BaseModal
+    :isOpen="isDialog"
+    :documento="documento"
+    title="Controle de acesso"
+    :confirmText="isAction"
+    @close="close"
+    @confirm="salvar"
+  >
+    <v-row >
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          UBM:
+      </v-col>
+      <v-col class="px-2 py-1">
+          {{ obm }}
+      </v-col>  
+    </v-row>
+    <v-row>
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          Proprietário:
+      </v-col>
+      <v-col class="px-2 py-1">
+          {{ proprietario }}
+      </v-col>  
+    </v-row>
+    <v-row> 
+      <v-col class="px-0 pt-2 font-weight-bold" align="end">
+          Documento:
+      </v-col>
+      <v-col class="px-2 py-0">
+        <v-text-field
+          autofocus
+          density="compact"
+          v-model="documento"
+          variant="underlined"
+          hide-details
+          width="100px"
+          @keyup="getUser(documento)"
+        />
+      </v-col> 
+    </v-row>
+    <v-row>
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          Condutor:
+      </v-col>
+      <v-col class="px-2 py-1">
+          {{ condutor }}
+      </v-col>  
+    </v-row>
+    <v-row>
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          Placa:
+      </v-col>
+      <v-col class="px-2 py-1">
+          {{ placa }}
+      </v-col>  
+    </v-row>
+    <v-row >
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          Modelo:
+      </v-col>
+      <v-col class="px-2 py-1">
+          {{ modelo }}
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col class="px-0 py-1 font-weight-bold" align="end">
+          Destino:
+      </v-col>
+      <v-col class="px-2 py-1">
+        <v-select
+          :items="dados"
+          density="comfortable"
+          variant="outlined"
+          v-model="destino"
+        >
+        </v-select>  
+      </v-col>  
+    </v-row>
+    <v-divider class="my-4"></v-divider>
+    <v-row>
+      <v-col align="center">
+        <vue-barcode :value=placa v-if="placa"></vue-barcode>
+      </v-col>
+    </v-row>
+  </BaseModal>
 </template>
 
 <script>
-import { info } from 'sass';
-
+import BaseModal from '@/components/modals/BaseModal.vue';
 
 export default {
+  components:{
+    BaseModal
+  },
   props:{
     dialog: Object,
   },
@@ -242,21 +220,11 @@ export default {
       this.isDialog = false
       this.$emit('closeModal')
     },
-
-    setFocus() {
-      const button = this.$refs.myButton.$el;
-      setInterval(() => {
-        button.focus()
-      },100)
-    }
   },
   async mounted() {
     this.dbDest = this.$dbTarget;
     this.dbDest.target.map((element) => this.dados.push(element.local));
     await this.getDados();
-    if (this.documento) {
-      this.setFocus();
-    }
   },
 }
 </script>
