@@ -114,7 +114,7 @@
         <v-col>
           <v-tabs v-model="tab" fixed-tabs >
             <v-tab prepend-icon="mdi-car" value="car">Veículos</v-tab>
-            <v-tab prepend-icon="mdi-walk" value="pedestrian">Pedestres</v-tab>
+            <v-tab prepend-icon="mdi-walk" value="pedestre">Pedestres</v-tab>
           </v-tabs>
         </v-col>
       </template>
@@ -129,8 +129,8 @@
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="car">
               <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
-            </v-tabs-window-item value="pedestrian">
-            <v-tabs-window-item value="pedestrian" class="mx-auto my-auto">
+            </v-tabs-window-item>
+            <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
               <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
             </v-tabs-window-item>
           </v-tabs-window>
@@ -153,7 +153,7 @@ export default {
       drawer: false,
       tab: 'car',
       focusRico: false,
-      pedestrian: 'pedestrian',
+      pedestrian: 'pedestre',
       dataTable: false,
       isLoggedin: false,
       expToken: '',
