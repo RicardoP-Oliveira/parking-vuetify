@@ -6,6 +6,7 @@ import User from '../app/models/user.mjs';
 import Carro from '../app/models/carro.mjs';
 import Ceics from '../app/models/ceics.mjs';
 import Orgao from '../app/models/orgao.mjs';
+import Pedestre from '../app/models/pedestre.mjs';
 
 const models = [
   Ubm,
@@ -13,6 +14,7 @@ const models = [
   Carro,
   Ceics,
   Orgao,
+  Pedestre,
 ];
 
 class Database {

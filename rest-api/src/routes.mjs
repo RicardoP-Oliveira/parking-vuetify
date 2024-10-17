@@ -8,6 +8,7 @@ import UbmController from './app/controllers/UbmController.mjs';
 import UserController from './app/controllers/UserController.mjs';
 import CeicsController from './app/controllers/CeicsController.mjs';
 import SessionController from './app/controllers/SessionController.mjs';
+import PedestreController from './app/controllers/PedestreController.mjs';
 
 const routes = new Router();
 const upload = multer(uploadConfig.getConfig());
@@ -63,5 +64,7 @@ routes.post('/ceics/pedestre', auth, CeicsController.storePedestre);
 routes.get('/ceics', auth, CeicsController.index);
 routes.get('/ceics/:placa', auth, CeicsController.show);
 routes.get('/parking/:placa', auth, CeicsController.parking);
+
+routes.get('/pedestre', auth, PedestreController.index);
 
 export default routes;
