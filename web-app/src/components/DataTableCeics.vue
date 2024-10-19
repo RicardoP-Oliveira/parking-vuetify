@@ -114,17 +114,17 @@
           { title: 'Modelo', key: 'marcaModelo', align: 'center', width: '80px'},
           { title: 'Entrada', align: 'center', children: [
             { title: 'Data', key: 'entrada', align: 'center' },
-            { title: 'Hora', key: 'hEntrada', align: 'center' }
+            { title: 'Hora', key: 'hEntrada', align: 'center' },
+            { title: 'Documento', key: 'eRg', align: 'center' },
+            { title: 'Condutor', key: 'eCondutor', align: 'center', width: '200px' },
           ] },
-          { title: 'Documento', key: 'eRg', align: 'center' },
-          { title: 'Condutor', key: 'eCondutor', align: 'center', width: '200px' },
+          { title: 'Destino', key: 'destino', align: 'center'},
           { title: 'Saída', align: 'center', children: [
             { title: 'Data', key: 'saida', align: 'center' },
-            { title: 'Hora', key: 'hSaida', align: 'center' }
+            { title: 'Hora', key: 'hSaida', align: 'center' },
+            { title: 'Documento', key: 'sRg', align: 'center'},
+            { title: 'Condutor', key: 'sCondutor', align: 'center', width: '200px'},
           ] },
-          { title: 'Documento', key: 'sRg', align: 'center'},
-          { title: 'Condutor', key: 'sCondutor', align: 'center', width: '200px'  },
-          { title: 'Destino', key: 'destino', align: 'center', width: '80px'},
         ],
         serverItems: [],
         totalItems: 0,

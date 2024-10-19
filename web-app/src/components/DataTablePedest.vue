@@ -110,14 +110,16 @@
             align: 'center',
             sortable: false,
             key: 'name',
+            width: '250px',
           },
-          { title: 'Tipo Documento', key: 'tDoc', align: 'center' },
-          { title: 'Documento', key: 'nDoc', align: 'center' },
-          { title: 'Entrada', align: 'center', children: [
-            { title: 'Data', key: 'entrada', align: 'center' },
+          { title: 'Tipo Documento', key: 'tDoc', align: 'center', width: '100px'},
+          { title: 'Documento', key: 'nDoc', align: 'center', width: '200px' },
+          { title: 'Entrada', align: 'center',width: '300px', children: [
+            { title: 'Data', key: 'entrada', align: 'center'},
             { title: 'Hora', key: 'hEntrada', align: 'center' }
           ] },
-          { title: 'Saída', align: 'center', children: [
+          { title: 'Destino', key: 'destino', align: 'center' },
+          { title: 'Saída', align: 'center', width: '300px', children: [
             { title: 'Data', key: 'saida', align: 'center' },
             { title: 'Hora', key: 'hSaida', align: 'center' }
           ] },
@@ -129,9 +131,7 @@
     methods: {
       async loadItems({ page = this.pageNow , itemsPerPage = this.pageSize } = {}) {
         try {
-          console.log('tab ',this.tab)
           const res = await this.$pedestreService.getTodos(page, itemsPerPage, this.token);
-          console.log(res)
           this.validadeToken(this.token);
           this.serverItems = res[0].dados;
           this.totalItems = res[1];         
