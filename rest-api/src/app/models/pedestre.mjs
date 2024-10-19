@@ -11,6 +11,7 @@ class pedestre extends Model {
       name: DataTypes.STRING,
       tDoc: DataTypes.STRING,
       nDoc: DataTypes.STRING,
+      destino: DataTypes.STRING,
     }, {
       sequelize,
       modelName: 'pedestre',
