@@ -93,6 +93,7 @@ export default {
   components:{
     BaseModal
   },
+  name: 'infoModal',
   props:{
     dialog: Object,
   },
@@ -212,13 +213,13 @@ export default {
       }
       const salved = await this.$ceicsservice.adicionar(this.form, this.token)
         if (salved) {
-          this.$emit('update:options', {from: this.$props});
+          this.$emit('update:options');
           this.close();
         }
     },
     close(){
       this.isDialog = false
-      this.$emit('closeModal')
+      this.$emit('closeModal', {from: this.$options.name})
     },
   },
   async mounted() {

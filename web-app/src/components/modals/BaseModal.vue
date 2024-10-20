@@ -70,9 +70,15 @@ export default {
     },
     setFocus() {
       const button = this.$refs.myButton.$el;
-      if (this.document) {
-        button.focus();
-      }
+      this.$nextTick(() => {
+        // const identField = this.$refs.ident;
+        if (button) {
+          button.blur(); // Remove o foco
+          setTimeout(() => {
+            button.focus(); // Foca novamente
+          }, 100); // Pequeno atraso para garantir que o foco seja redefinido
+        }
+      });
     }
   },
   computed: {
