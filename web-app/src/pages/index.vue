@@ -1,8 +1,7 @@
 <template>
-  <DataTableCeics v-if="tab=='car'"/>
-  <DataTablePedest v-else />
+  <TableCarros v-if="tab === 'carro'"/>
+  <TablePedestres v-else />
 </template>
-
 <script>
  export default {
   data() {

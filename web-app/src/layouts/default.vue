@@ -113,7 +113,7 @@
       <template v-slot:extension v-if="dataTable">
         <v-col>
           <v-tabs v-model="tab" fixed-tabs >
-            <v-tab prepend-icon="mdi-car" value="car">Veículos</v-tab>
+            <v-tab prepend-icon="mdi-car" value="carro">Veículos</v-tab>
             <v-tab prepend-icon="mdi-walk" value="pedestre">Pedestres</v-tab>
           </v-tabs>
         </v-col>
@@ -127,7 +127,7 @@
       <v-card>
         <v-card-text>
           <v-tabs-window v-model="tab">
-            <v-tabs-window-item value="car">
+            <v-tabs-window-item value="carro">
               <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
             </v-tabs-window-item>
             <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
@@ -151,12 +151,12 @@ export default {
     },
     data: () => ({ 
       drawer: false,
-      tab: 'car',
+      tab: null,
       focusRico: false,
-      pedestrian: 'pedestre',
       dataTable: false,
       isLoggedin: false,
       expToken: '',
+      items: 'loadItems'
     }),
     methods: {
       async updateBtn(info) {
@@ -191,7 +191,11 @@ export default {
       },
 
       changeTable(value) {
-        this.tab = value
+        if (value.from === 'infoModal') {
+          this.tab = 'carro';
+        } else {
+          this.tab = 'pedestre';
+        }
       },
 
       // getExpirationToken(value) {
@@ -237,12 +241,14 @@ export default {
         localStorage.clear();
         this.beforeUnmount();
         this.expToken = '';
-        this.tab = 'car';
+        this.tab = 'carro';
         this.dataTable = false;
         this.isLoggedin = false;
         this.$router.push('/login')
       }
-
+    },
+    mounted() {
+      this.tab='carro'
     },
   }
 </script>
