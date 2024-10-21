@@ -19,11 +19,31 @@ const capitalize = (string) =>{
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+// Verificar token
+const isValidToken = (token) => {
+  if (!token) {
+    return false
+  } else {
+    const decodedToken = jwtDecode(token);
+    const experationTime = new Date(decodedToken.exp * 1000); // convertendo data expiração
+    const currentTime = new Date();
+    const timeRemaining = (experationTime - currentTime);
+    if (timeRemaining <= 0) {
+      this.localStorage.removeItem('token');
+      return false;
+    } else {
+      return true
+    }
+  }
+}
+
 // Função de guard para verificar autenticação
 async function myGuard(to, from, next) {
   const token = localStorage.getItem('token');
   
-  if (token) {
+  const isValid = await isValidToken(token);
+
+  if (isValid) {
     const options = {
       headers: {
         'Content-type': 'application/json;charset=UTF-8',
@@ -57,7 +77,10 @@ async function myGuard(to, from, next) {
 
 async function myLogin(to, from, next) {
   const token = localStorage.getItem('token');
-  if (token) {
+
+  const isValid = await isValidToken(token);
+
+  if (isValid) {
     const decoded = jwtDecode(token);
 
     if (decoded.isLoggedin) {
@@ -99,7 +122,7 @@ router.beforeEach((to, from, next) => {
   // Verifica se a rota requer autenticação
   if (to.meta.requiresAuth && to.path === '/') {
     myGuard(to, from, next); // Chama a função que verifica o token
-  } else if (to.name === '/login'){
+  } else if (to.path === '/login'){
     myLogin(to, from, next);
   } else {
     next();

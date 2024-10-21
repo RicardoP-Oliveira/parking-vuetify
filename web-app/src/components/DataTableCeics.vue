@@ -6,10 +6,9 @@
         density="compact"
         height="600"
         fixed-header
-        last-page-label="Fim"
         items-per-page-text="Resultado por página"
         :page="pageNow" 
-        :headers="headers"
+        :headers="generatedHeaders"
         :items="serverItems"
         :items-length="totalItems"
         @update:options="loadItems"
@@ -43,17 +42,13 @@
           </v-col>
         </v-row>  
       </template>
-    </v-data-table-server>
-   
-    <!-- <infoModal :dialog="{isDialog, idPlaca}" @update:options="teste" @fecha="closeModal" v-if="isDialog"/> -->
+      </v-data-table-server>
     <infoModal
       v-if="modal.isOpen && modal.type === 'car'"
       :dialog="{isDialog: modal.isOpen, idPlaca: modal.idPlaca}"
       @update:options="loadItems"
       @closeModal="closeModal"
     />
-
-    <!-- <infoPedestre :pedestre="isPedestre" @update:options="loadItems" @fecha="closeModal" v-if="isPedestre"/> -->
     <infoPedestre
       v-if="modal.isOpen && modal.type === 'pedestre'"
       :pedestre="modal.isOpen"
@@ -69,7 +64,6 @@
  import { jwtDecode } from 'jwt-decode'
  import infoPedestre from '@/components/modals/infoPedestre.vue';
  import infoModal from '@/components/modals/infoModal.vue';
-
    
   export default {
     components: {
@@ -78,6 +72,7 @@
     },
     props: {
       tab: String,
+      dataService: Function
     },
     emits: [
       'updateBtn',
@@ -104,30 +99,36 @@
           { value: 500, title: '500' },
           { value: 1000, title: '1000'},
         ]),
-        headers: [
-          {
-            title: 'Placa',
-            align: 'center',
-            sortable: false,
-            key: 'placa',
-          },
-          { title: 'Modelo', key: 'marcaModelo', align: 'center', width: '80px'},
-          { title: 'Entrada', align: 'center', children: [
-            { title: 'Data', key: 'entrada', align: 'center' },
-            { title: 'Hora', key: 'hEntrada', align: 'center' },
-            { title: 'Documento', key: 'eRg', align: 'center' },
-            { title: 'Condutor', key: 'eCondutor', align: 'center', width: '200px' },
-          ] },
-          { title: 'Destino', key: 'destino', align: 'center'},
-          { title: 'Saída', align: 'center', children: [
-            { title: 'Data', key: 'saida', align: 'center' },
-            { title: 'Hora', key: 'hSaida', align: 'center' },
-            { title: 'Documento', key: 'sRg', align: 'center'},
-            { title: 'Condutor', key: 'sCondutor', align: 'center', width: '200px'},
-          ] },
-        ],
         serverItems: [],
         totalItems: 0,
+        generatedHeaders: [],
+        headerOrder: this.setHeaderOrder(),
+        displayColuns: this.setColumns(),
+        columnNameMap: this.setNamesMap(),
+        headerGroups: {
+          entrada: {
+            title: 'Entrada',
+            children: [
+              { key: 'entrada', title: 'Data' },
+              { key: 'hEntrada', title: 'Hora' },
+              { key: 'eRg', title: 'Documento' },
+              { key: 'eCondutor', title: 'Condutor' },
+            ],
+          },
+          saida: {
+            title: 'Saída',
+            children: [
+              { key: 'saida', title: 'Data' },
+              { key: 'hSaida', title: 'Hora' },
+              { key: 'sRg', title: 'Documento' },
+              { key: 'sCondutor', title: 'Condutor' },
+            ],
+            width: '350px',
+          },
+        },
+        
+        
+    
       }
     },
     methods: {
@@ -135,11 +136,125 @@
         try {
           const res = await this.$ceicsservice.getTodos(page, itemsPerPage, this.token, this.tab);
           this.validadeToken(this.token);
-          this.serverItems = res[0].dados;
-          this.totalItems = res[1];         
+          this.serverItems = res[0].dados.map((item) => {
+            let filteredItem = {};
+            this.displayColuns.forEach((column) => {
+              if (column === 'entrada' || column === 'saida') {
+                filteredItem[column] = this.dateFormatterOutput(item[column]);
+              } else {
+                filteredItem[column] = item[column];
+              }
+            });
+            return filteredItem;
+          });
+          this.totalItems = res[1];
+          this.generateHeaders(); 
         } catch (error) {
           console.error('Erro ao carregar itens do servidor:', error);
         }
+      },
+      setHeaderOrder() {
+        if (this.tab === 'carro') {
+          return [
+            'placa', 
+            'marcaModelo', 
+            'entrada', 
+            'destino', 
+            'saida',
+          ]
+        } else if (this.tab === 'pedestre') {
+          return [
+            'name',
+            'tDoc',
+            'nDoc',
+            'entrada',
+            'destino',
+            'saida',
+          ]
+        } else {
+          return null
+        }
+      },
+      setColumns() {
+        if (this.tab === 'carro') {
+          return [
+            'placa',
+            'marcaModelo',
+            'entrada',
+            'hEntrada',
+            'eRg',
+            'eCondutor',
+            'saida',
+            'hSaida',
+            'sRg',
+            'sCondutor',
+            'destino'
+          ]
+        } else if (this.tab === 'pedestre') {
+          return [
+            'name',
+            'tDoc',
+            'nDoc',
+            'entrada',
+            'hEntrada',
+            'saida',
+            'hSaida',
+            'destino'
+          ]
+        } else {
+          return null
+        }
+      },
+      setNamesMap() {
+        return ({
+          marcaModelo: 'Modelo',
+          eRg: 'Documento',
+          eCondutor: 'Condutor',
+          sRg: 'Documento',
+          sCondutor:  'Condutor',
+          entrada: 'Data',
+          saida: 'Data',
+          hEntrada: 'Hora',
+          hSaida: 'Hora',
+          name: 'Pedestre',
+          tDoc: 'Tipo Documento',
+          nDoc: 'Documento',
+        }) 
+      },
+      generateHeaders() {
+        const headers = [];
+        this.headerOrder.forEach(headerKey => {
+          if (this.headerGroups[headerKey]) {
+            const group = this.headerGroups[headerKey];
+            headers.push({
+              title: group.title,
+              align: 'center',
+              children: group.children.map(child => ({
+                  title: this.columnNameMap[child.key] || child.key.charAt(0).toUpperCase() + child.key.slice(1),
+                  key: child.key,
+                  align: 'center',
+                }
+              )),
+            });
+          } else {
+            headers.push({
+              title: this.columnNameMap[headerKey] || headerKey.charAt(0).toUpperCase() + headerKey.slice(1),
+              key: headerKey,
+              align: 'center',
+              width: this.getWidth(headerKey),
+            });
+          }
+        });
+        this.generatedHeaders = headers;
+      },
+      getWidth(value) {
+        return value === 'eCondutor' || value === 'sCondutor' ? '200px' : '100px'
+      },
+      dateFormatterOutput(data) {
+          if (data) {
+            const ndata = data.split('-');
+            return (`${ndata[2]}/${ndata[1]}/${ndata[0]}`);
+          }
       },
       validadeToken(token) {
         try {
@@ -181,20 +296,12 @@
         }
       },
       setFocus() {
-        this.$nextTick(() => this.$refs.ident.focus());
+        setTimeout(() => this.$refs.ident.focus(), 200);
       },
-      // async teste(value) {
-      //   const tab = value.from;
-      //   if (tab.dialog.isDialog) {
-      //     this.selModal = 'car';
-   
-      //   }
-      //   await this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
-      //   // this.$emit('changeTable', this.selModal); 
-      // },
-      closeModal() {
+      closeModal(from) {
         this.modal.isOpen = false;
         this.clearIdent();
+        this.$emit('changeTable', from);
         this.setFocus();
         // this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       },
@@ -205,7 +312,11 @@
       }
     },
     mounted() {
+      this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       this.setFocus();
+    },
+    watch: {
+      tab: ['loadItems', 'setFocus'],
     }
   }
 </script>

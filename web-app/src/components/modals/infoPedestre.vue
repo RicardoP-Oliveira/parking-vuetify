@@ -90,10 +90,11 @@ export default {
   components:{
     BaseModal
   },
+  name: 'infoPedestre',
   props:{
     pedestre: Boolean,
   },
-  emits:['closeModal', 'update:options'],
+  emits:['update:options','closeModal'],
   data() {
     return {
       isPedestre: this.pedestre,
@@ -120,6 +121,7 @@ export default {
           this.tipoDoc = userRes.dados.tipo_doc;
           this.idOrgao = userRes.dados.orgaoId;
           this.nome = userRes.dados.nGuerra;
+          this.documento = userRes.dados.documento;
           this.idUbm = userRes.dados.ubmId;
           this.trato = userRes.dados.gradua;
           this.destino = this.dadosDestino.includes(userRes.dados.ubm.name) 
@@ -149,20 +151,20 @@ export default {
     },
     async salvar(){
       this.form = {
-        placa: 'PEDESTRE',
-        documento: this.documento.trim(),
-        condutor: `${this.trato} ${this.orgaoSigla} ${this.nome.toUpperCase()}`,
-        destino: this.destino.toUpperCase()
+        'nDoc': this.documento.trim(),
+        'tDoc': this.tipoDoc,
+        'name': `${this.trato} ${this.orgaoSigla} ${this.nome.toUpperCase()}`,
+        'destino': this.destino.toUpperCase()
       }
-      const salved = await this.$ceicsservice.adicionarPedestre(this.form, this.token)
+      const salved = await this.$pedestreService.adicionar(this.form, this.token)
         if (salved) {
-          this.$emit('update:options', {from: this.$props});
+          this.$emit('update:options');
           this.close();
         }
     },
     close(){
       this.isPedestre = false;
-      this.$emit('closeModal')
+      this.$emit('closeModal', {from: this.$options.name})
     }
   },
   computed: {

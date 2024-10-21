@@ -11,7 +11,7 @@
         :headers="generatedHeaders"
         :items="serverItems"
         :items-length="totalItems"
-        @update:options="loadItems"
+        @update:options="onUpdateOptions"
         hide-default-footer
         item-name="placa"
         class="flex-table"
@@ -23,6 +23,7 @@
             <v-text-field
               v-model="ident"
               ref="ident"
+              autofocus
               label="Identificador/Placa"
               variant="outlined"
               :rules="[validateIdent]"
@@ -44,7 +45,7 @@
       </template>
       </v-data-table-server>
     <infoModal
-      v-if="modal.isOpen && modal.type === 'car'"
+      v-if="modal.isOpen && modal.type === 'carro'"
       :dialog="{isDialog: modal.isOpen, idPlaca: modal.idPlaca}"
       @update:options="loadItems"
       @closeModal="closeModal"
@@ -60,7 +61,7 @@
 </template>
 
 <script>
- import {ref} from 'vue'
+ import { ref } from 'vue'
  import { jwtDecode } from 'jwt-decode'
  import infoPedestre from '@/components/modals/infoPedestre.vue';
  import infoModal from '@/components/modals/infoModal.vue';
@@ -76,11 +77,13 @@
       getHeaderOrder: Function,
       getColumns: Function,
       getHeaderGroups: Function,
+      changeTable: Function,
     },
     emits: [
       'updateBtn',
       'changeTable',
-      'update:options'
+      'update:options',
+      'closeModal'
     ],
     inject: ['dataTable'],
     name: 'Table',
@@ -93,8 +96,8 @@
         },
         token: `Bearer ${localStorage.getItem('token')}` ,
         ident: '',
-        pageSize: ref(50),
-        pageNow: ref(1),
+        pageSize: 50,
+        pageNow: 1,
         itemsPerPageOptions: ref([
           { value: 50, title: '50' },
           { value: 100, title: '100' },
@@ -112,7 +115,7 @@
       }
     },
     methods: {
-      async loadItems({ page = this.pageNow , itemsPerPage = this.pageSize } = {}) {
+      async loadItems({ page = this.pageNow , itemsPerPage = this.pageSize} = {}) {
         try {
           const res = await this.dataService(page, itemsPerPage, this.token, this.tab);
           this.validadeToken(this.token);
@@ -191,7 +194,7 @@
       },
       validadeToken(token) {
         try {
-          const decoded = jwtDecode(this.token);
+          const decoded = jwtDecode(token);
           if (decoded.isLoggedin && !this.dataTable) {
             this.$emit('updateBtn', { from: this.$options });
           }
@@ -201,9 +204,8 @@
       },
       selectModal(){
         if (this.$refs.ident.isValid) {
-          this.$refs.ident.blur();
           this.modal.isOpen = true;
-          this.modal.type = this.ident.length > 0 ? 'car' : 'pedestre';
+          this.modal.type = this.ident.length > 0 ? 'carro' : 'pedestre';
           this.modal.idPlaca = this.ident.length > 0 ? this.ident : '';
         }
       },
@@ -230,35 +232,44 @@
         }
       },
       setFocus() {
-        this.$nextTick(() => {
-          const identField = this.$refs.ident;
-          if(identField) {
-            identField.focus();
-          identField.select();
+        setTimeout(() => {
+          if (this.$refs.ident) {
+            this.$refs.ident.focus()
           }
-          
-        })  
+        }
+        , 200);
       },
       closeModal(from) {
+        this.$emit('closeModal')
         this.modal.isOpen = false;
         this.clearIdent();
-        this.setFocus();
         this.$emit('changeTable', from);
-        
+        this.setFocus(); 
       },
+      onUpdateOptions({page, itemsPerPage}) {
+        this.pageNow = page;
+        this.pageSize = itemsPerPage;
+        this.loadItems({ page, itemsPerPage });
+        this.setFocus();
+      }
     },
     computed: {
       convertToUpper() {
         this.ident ? this.ident = this.ident.toUpperCase() : '';
       }
     },
+    watch: {
+      tab(newTab) {
+        this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
+        setTimeout(() => {
+          this.setFocus();
+        }, 170);
+      },        
+    },
     mounted() {
       this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
-      this.setFocus();
     },
-    watch: {
-      tab: 'loadItems',
-    }
+   
   }
 </script>
 

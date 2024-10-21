@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpenInternal" :width="width" persistent>
+  <v-dialog ref="baseModal"v-model="isOpenInternal" :width="width" persistent>
     <v-card>
       <v-card-title class="text-center">
         {{ title }}
@@ -55,10 +55,10 @@ export default {
       default: '',
     }
   },
-  emits: ['close', 'confirm'],
+  emits: ['confirm', 'close'],
   data() {
     return {
-      document: this.documento
+      document: this.documento,
     };
   },
   methods: {
@@ -98,7 +98,6 @@ export default {
         this.setFocus();
       }
     },100)
-      
   },
 }
 </script>

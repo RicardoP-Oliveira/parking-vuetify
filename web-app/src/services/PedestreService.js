@@ -35,16 +35,16 @@ export default class PedestreService {
   //   }).then((res) => res.json());
   // }
 
-  // static adicionar(dados, token) {
-  //   return fetch(caminho, {
-  //     headers: {
-  //       'Content-type': 'application/json;charset=UTF-8',
-  //       Authorization: token,
-  //     },
-  //     body: JSON.stringify(dados),
-  //     method: 'POST',
-  //   }).then((res) => res.json());
-  // }
+  static adicionar(dados, token) {
+    return fetch(caminho, {
+      headers: {
+        'Content-type': 'application/json;charset=UTF-8',
+        Authorization: token,
+      },
+      body: JSON.stringify(dados),
+      method: 'POST',
+    }).then((res) => res.json());
+  }
 
   // static adicionarPedestre(dados, token) {
   //   return fetch(`${caminho}/pedestre`, {

@@ -179,7 +179,7 @@
         }
       },
       setFocus() {
-        this.$nextTick(() => this.$refs.ident.focus());
+        setTimeout(() => this.$refs.ident.focus(), 100);
       },
       // async teste(value) {
       //   const tab = value.from;
@@ -190,10 +190,11 @@
       //   await this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       //   // this.$emit('changeTable', this.selModal); 
       // },
-      closeModal() {
+      closeModal(from) {
         this.modal.isOpen = false;
         this.clearIdent();
-        // this.setFocus();
+        this.setFocus();
+        this.$emit('changeTable', from);
         // this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       },
     },
@@ -203,7 +204,11 @@
       }
     },
     mounted() {
-      // this.setFocus();
+      this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
+      this.setFocus();
+    },
+    watch: {
+      tab: ['loadItems', 'setFocus'],
     }
   }
 </script>

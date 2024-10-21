@@ -3,6 +3,8 @@
   <TablePedestres v-else />
 </template>
 <script>
+import DataTablePedest from '@/components/DataTablePedest.vue';
+
  export default {
   data() {
     return {
@@ -11,8 +13,8 @@
   },
    methods: {
      getInfo() {
-      this.tab = this.$attrs.tab || 'car';
-     }
+      this.tab = this.$attrs.tab || 'carro';
+     },
    },
    mounted() {
      this.getInfo()

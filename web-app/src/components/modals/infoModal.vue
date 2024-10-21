@@ -4,8 +4,9 @@
     :documento="documento"
     title="Controle de acesso"
     :confirmText="isAction"
-    @close="close"
+    :saveData="salvar"
     @confirm="salvar"
+    @close="close"
   >
     <v-row >
       <v-col class="px-0 py-1 font-weight-bold" align="end">
@@ -98,9 +99,8 @@ export default {
     dialog: Object,
   },
   emits:[
-    'closeModal',
     'update:options',
-    'changeTable'
+    'closeModal',
   ],
   data(){
     return {
@@ -212,10 +212,10 @@ export default {
         'owner': this.proprietario ? this.proprietario.toUpperCase().trim() : this.proprietario,
       }
       const salved = await this.$ceicsservice.adicionar(this.form, this.token)
-        if (salved) {
-          this.$emit('update:options');
-          this.close();
-        }
+      if (salved) {
+        this.$emit('update:options');
+        this.close();
+      }
     },
     close(){
       this.isDialog = false
