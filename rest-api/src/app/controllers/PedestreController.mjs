@@ -42,6 +42,46 @@ class PedestreController {
     }
     return res.json([resposta, total]);
   }
+
+  async show(req, res) {
+  }
+
+  async store(req, res) {
+    const body = req.body;
+    var pedestre;
+    
+    const data = {
+      ...body,
+      'entrada': dateFormatter(new Date()),
+      'hEntrada': new Date().toLocaleTimeString(),
+    }
+
+    const entrada = await Pedestre.findOne({
+      where: {
+        nDoc: body.nDoc,
+        saida: null
+      },
+      order: [['updatedAt', 'DESC']]
+    })
+
+    if (!entrada) {
+      pedestre = await Pedestre.create(data);
+    } else {
+      const updatePedestre = {
+        ...data,
+        'saida': dateFormatter(new Date()),
+        'hSaida': new Date().toLocaleTimeString(),
+      }
+      pedestre = await entrada.update(updatePedestre)
+    }
+
+    return res.json(pedestre)
+  }
+  
+
+  async update(req, res) {}
+
+  async destroy(req, res) {}
 }
 
     export default new PedestreController();

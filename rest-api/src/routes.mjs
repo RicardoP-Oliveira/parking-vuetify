@@ -60,11 +60,11 @@ routes.delete('/carro/:id', CarroController.destroy);
 // -----  Rotas de Estacionamento ---- //
 
 routes.post('/ceics',  auth, CeicsController.store);
-routes.post('/ceics/pedestre', auth, CeicsController.storePedestre);
 routes.get('/ceics', auth, CeicsController.index);
 routes.get('/ceics/:placa', auth, CeicsController.show);
 routes.get('/parking/:placa', auth, CeicsController.parking);
 
 routes.get('/pedestre', auth, PedestreController.index);
+routes.post('/pedestre', auth, PedestreController.store);
 
 export default routes;

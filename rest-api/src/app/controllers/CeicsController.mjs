@@ -120,7 +120,17 @@ class CeicsController {
     hEntrada: new Date().toLocaleTimeString(),
   }
 
-  const vaga = await Ceics.findOne({where: [{ placa: placa }, {saida: null}]});
+  const vaga = await Ceics.findOne({
+    where: [
+      {
+        placa: placa
+      },
+      {
+        saida: null
+      }
+    ],
+    order: [['updatedAt', 'DESC']],
+  });
 
   if(!vaga){
       var saida = await Ceics.create(dataParking);
@@ -137,34 +147,34 @@ class CeicsController {
    return res.json(saida);
   }
 
-  async storePedestre (req, res) {
-    const { placa, condutor, destino, documento } = req.body;
+  // async storePedestre (req, res) {
+  //   const { placa, condutor, destino, documento } = req.body;
 
-  const dataParking = {
-    placa: placa,
-    eCondutor: condutor,
-    eRg: documento,
-    destino,
-    entrada: dateFormatter(new Date()),
-    hEntrada: new Date().toLocaleTimeString(),
-  }
+  // const dataParking = {
+  //   placa: placa,
+  //   eCondutor: condutor,
+  //   eRg: documento,
+  //   destino,
+  //   entrada: dateFormatter(new Date()),
+  //   hEntrada: new Date().toLocaleTimeString(),
+  // }
 
-  const vaga = await Ceics.findOne({where: [{ eRg: documento, placa: 'PEDESTRE' , saida: null}]});
+  // const vaga = await Ceics.findOne({where: [{ eRg: documento, placa: 'PEDESTRE' , saida: null}]});
 
-  if(!vaga){
-      var saida = await Ceics.create(dataParking);
-  } else {
-    var dados = {
-      sCondutor: condutor,
-      sRg: documento,
-      saida: dateFormatter(new Date()),
-      hSaida: new Date().toLocaleTimeString(),
-    }
-    var saida = await vaga.update(dados);
-  }
+  // if(!vaga){
+  //     var saida = await Ceics.create(dataParking);
+  // } else {
+  //   var dados = {
+  //     sCondutor: condutor,
+  //     sRg: documento,
+  //     saida: dateFormatter(new Date()),
+  //     hSaida: new Date().toLocaleTimeString(),
+  //   }
+  //   var saida = await vaga.update(dados);
+  // }
 
-   return res.json(saida);
-  }
+  //  return res.json(saida);
+  // }
 }
 
 export default new CeicsController();
