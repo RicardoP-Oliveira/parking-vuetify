@@ -3,7 +3,6 @@
   <TablePedestres v-else />
 </template>
 <script>
-import DataTablePedest from '@/components/DataTablePedest.vue';
 
  export default {
   data() {
