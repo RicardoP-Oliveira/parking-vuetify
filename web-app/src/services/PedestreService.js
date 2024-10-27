@@ -1,7 +1,6 @@
 import ConfigClass from '../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/pedestre`;
-const parking = `${ConfigClass.getUrlApi().toString()}/parking`;
 
 export default class PedestreService {
   static getTodos(page, perPage, token, key='') {
@@ -17,6 +16,14 @@ export default class PedestreService {
         Authorization: token,
       },
     }).then((res) => res.json());
+  }
+
+  static getByDoc(doc, token) {
+    return fetch(`${caminho}/doc/${doc}`, {
+      headers: {
+        Authorization: token,
+      }
+    }).then ((res) => res.json());
   }
 
   // static getInfo(placa, token) {
@@ -45,15 +52,4 @@ export default class PedestreService {
       method: 'POST',
     }).then((res) => res.json());
   }
-
-  // static adicionarPedestre(dados, token) {
-  //   return fetch(`${caminho}/pedestre`, {
-  //     headers: {
-  //       'Content-type': 'application/json;charset=UTF-8',
-  //       Authorization: token,
-  //     },
-  //     body: JSON.stringify(dados),
-  //     method: 'POST',
-  //   }).then((res) => res.json());
-  // }
 }
