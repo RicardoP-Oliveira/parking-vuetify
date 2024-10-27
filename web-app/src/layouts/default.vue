@@ -21,7 +21,7 @@
 
       <!-- Listas de navegação -->
       <v-list density="compact" nav>
-        <v-list-item title="Dashboard" value="mydashboard" >
+        <v-list-item title="Dashboard" link >
           <template v-slot:prepend>
             <v-tooltip location="bottom">
               <template v-slot:activator="{ props }">
@@ -31,7 +31,7 @@
             </v-tooltip>
           </template>
         </v-list-item>
-        <v-list-item title="Usuários" value="mysusers" >
+        <v-list-item title="Usuários" link >
           <template v-slot:prepend>
             <v-tooltip location="bottom">
               <template v-slot:activator="{ props }">
@@ -41,7 +41,7 @@
             </v-tooltip>
           </template>
         </v-list-item>
-        <v-list-item title="Veículos" value="mycars" >
+        <v-list-item title="Veículos" link >
           <template v-slot:prepend>
             <v-tooltip location="bottom">
               <template v-slot:activator="{ props }">
@@ -51,7 +51,7 @@
             </v-tooltip>
           </template>
         </v-list-item>
-        <v-list-item title="Militares" value="militarys" >
+        <v-list-item title="Militares" link to="/report">
           <template v-slot:prepend>
             <v-tooltip location="bottom">
               <template v-slot:activator="{ props }">
@@ -61,7 +61,7 @@
             </v-tooltip>
           </template>
         </v-list-item>
-        <v-list-item title="Estacionamento" value="parking" to="/">
+        <v-list-item title="Estacionamento" link to="/">
           <template v-slot:prepend>
             <v-tooltip location="bottom">
               <template v-slot:activator="{ props }">
@@ -71,15 +71,24 @@
             </v-tooltip>
           </template>
         </v-list-item>
-        <v-list-item title="Relatórios" value="report" >
-          <template v-slot:prepend>
-            <v-tooltip location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" icon="mdi-chart-line"></v-icon>
-              </template>
-              Relatórios
-            </v-tooltip>
-          </template>
+        <v-list-item title="Relatórios" link>
+            <template v-slot:prepend>
+              <v-tooltip location="bottom">
+                <template v-slot:activator="{ props }">
+                  <v-icon v-bind="props" icon="mdi-chart-line"></v-icon>
+                </template>
+                Relatórios
+              </v-tooltip>
+            </template>
+            <template v-slot:append>
+              <v-icon icon="mdi-menu-right" size="x-small"></v-icon>
+            </template>
+            <v-menu activator="parent" location="end" >
+              <v-list density="compact" nav  class="bg-deep-purple">
+                <v-list-item title="Serviço 24h" value="report24"  @click="openDialog('Serviço 24h')"/>
+                <v-list-item title="Serviço 12h" value="report12" />
+              </v-list>
+            </v-menu>
         </v-list-item>
       </v-list>
 
@@ -109,6 +118,13 @@
         class="mr-3 ms-3"
       />
       <v-app-bar-title :text="$route.name" />
+      <template v-slot:append v-if="isLoggedin">
+        <v-btn 
+          :text="expToken"
+          variant="text"
+          class="text-none"
+        > {{  expToken }}</v-btn>  
+      </template>
 
       <template v-slot:extension v-if="dataTable">
         <v-col>
@@ -128,7 +144,10 @@
         <v-card-text>
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="carro">
-              <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
+              <router-view
+                @update-btn="updateBtn"
+                @changeTable="changeTable"
+                :tab="tab"/>
             </v-tabs-window-item>
             <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
               <router-view @update-btn="updateBtn" @changeTable="changeTable" :tab="tab"/>
@@ -138,47 +157,72 @@
       </v-card>
     </v-main>
   </v-layout>
+
+  <v-dialog
+      v-model="dialog"
+      max-width="400"
+    >
+      <v-card
+        max-width="400"
+        prepend-icon="mdi-update"
+        text="Your application will relaunch automatically after the update is complete."
+        :title="titleDialog"
+      >
+        <template v-slot:actions>
+          <v-btn
+            class="ms-auto"
+            text="Ok"
+            @click="dialog = false"
+          ></v-btn>
+        </template>
+      </v-card>
+    </v-dialog>
 </template>
 
 <script>
 
+import { ref } from 'vue'
 import { jwtDecode } from 'jwt-decode'
 export default {
     provide() {
       return {
         dataTable: this.dataTable,
+        tab: this.tab,
+        setFalseDataTable: this.setFalseDataTable,
       }
     },
     data: () => ({ 
       drawer: false,
-      tab: null,
+      tab: ref(null),
       focusRico: false,
-      dataTable: false,
+      dataTable: ref(false),
       isLoggedin: false,
       expToken: '',
-      items: 'loadItems'
+      items: 'loadItems',
+      dialog: ref(false),
+      titleDialog: '',
+      interval: null,
     }),
     methods: {
       async updateBtn(info) {
-        if (this.dataTable) {
-           
-          await this.$router.push({path:'/' })
-        } else if (info && info.from.name == 'Table') {
+        if (info && info.from.name == 'Table') {
           this.dataTable = true;
           this.isLoggedin = true;
+          this.drawer = false
         } else {
+          this.dataTable = false;
           this.isLoggedin = true;
-
+          this.drawer = true
         }
-
         this.getCmte();
-        // this.getExpirationToken(localStorage.getItem('token'));
+        this.getExpirationToken(localStorage.getItem('token'));
       },
-
+      setFalseDataTable() {
+        this.dataTable = false;
+      },
       getCmte() {
         if(localStorage.getItem('token')) {
           const decoded = jwtDecode(localStorage.getItem('token'));
-
           if(decoded.isLoggedin) {
             this.documento = decoded.documento;
             this.gradua = decoded.gradua;
@@ -186,57 +230,59 @@ export default {
             this.nGuerra = decoded.nGuerra;
             this.cmte = `${this.gradua} ${this.orgao} ${this.nGuerra}`;
           }
-          
         }
       },
-
+      async openDialog(value) {
+        const services = await this.$servicoService.getAll();
+        console.log(services)
+        const date =  new Date();
+        date.setDate(date.getDate() - 1);
+        const dateFormated = date.toLocaleDateString();
+        this.titleDialog = `${value} - ${dateFormated}`
+        this.dialog = true
+      },
       changeTable(value) {
         if (value.from === 'infoModal') {
           this.tab = 'carro';
-        } else {
+        } else if (value.from === 'infoPedestre') {
           this.tab = 'pedestre';
+        } else {
+          this.tab = value;
         }
       },
-
-      // getExpirationToken(value) {
-      //   const expDecoded = jwtDecode(value);
-      //   const expirationTime = new Date(expDecoded.exp * 1000); // Convertendo expiração para data
-
-      //   this.interval = setInterval(() => {
-      //     const now = new Date();  // Obtém a hora atual
-      //     const timeRemaining = expirationTime - now; // Diferença em milissegundos
-
-      //     // Hora atual formatada
-      //     const formattedTime = now.toLocaleTimeString(); // Atualiza a cada segundo
-
-      //     if (timeRemaining <= 0) {
-      //       clearInterval(this.interval); // Para o relógio quando o tempo expirar
-      //       this.expToken = `Token expirado em ${expirationTime.toLocaleDateString()} às ${expirationTime.toLocaleTimeString()}`;
-      //       alert('Seu token expirou. Sendo redirecionado para a tela de login!')
-      //       this.logout();
-      //     } else {
-      //       // Cálculo das horas, minutos e segundos restantes
-      //       const hours = Math.floor(timeRemaining / (1000 * 60 * 60)); // Converte para horas
-      //       const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60)); // Minutos restantes
-      //       const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000); // Segundos restantes
-
-      //       // Zeros à esquerda para minutos e segundos
-      //       const formattedHours = String(hours).padStart(2, '0');
-      //       const formattedMinutes = String(minutes).padStart(2, '0');
-      //       const formattedSeconds = String(seconds).padStart(2, '0');
-
-      //       // Data de Expiração Formatada
-      //       const formattedExpirationDate = expirationTime.toLocaleDateString();
-
-      //       // Exibe a contagem regressiva no formato HH:mm:ss
-      //       this.expToken = `O token expira em ${formattedExpirationDate} - ${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-      //   }}, 1000);
-      // },
-
+      getExpirationToken(value) {
+        const expDecoded = jwtDecode(value);
+        const expirationTime = new Date(expDecoded.exp * 1000);
+        
+        if (this.interval) {
+          clearInterval(this.interval);
+          this.interval = null;
+        }
+        // Convertendo expiração para data
+        this.interval = setInterval(() => {
+          const now = new Date(); 
+          const timeRemaining = expirationTime - now; 
+          const formattedTime = now.toLocaleTimeString(); 
+          if (timeRemaining <= 0) {
+            this.expToken = `Token expirado em ${expirationTime.toLocaleDateString()} às ${expirationTime.toLocaleTimeString()}`;
+            alert('Seu token expirou. Sendo redirecionado para a tela de login!')
+            this.logout();
+          } else {
+            const hours = Math.floor(timeRemaining / (1000 * 60 * 60)); 
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60)); 
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000); 
+            const formattedHours = String(hours).padStart(2, '0');
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(seconds).padStart(2, '0');
+            const formattedExpirationDate = expirationTime.toLocaleDateString();
+            this.expToken = `Tempo restante: ${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+          }
+        }, 1000);
+      },
       beforeUnmount() {
         clearInterval(this.interval)
+        this.interval = null;
       },
-
       logout() {
         localStorage.clear();
         this.beforeUnmount();
@@ -244,7 +290,7 @@ export default {
         this.tab = 'carro';
         this.dataTable = false;
         this.isLoggedin = false;
-        this.$router.push('/login')
+        this.$router.push({name: 'Login' })
       }
     },
     mounted() {
