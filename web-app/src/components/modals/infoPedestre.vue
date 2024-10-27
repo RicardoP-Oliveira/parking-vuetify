@@ -2,6 +2,7 @@
   <BaseModal
     :isOpen="pedestre"
     :documento="documento"
+    :confirmText="isAction"
     title="Controle de Pedestres"
     @close="close"
     @confirm="salvar"
@@ -9,16 +10,21 @@
   <v-row >
     <v-col class="px-2 py-1">
         <v-text-field
-          label="Documento"
           autofocus
+          label="Documento"
           variant="underlined"
           v-model="documento"
-          @keyup="getUser(documento)"
+          @keyup="getDados(documento)"
+          :error="!documento && formTouched"
+          :error-messages="!documento && formTouched ? '* Obrigatório' : ''"
         >
         </v-text-field>
     </v-col>
     <v-col class="px-2 py-1">
         <v-select
+          :items="docOptions"
+          item-title="name"
+          item-value="sigla"
           label="Tipo Doc"
           variant="underlined"
           v-model="tipoDoc"
@@ -54,6 +60,9 @@
           label="Nome"
           variant="underlined"
           v-model="nome"
+          @keyup="convertToUpper"
+          :error="!nome && formTouched"
+          :error-messages="!nome && formTouched ? '* Obrigatório' : ''"
         >
         </v-text-field>
     </v-col>
@@ -76,6 +85,8 @@
           label="Destino"
           variant="underlined"
           v-model="destino"
+          :error="!destino && formTouched"
+          :error-messages="!destino && formTouched ? '* Obrigatório' : ''"
         >
         </v-select>
     </v-col> 
@@ -97,8 +108,12 @@ export default {
   emits:['update:options','closeModal'],
   data() {
     return {
+      formTouched: false,
+      error:undefined,
       isPedestre: this.pedestre,
       documento: '',
+      isAction: 'Entrada',
+      tratoRegex: null,
       tipoDoc: '',
       idOrgao: '',
       trato: '',
@@ -106,6 +121,7 @@ export default {
       idUbm: '',
       destino: '',
       orgaoSigla: '',
+      dados: [],
       dadosDestino: [],
       unidades: [],
       orgaos: [],
@@ -114,25 +130,77 @@ export default {
     }
   },
   methods: {
-    async getUser(value){
+    async getDados(value){
       try {
-        const userRes = await this.$userservice.getId(`rg${value}`, this.token);
-        if (!userRes.erro) {
-          this.tipoDoc = userRes.dados.tipo_doc;
-          this.idOrgao = userRes.dados.orgaoId;
-          this.nome = userRes.dados.nGuerra;
-          this.documento = userRes.dados.documento;
-          this.idUbm = userRes.dados.ubmId;
-          this.trato = userRes.dados.gradua;
-          this.destino = this.dadosDestino.includes(userRes.dados.ubm.name) 
-            ? userRes.dados.ubm.name
-            : 'OUTRO';
-          this.orgaoSigla = userRes.dados.orgaoU.sigla || '';  
-        }
+        this.limparForm();
+
+        const search = `rg${value}`.trim();
+        const searchRg = value.trim();
+        const [pedestreRes, pedestrePark] = await Promise.all([
+          this.$userservice.getId(search, this.token),
+          this.$pedestreService.getByDoc(searchRg, this.token)
+        ]);
+        this.dados = pedestreRes
+        this.processResult(pedestreRes, pedestrePark);
       } catch (error) {
         console.log('Erro ao buscar usuário', error);
       }
     },
+
+    processResult(pedestreRes, pedestrePark) {
+      if((!pedestreRes.erro && pedestreRes.dados)){
+        this.setDataForm(pedestreRes.dados)
+      } 
+      if (!pedestrePark.erro && pedestrePark.dados) {
+        this.isAction = 'Saída';
+        const regex = this.mountRegex(pedestrePark.dados.name);
+        this.setDataForm(pedestrePark.dados, regex);
+      }
+    },
+
+    limparForm() {
+      this.tipoDoc =  '';
+      this.isAction = 'Entrada',
+      this.idOrgao =  '';
+      this.nome =  '';
+      this.idUbm =  '';
+      this.trato =  '';
+      this.destino = '';
+      this.orgaoSigla = '';
+    },
+    
+    setDataForm(data, regex='') {
+      this.tipoDoc =  this.tipoDoc || data.tDoc || data.tipo_doc;
+      this.idOrgao =  this.idOrgao || regex.orgao || data.orgaoId;
+      this.nome =  this.nome || regex.name || data.nGuerra;
+      this.idUbm =  this.idUbm || regex.ubm || data.ubmId;
+      this.trato =  this.trato || regex.trato ||data.gradua;
+      this.destino = data.destino 
+        || (this.dadosDestino.includes(data.ubm?.name) 
+        ? data.ubm?.name
+        : 'OUTRO');
+      this.orgaoSigla = regex.orgao || (data.orgaoU?.sigla || '');
+    },
+
+    mountRegex(regex) {
+      const terms = ["BM", "PM", "EB", "MB", "MAER"]
+      const nameSplit = regex.split(/\s+/).filter(Boolean);
+      const validTerms = terms.some(term => nameSplit.includes(term));
+      if (validTerms) {
+        return {
+          trato: nameSplit[0],
+          name: nameSplit.slice(2).join(' '),
+          orgao: nameSplit[1] || '', 
+        }
+      } else {
+        return {
+          trato: nameSplit[0],
+          name: nameSplit.slice(1).join(' '),
+          ubm: 'VISITANTE'
+        }
+      }
+    },
+
     async getUnidades() {
       const ubmRes = await this.$ubmservice.getTodos();
       if (!ubmRes.erro) {
@@ -150,6 +218,32 @@ export default {
       }
     },
     async salvar(){
+      this.formTouched = true;
+      if (!this.documento || !this.nome || !this.destino) {
+        this.error = "Por favor, preencha todos os campos obrigatórios.";
+        this.hide = true;
+        return;
+      }
+
+      if(this.dados.erro) {
+        const formUser = {
+          'gradua': this.trato,
+          'tipo_doc': this.tipoDoc.trim(),
+          'orgaoId': this.idOrgao,
+          'documento': this.documento.trim(),
+          'ubmId': this.idUbm,
+          'nGuerra': this.nome.trim(),
+          'cnh': this.tipoDoc === 'CNH' ? this.documento.trim() : '',
+        }
+
+        const newUser = await this.$userservice.adicionar(formUser, this.token);
+        if (!newUser) {
+          return res.json({
+            erro: true, msg: 'Não foi possível salvar o usuário'
+          }) 
+        } 
+      }
+
       this.form = {
         'nDoc': this.documento.trim(),
         'tDoc': this.tipoDoc,
@@ -179,11 +273,19 @@ export default {
     },
     tratoOptions() {
       return this.$dbPgt.pgt.map(t => ({trato: t.trato, name: t.name}))
+    },
+    docOptions() {
+      return this.$dbDoc.doc.map(d => ({sigla: d.sigla, name: d.nome}))
+    },
+    convertToUpper() {
+      this.nome ? this.nome = this.nome.toUpperCase() : '';
     }
   },
+
   mounted() {
     this.getUnidades();
     this.getOrgaos();
+    this.tratoRegex = this.tratoOptions;
   }
 }
 </script>
