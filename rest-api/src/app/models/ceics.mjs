@@ -53,6 +53,15 @@ import  { Model, DataTypes } from "sequelize";
         throw error;
       }
     }
+
+    static async serviceDay(date) {
+      const service = await this.findAll({
+        where: {
+          saida: null 
+        },
+        order: [['updatedAt', 'DESC']]
+      })
+    }
   }
 
   export default ceics;
