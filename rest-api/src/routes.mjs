@@ -9,6 +9,7 @@ import UserController from './app/controllers/UserController.mjs';
 import CeicsController from './app/controllers/CeicsController.mjs';
 import SessionController from './app/controllers/SessionController.mjs';
 import PedestreController from './app/controllers/PedestreController.mjs';
+import ServicoController from './app/controllers/ServicoController.mjs';
 
 const routes = new Router();
 const upload = multer(uploadConfig.getConfig());
@@ -66,5 +67,9 @@ routes.get('/parking/:placa', auth, CeicsController.parking);
 
 routes.get('/pedestre', auth, PedestreController.index);
 routes.post('/pedestre', auth, PedestreController.store);
+routes.get('/pedestre/doc/:doc', auth, PedestreController.show);
+
+routes.post('/servico', ServicoController.store);
+routes.get('/servico', ServicoController.index);
 
 export default routes;

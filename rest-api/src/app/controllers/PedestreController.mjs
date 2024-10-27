@@ -44,6 +44,31 @@ class PedestreController {
   }
 
   async show(req, res) {
+    const resposta = new Resposta();
+    const { doc } = req.params || '';
+    
+    try {
+      const pedestre = await Pedestre.findOne({
+        where: {
+          nDoc: doc,
+          saida: null
+        }
+      })
+
+      if (pedestre) {
+        resposta.dados = pedestre;
+      } else {
+        resposta.erro = true;
+        resposta.msg = "Nenhum registro encontrado!"
+      }
+
+      
+    } catch (error) {
+      resposta.erro = true;
+      resposta.msg = "Ocorreu um erro na busca dos dados!"
+    }
+
+    return res.json(resposta);
   }
 
   async store(req, res) {
@@ -68,7 +93,6 @@ class PedestreController {
       pedestre = await Pedestre.create(data);
     } else {
       const updatePedestre = {
-        ...data,
         'saida': dateFormatter(new Date()),
         'hSaida': new Date().toLocaleTimeString(),
       }
