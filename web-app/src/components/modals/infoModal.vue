@@ -135,9 +135,10 @@ export default {
       }
    },
     getSearchPlaca(infoRes) {
-      return !isNaN(this.search) && !infoRes.erro
-        ? infoRes.visitor ? this.search : infoRes.dados.placa || ''
-        : this.search;
+      if(isNaN(this.search) || infoRes.erro) {
+        return this.search;
+      }
+      return infoRes.visitor ? this.search : infoRes.dados.placa || '';
     },
     processResults(infoRes, parkingRes) {
       if (!parkingRes.erro && parkingRes.dados) {
@@ -187,7 +188,7 @@ export default {
     },
     async getUser(value) {
       try {
-        const res = await this.$userservice.getId(`rg${value.trim()}`.trim(), this.token);
+        const res = await this.$userservice.getId(`rg${value.trim()}`, this.token);
         if (!res.erro) {
           this.condutor = !res.dados.orgaoU.sigla
           ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
