@@ -17,6 +17,7 @@ import userService from '@/services/UserServices';
 import ubmService from '@/services/UbmServices';
 import orgaoService from '@/services/OrgaoServices';
 import pedestreService from '@/services/PedestreService';
+import servicoService from '@/services/ServicoServices';
 
 
 // Bancos de dados
@@ -43,6 +44,7 @@ app.config.globalProperties.$userservice = userService;
 app.config.globalProperties.$ubmservice = ubmService;
 app.config.globalProperties.$orgaoservice = orgaoService;
 app.config.globalProperties.$pedestreService = pedestreService;
+app.config.globalProperties.$servicoService = servicoService;
 
 registerPlugins(app)
 
