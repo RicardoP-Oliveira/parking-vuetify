@@ -50,7 +50,12 @@ import bcrypt from 'bcryptjs';
       return bcrypt.compare(password, this.password_hash);
     }
 
-    static associate(models) {
+    static async getCmtGuarda(rg) {
+      const user = await this.findOne({ where: { documento: rg } });
+      const cmtGuarda = `${user.gradua} BM ${user.nGuerra}`
+      return cmtGuarda; 
+    }
+     static associate(models) {
       this.belongsTo(models.ubm, { foreignKey: "ubmId", as: "ubm" });
       this.hasMany(models.carro, { foreignKey: "userId", as: "carros" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgaoU"});
