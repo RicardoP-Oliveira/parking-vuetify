@@ -19,8 +19,17 @@ const capitalize = (string) =>{
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+const translations = {
+  'report': 'Relatórios'
+}
+
+const translate = (string) => {
+  return translations[string.toLowerCase()] || string;
+};
+
 // Verificar token
 const isValidToken = (token) => {
+
   if (!token) {
     return false
   } else {
@@ -29,7 +38,7 @@ const isValidToken = (token) => {
     const currentTime = new Date();
     const timeRemaining = (experationTime - currentTime);
     if (timeRemaining <= 0) {
-      this.localStorage.removeItem('token');
+      localStorage.removeItem('token');
       return false;
     } else {
       return true
@@ -40,7 +49,7 @@ const isValidToken = (token) => {
 // Função de guard para verificar autenticação
 async function myGuard(to, from, next) {
   const token = localStorage.getItem('token');
-  
+
   const isValid = await isValidToken(token);
 
   if (isValid) {
@@ -107,7 +116,7 @@ const protectedRoutes = setupLayouts(routes).map(route => ({
     children: route.children?.map(child => ({
       ...child,
       name:  (child.path === '/') ? 'Estacionamento' 
-        : capitalize(child.name.substring(child.name.indexOf('/') + 1))
+        : capitalize(translate(child.name.substring(child.name.indexOf('/') + 1)))
     })) 
 }));
 
