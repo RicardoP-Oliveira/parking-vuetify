@@ -15,8 +15,9 @@
           variant="underlined"
           v-model="documento"
           @keyup="getDados(documento)"
-          :error="!documento && formTouched"
-          :error-messages="!documento && formTouched ? '* Obrigatório' : ''"
+          :error="showError"
+          :error-messages="errorMessage"
+          @blur="formTouched = true"
         >
         </v-text-field>
     </v-col>
@@ -219,7 +220,7 @@ export default {
     },
     async salvar(){
       this.formTouched = true;
-      if (!this.documento || !this.nome || !this.destino) {
+      if (!this.nome || !this.destino) {
         this.error = "Por favor, preencha todos os campos obrigatórios.";
         this.hide = true;
         return;
@@ -262,6 +263,22 @@ export default {
     }
   },
   computed: {
+    showError() {
+      const zeroPattern = /^0+$/;
+      return (
+        (!this.documento && this.formTouched) || 
+        (this.documento && this.documento.length < 4) || 
+        zeroPattern.test(this.documento) 
+      );
+    },
+    
+    errorMessage() {
+      if (!this.documento && this.formTouched) return '* Obrigatório';
+      if (this.documento && this.documento.length < 4)
+        return '* Deve ter pelo menos 4 caracteres';
+      if (/^0+$/.test(this.documento)) return '* O valor não pode ser apenas zeros';
+      return '';
+    },
     orgaosOptions(){
       return this.orgaos.map(o => ({id: o.orgao.id, orgao: o.orgao.orgao}))
     },
