@@ -160,14 +160,27 @@
 
   <v-dialog
       v-model="dialog"
-      max-width="400"
+      max-width="720"
+      :services="services"
     >
       <v-card
-        max-width="400"
+        max-width="720"
         prepend-icon="mdi-update"
-        text="Your application will relaunch automatically after the update is complete."
         :title="titleDialog"
       >
+        <v-card-text>
+          <v-list>
+            <v-list-item  v-for="(item, index) in services.dados" :key="index">
+              <v-row align="center">
+                <v-col>RG: {{ item.rg }}</v-col>
+                <v-col>Início: {{ item.dataInicio }}</v-col>
+                <v-col>Hora: {{ item.horaInicio }}</v-col>
+                <v-col>Término: {{ item.dataTermino ? item.dataTermino : 'Aberto'}}</v-col>
+                <v-col><v-btn @click="listarServico(item)">Detalhes</v-btn></v-col>
+              </v-row>   
+            </v-list-item>
+          </v-list>
+        </v-card-text>
         <template v-slot:actions>
           <v-btn
             class="ms-auto"
@@ -183,6 +196,7 @@
 
 import { ref } from 'vue'
 import { jwtDecode } from 'jwt-decode'
+import { dateFormatterOutput } from '@/js/maxMin';
 export default {
     provide() {
       return {
@@ -194,6 +208,7 @@ export default {
     data: () => ({ 
       drawer: false,
       tab: ref(null),
+      services: [],
       focusRico: false,
       dataTable: ref(false),
       isLoggedin: false,
@@ -233,8 +248,15 @@ export default {
         }
       },
       async openDialog(value) {
-        const services = await this.$servicoService.getAll();
-        console.log(services)
+        this.services = await this.$servicoService.getAll();
+        if(this.services.dados) {
+          this.services.dados.map(service => {
+            service.dataInicio = dateFormatterOutput(service.dataInicio);
+            service.dataTermino = service.dataTermino
+              ? dateFormatterOutput(service.dataTermino)
+              : 'Aberto';
+          })
+        }
         const date =  new Date();
         date.setDate(date.getDate() - 1);
         const dateFormated = date.toLocaleDateString();
@@ -291,6 +313,20 @@ export default {
         this.dataTable = false;
         this.isLoggedin = false;
         this.$router.push({name: 'Login' })
+      },
+      listarServico(value) {
+        const options = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        const data = {
+          RG: value.rg,
+          Início: value.dataInicio,
+          Hora: value.horaInicio,
+          Término: value.dataTermino,
+          horaT: value.horaTermino,
+          CreatedAt: new Date(value.createdAt).toLocaleDateString(),
+          hourCreatedAt: new Date(value.createdAt).toLocaleTimeString('pt-BR', options),
+        }
+
+        console.log(data);
       }
     },
     mounted() {

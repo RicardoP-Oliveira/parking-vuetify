@@ -65,6 +65,7 @@
  import { jwtDecode } from 'jwt-decode'
  import infoPedestre from '@/components/modals/infoPedestre.vue';
  import infoModal from '@/components/modals/infoModal.vue';
+ import { dateFormatterOutput } from '@/js/maxMin.js';
    
   export default {
     components: {
@@ -123,7 +124,7 @@
             let filteredItem = {};
             this.displayColuns.forEach((column) => {
               if (column === 'entrada' || column === 'saida') {
-                filteredItem[column] = this.dateFormatterOutput(item[column]);
+                filteredItem[column] = dateFormatterOutput(item[column]);
               } else {
                 filteredItem[column] = item[column];
               }
@@ -186,12 +187,12 @@
         } 
         return value === 'eCondutor' || value === 'sCondutor' ? '200px' : '100px'
       },
-      dateFormatterOutput(data) {
-          if (data) {
-            const ndata = data.split('-');
-            return (`${ndata[2]}/${ndata[1]}/${ndata[0]}`);
-          }
-      },
+      // dateFormatterOutput(data) {
+      //     if (data) {
+      //       const ndata = data.split('-');
+      //       return (`${ndata[2]}/${ndata[1]}/${ndata[0]}`);
+      //     }
+      // },
       validadeToken(token) {
         try {
           const decoded = jwtDecode(token);

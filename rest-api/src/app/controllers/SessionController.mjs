@@ -27,7 +27,7 @@ class SessionController {
             }
         
             const now = new Date();
-            const formatedDate = now.toLocaleDateString();
+            const formatedDate = now;
             const formatedTime = now.toLocaleTimeString();
             const body = {
                     rg: user.documento,
