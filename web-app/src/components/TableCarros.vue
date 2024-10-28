@@ -14,15 +14,16 @@ export default {
   components: {
     BaseTable
   },
-  data() {
-    return {
-      modal: {
-        isOpen: false,
-        idPlaca: '',
-        type: null
-      }
-    }
-  },
+  name: 'TableCarros',
+  // data() {
+  //   return {
+  //     modal: {
+  //       isOpen: false,
+  //       idPlaca: '',
+  //       type: null
+  //     }
+  //   }
+  // },
   methods: {
     async loadCarData(page, itemsPerPage, token, tab) {
       return await this.$ceicsservice.getTodos(page, itemsPerPage, token, tab)

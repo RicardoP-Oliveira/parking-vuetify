@@ -14,13 +14,14 @@ export default {
   components: {
     BaseTable
   },
-  data() {
-    return {
-      modal: {
-        isOpen: false,
-      }
-    }
-  },
+  name: 'TablePedestres',
+  // data() {
+  //   return {
+  //     modal: {
+  //       isOpen: false,
+  //     }
+  //   }
+  // },
   methods: {
     async loadPedestreData(page, itemsPerPage, token, tab) {
       return await this.$pedestreService.getTodos(page, itemsPerPage, token, tab)
