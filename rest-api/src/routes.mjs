@@ -38,9 +38,9 @@ routes.get('/user', auth, UserController.index);
 
 routes.get('/user/:id', auth, UserController.show);
 
-routes.post('/user', auth, upload.single('foto'), UserController.store);
+routes.post('/user', auth,  upload.single('foto'), UserController.store);
 
-routes.put('/user/:id', auth, upload.single('foto'), UserController.update);
+routes.patch('/user/:id',  upload.single('foto'), UserController.update);
 
 routes.delete('/user/:id', auth, UserController.destroy);
 

@@ -17,8 +17,12 @@
         "name": "Capitão"
      },
      {
-        "trato": "Ten",
-        "name": "Tenente"
+        "trato": "1º Ten",
+        "name": "1º Tenente"
+     },
+     {
+      "trato": "2º Ten",
+      "name": "2º Tenente"
      },
      {
         "trato": "Asp",
@@ -33,8 +37,16 @@
         "name": "Subtenente"
      },
      {
-        "trato": "Sgt",
-        "name": "Sargento"
+        "trato": "1º Sgt",
+        "name": "1º Sargento"
+     },
+     {
+        "trato": "2º Sgt",
+        "name": "2º Sargento"
+     },
+     {
+        "trato": "3º Sgt",
+        "name": "3º Sargento"
      },
      {
         "trato": "Cb",
@@ -44,6 +56,10 @@
         "trato": "Sd",
         "name": "Soldado"
      },
+     {
+      "trato": "SdAl",
+      "name": "Soldado Aluno"
+   },
      {
         "trato": "Insp.(ª)",
         "name": "Inspetor(a)"

@@ -9,14 +9,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      orgao: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
       sigla: {
         allowNull: true,
         type: Sequelize.STRING
       },
+      orgao: {
+        allowNull: false,
+        type: Sequelize.STRING,
+      },
+      
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

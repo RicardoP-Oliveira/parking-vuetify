@@ -16,7 +16,6 @@ import  { Model, DataTypes } from "sequelize";
         sRg: DataTypes.STRING,
         sCondutor: DataTypes.STRING,
         destino: DataTypes.STRING,
-        owner: DataTypes.STRING,
       }, {
         sequelize,
         modelName: 'ceics',

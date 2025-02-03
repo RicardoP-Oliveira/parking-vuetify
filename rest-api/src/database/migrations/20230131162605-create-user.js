@@ -52,19 +52,6 @@ module.exports = {
 	      allowNull: true,
 	      type: Sequelize.STRING
       },
-      isAdmin: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      foto: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
-      password_hash: {
-        allowNull: true,
-        type: Sequelize.STRING,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

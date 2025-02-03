@@ -21,11 +21,10 @@ class SessionController {
             if (!user) {
                 return res.status(401).json({ error: 'Usuário não existe.'});
             } 
-        
             if(!(await user.checkPassword(password))){
                 return res.status(401).json({ error: 'Usuário/Senha incorretos.'});
             }
-        
+
             const now = new Date();
             const formatedDate = now;
             const formatedTime = now.toLocaleTimeString();
@@ -34,21 +33,19 @@ class SessionController {
                     dataInicio: formatedDate,
                     horaInicio: formatedTime,
             }
-            let servico = null;
-            const isOpenServico = await Servico.findOne({ where: { dataTermino: null}, order: [['createdAt', 'DESC']]});
-            if (isOpenServico) {
-                const bodyUpdate = {
-                    dataTermino: formatedDate,
-                    horaTermino: formatedTime,
-                }
-                servico = await isOpenServico.update(bodyUpdate);
-                if (servico) {
-                    servico = await Servico.create(body);
-                }
-            } else {
-                servico = await Servico.create(body);
-            }
-            
+            // let servico = null;
+            // const isOpenServico = await Servico.findOne({ where: { dataTermino: null}, order: [['createdAt', 'DESC']]});
+  
+            // if (isOpenServico) {
+            //     const bodyUpdate = {
+            //         dataTermino: formatedDate,
+            //         horaTermino: formatedTime,
+            //     }
+            //     servico = await isOpenServico.update(bodyUpdate);
+            // } else {
+            //     servico = await Servico.create(body);
+            // }
+
             const payload = {
                 id: user.id,
                 documento: user.documento,
@@ -65,8 +62,7 @@ class SessionController {
             }
 
             return res.json ({
-                token: jwt.sign(payload, secret, options),
-                servico,
+                token: jwt.sign(payload, secret, options)
             });
         } catch (error) {
             return res.status(401).json({ error: 'Falha na Autenticação!'});

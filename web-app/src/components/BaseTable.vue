@@ -214,7 +214,7 @@
         this.ident = '';
       },
       validateIdent(value) {
-       const pattern = /^([0-9]{2,4}$|^[A-Z0-9]{2,4}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
+       const pattern = /^([0-9]{1,4}$|^[A-Z0-9]{2,6}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/
        return value.length === 0 || pattern.test(value) || 'Identificador inválido';
       },
       getLength() {

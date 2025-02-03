@@ -1,6 +1,6 @@
 export default  {
   dialect: 'postgres',
-  host: '127.0.0.1',
+  host: '172.24.137.60',
   username: 'docker',
   password: 'patro233',
   database: 'guardaCeics',

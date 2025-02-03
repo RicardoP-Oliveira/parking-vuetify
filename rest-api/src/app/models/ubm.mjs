@@ -6,7 +6,6 @@ class ubm extends Model {
   static init(sequelize) {
     super.init(
       {
-
         name: DataTypes.STRING,
       },
       {

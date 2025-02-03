@@ -14,7 +14,11 @@ module.exports = {
         unique: true,
         type: Sequelize.STRING
       },
-      marcaModelo: {
+      marca: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      modelo: {
         allowNull: true,
         type: Sequelize.STRING
       },

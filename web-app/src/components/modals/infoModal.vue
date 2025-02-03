@@ -58,7 +58,7 @@
     </v-row>
     <v-row >
       <v-col class="px-0 py-1 font-weight-bold" align="end">
-          Modelo:
+          Marca/Modelo:
       </v-col>
       <v-col class="px-2 py-1">
           {{ modelo }}
@@ -179,7 +179,7 @@ export default {
     processInfo(res) {
       
       this.placa = this.placa || res.placa;
-      this.modelo = this.modelo || res.marcaModelo;
+      this.modelo = this.modelo || `${res.marca} ${res.modelo}`;
       this.documento = res.user ? res.user.documento : '';
       this.getOwner(res)
       if (this.documento) {
@@ -193,7 +193,7 @@ export default {
           this.condutor = !res.dados.orgaoU.sigla
           ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
           : `${res.dados.gradua.trim()} ${res.dados.orgaoU.sigla.trim()} ${res.dados.nGuerra.trim()}`;
-          this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'OUTRO';
+          this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'CEICS';
           this.obm = res.dados.ubm.name;
         } else {
           this.condutor = '';

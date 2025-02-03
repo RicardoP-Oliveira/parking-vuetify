@@ -6,13 +6,12 @@ function dateFormatter (data){
   const dd = data.getDate();
   const mm = data.getMonth() + 1;
   const aaaa = data.getFullYear();
-  return `${mm}-${dd}-${aaaa}`;
+  return `${aaaa}-${mm}-${dd}`;
 }
 
 class PedestreController {
   async index(req, res) {
     const resposta = new Resposta();
-    const { query } = req.query;
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
 
@@ -22,16 +21,9 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         order: [['updatedAt', 'DESC']],
-        where:{
-          nDoc: {
-            [Op.ne]: null,
-            [Op.ne]: '',
-          }
-        },
         offset: (page - 1) * perPage,
         limit: perPage,
       });
-
       resposta.dados = rows;
       var total = count; 
 
@@ -49,12 +41,12 @@ class PedestreController {
     
     try {
       const pedestre = await Pedestre.findOne({
+        order: [['updatedAt', 'DESC']],
         where: {
           nDoc: doc,
           saida: null
         }
       })
-
       if (pedestre) {
         resposta.dados = pedestre;
       } else {

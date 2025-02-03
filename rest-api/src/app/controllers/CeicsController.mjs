@@ -8,42 +8,41 @@ function dateFormatter (data){
   const dd = data.getDate();
   const mm = data.getMonth() + 1;
   const aaaa = data.getFullYear();
-  return `${mm}-${dd}-${aaaa}`;
+  return `${aaaa}-${mm}-${dd}`;
 }
 
 class CeicsController {
   async index(req, res) {
     const resposta = new Resposta();
-    const { query } = req.query;
+    // const { query } = req.query;
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
-   
+
     try {
       if(perPage <=0 ){
         perPage = await Ceics.count();
       }
-
-      const whereCondition = query && (query !== 'carro' && query !== 'pedestre')
-        ? {
-          [Op.or]: [
-            {placa : { [Op.iLike]: `%${query}%`}},
-            {eRg: { [Op.iLike]: `${query}`}},
-            {eCondutor: { [Op.iLike]: `%${query}%`}},
-            {sRg: { [Op.iLike]: `${query}`}},
-            {sCondutor: { [Op.iLike]: `%${query}%`}},
-            {marcaModelo: { [Op.iLike]: `%${query}%`}}
-          ]
-        }
-        : query === 'carro' ? { placa: { [Op.ne]: 'PEDESTRE'}}
-        : { placa: { [Op.eq]: 'PEDESTRE'} }
+      // const whereCondition = query 
+      //   ? {
+      //     [Op.or]: [
+      //       {placa : { [Op.iLike]: `%${query}%`}},
+      //       {eRg: { [Op.iLike]: `${query}`}},
+      //       {eCondutor: { [Op.iLike]: `%${query}%`}},
+      //       {sRg: { [Op.iLike]: `${query}`}},
+      //       {sCondutor: { [Op.iLike]: `%${query}%`}},
+      //       {marca: { [Op.iLike]: `%${query}%`}},
+      //       {modelo: {[Op.iLike]: `%${query}%`}}
+      //     ]
+      //   }
+      //   : query === 'carro' ? { placa: { [Op.ne]: 'PEDESTRE'}}
+      //   : { placa: { [Op.eq]: 'PEDESTRE'} }
 
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
-        where: whereCondition,
+        // where: whereCondition,
         offset: (page - 1) * perPage,
         limit: perPage,
         });
-      
       resposta.dados = rows;
       var total = count;  
       
@@ -65,7 +64,7 @@ class CeicsController {
        const buscaCar = await Carro.findCar(placa);
        const { veiculo, searchCriteria } = buscaCar;
 
-      if (!veiculo && (searchCriteria.id || searchCriteria.marcaModelo)) {
+      if (!veiculo && (searchCriteria.id || searchCriteria.marca )) {
         resposta.erro = true;
         resposta.msg = 'Veículo não cadastrado!\nContate o Administrador.';
       } else if (!veiculo && searchCriteria.placa){

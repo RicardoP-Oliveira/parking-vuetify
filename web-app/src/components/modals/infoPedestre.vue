@@ -179,7 +179,7 @@ export default {
       this.destino = data.destino 
         || (this.dadosDestino.includes(data.ubm?.name) 
         ? data.ubm?.name
-        : 'OUTRO');
+        : 'CEICS');
       this.orgaoSigla = regex.orgao || (data.orgaoU?.sigla || '');
     },
 
