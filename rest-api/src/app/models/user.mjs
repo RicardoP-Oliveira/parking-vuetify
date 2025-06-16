@@ -12,20 +12,20 @@ import bcrypt from 'bcryptjs';
         nGuerra: DataTypes.STRING,
         ubmId: DataTypes.INTEGER,
         orgaoId: DataTypes.INTEGER,
-        role: DataTypes.INTEGER,
-	      cnh: DataTypes.STRING,
-        foto: DataTypes.STRING,
-	      email: DataTypes.STRING,
-        password_hash: DataTypes.STRING,
-        password: DataTypes.VIRTUAL,
-        fotoUri: {
-          type: DataTypes.VIRTUAL,
-          get() {
-            if(this.foto){
-              return `http://localhost:3000/files/${this.foto}`;
-            }
-          }
-        }
+        // role: DataTypes.INTEGER,
+	      // cnh: DataTypes.STRING,
+        // foto: DataTypes.STRING,
+	      // email: DataTypes.STRING,
+        // password_hash: DataTypes.STRING,
+        // password: DataTypes.VIRTUAL,
+        // fotoUri: {
+        //   type: DataTypes.VIRTUAL,
+        //   get() {
+        //     if(this.foto){
+        //       return `http://localhost:3000/files/${this.foto}`;
+        //     }
+        //   }
+        // }
       }, {
         sequelize,
         modelName: 'user',

@@ -3,57 +3,152 @@ import Ceics from '../models/ceics.mjs';
 import Resposta from '../models/Resposta.mjs';
 import { Op } from 'sequelize';
 
-
-function dateFormatter (data){
-  const dd = data.getDate();
-  const mm = data.getMonth() + 1;
-  const aaaa = data.getFullYear();
-  return `${aaaa}-${mm}-${dd}`;
-}
-
 class CeicsController {
   async index(req, res) {
     const resposta = new Resposta();
-    // const { query } = req.query;
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
 
+    const {
+      placa,
+      documento,
+      modelo,
+      condutor,
+      dataEntradaInicio,
+      dataEntradaFim,
+      dataSaidaInicio,
+      dataSaidaFim,
+      horaEntradaInicio,
+      horaEntradaFim,
+      horaSaidaInicio,
+      horaSaidaFim
+    } = req.query;
+
+    let whereCondition = {};
+
+    const conditions = [];
+
+    if(placa) {
+      conditions.push({ placa: {[Op.iLike]: `%${placa}%`}});
+    }
+    
+    if (documento) {
+      conditions.push({
+        [Op.or]: [
+          { eRg: { [Op.iLike]: `%${documento}%`}},
+          { sRg: { [Op.iLike]: `%${documento}%`}}
+        ]
+      });
+    }
+    
+    if (modelo) {
+      conditions.push({ marcaModelo: { [Op.iLike]: `%${modelo}%`}});
+    }
+
+    if (condutor) {
+      console.log(condutor)
+      conditions.push({
+        [Op.or]: [
+          { eCondutor: { [Op.iLike]: `%${condutor}%`}},
+          { sCondutor: { [Op.iLike]: `%${condutor}%`}}  
+        ]
+      });
+    }
+
+    if (dataEntradaInicio || dataEntradaFim) {
+      const entradaDataCondition = {};
+      if (dataEntradaInicio) {
+        const formattedDate = dataEntradaInicio;
+        if (formattedDate) { // Garante que dateFormatter retornou algo válido
+          entradaDataCondition[Op.gte] = formattedDate;
+        }
+      }
+      if (dataEntradaFim) {
+        const formattedDate = dataEntradaFim;
+        if (formattedDate) { // Garante que dateFormatter retornou algo válido
+          entradaDataCondition[Op.lte] = formattedDate;
+        }
+      }
+
+      if (Reflect.ownKeys(entradaDataCondition).length > 0){
+        conditions.push({ entrada: entradaDataCondition });
+      }
+    }
+
+    if (dataSaidaInicio || dataSaidaFim) {
+      const saidaDateCondition = {};
+      if (dataSaidaInicio) {
+        const formattedDate = dataSaidaInicio;
+        if (formattedDate) {
+          saidaDateCondition[Op.gte] = formattedDate;
+        }
+      }
+      if (dataSaidaFim) {
+        const formattedDate = dataSaidaFim;
+        if (formattedDate) {
+          saidaDateCondition[Op.lte] = formattedDate;
+        }
+      }
+      if (Reflect.ownKeys(saidaDateCondition).length > 0) {
+        conditions.push({ saida: saidaDateCondition});
+      }
+    }
+
+    if (horaEntradaInicio || horaEntradaFim) {
+      const entradaTimeCondition = {};
+      if (horaEntradaInicio) {
+        entradaTimeCondition[Op.gte] = horaEntradaInicio;
+      }
+      if (horaEntradaFim) {
+        entradaTimeCondition[Op.lte] = horaEntradaFim;
+      }
+      if (Reflect.ownKeys(entradaTimeCondition).length > 0) {
+        conditions.push({ hEntrada: entradaTimeCondition});
+      }
+    }
+
+    if (horaSaidaInicio || horaSaidaFim) {
+      const saidaTimeCondition = {};
+      if (horaSaidaInicio) {
+        saidaTimeCondition[Op.gte] = horaSaidaInicio;
+      }
+      if (horaSaidaFim) {
+        saidaTimeCondition[Op.lte] = horaSaidaFim;
+      }
+      if (Reflect.ownKeys(saidaTimeCondition).length > 0) {
+        console.log("data:", saidaTimeCondition)
+        conditions.push({ hSaida: saidaTimeCondition});
+      }
+    }
+
+    if (conditions.length > 0) {
+      whereCondition = {[Op.and]: conditions};
+    } else {
+      whereCondition = {};
+    }
+
     try {
       if(perPage <=0 ){
-        perPage = await Ceics.count();
+        perPage = await Ceics.count({ where: whereCondition });
       }
-      // const whereCondition = query 
-      //   ? {
-      //     [Op.or]: [
-      //       {placa : { [Op.iLike]: `%${query}%`}},
-      //       {eRg: { [Op.iLike]: `${query}`}},
-      //       {eCondutor: { [Op.iLike]: `%${query}%`}},
-      //       {sRg: { [Op.iLike]: `${query}`}},
-      //       {sCondutor: { [Op.iLike]: `%${query}%`}},
-      //       {marca: { [Op.iLike]: `%${query}%`}},
-      //       {modelo: {[Op.iLike]: `%${query}%`}}
-      //     ]
-      //   }
-      //   : query === 'carro' ? { placa: { [Op.ne]: 'PEDESTRE'}}
-      //   : { placa: { [Op.eq]: 'PEDESTRE'} }
 
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
-        // where: whereCondition,
+        where: whereCondition,
         offset: (page - 1) * perPage,
         limit: perPage,
-        });
+      });
+
       resposta.dados = rows;
       var total = count;  
       
-
     } catch(erro) {
+      console.error("Erro na busca dos dados: ", erro);
       resposta.erro = true;
       resposta.msg = "Ocorreu um erro na busca dos dados!"
-      resposta.dados = erro;
+      resposta.dados = erro.message;
     }
-
-      return res.json([resposta, total]);
+    return res.json([resposta, total]);
   }
 
   async show(req, res) {
@@ -98,7 +193,6 @@ class CeicsController {
       }
 
     } catch (error) {
-      console.log('Aqui')
       resposta.erro = true;
       resposta.msg = `Error: ${error}`;
     }
@@ -115,7 +209,7 @@ class CeicsController {
     eCondutor: condutor,
     eRg: documento,
     destino,
-    entrada: dateFormatter(new Date()),
+    entrada: new Date(),
     hEntrada: new Date().toLocaleTimeString(),
   }
 
@@ -137,7 +231,7 @@ class CeicsController {
     var dados = {
       sCondutor: condutor,
       sRg: documento,
-      saida: dateFormatter(new Date()),
+      saida: new Date(),
       hSaida: new Date().toLocaleTimeString(),
     }
     var saida = await vaga.update(dados);

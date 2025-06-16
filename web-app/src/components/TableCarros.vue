@@ -4,6 +4,8 @@
     :get-header-order="headerOrder"
     :get-columns="setColumns"
     :get-header-groups="setHeaderGroups"
+    :filters="filters"
+    ref="baseTableRef"
   />
 </template>
 
@@ -12,32 +14,45 @@ import BaseTable from '@/components/BaseTable.vue';
 
 export default {
   components: {
-    BaseTable
+    BaseTable,
   },
   name: 'TableCarros',
-  // data() {
-  //   return {
-  //     modal: {
-  //       isOpen: false,
-  //       idPlaca: '',
-  //       type: null
-  //     }
-  //   }
-  // },
+  props: {
+    tab: String,
+    filters: Object, // Recebe a prop filters de default.vue e a passa para BaseTable
+  },
   methods: {
-    async loadCarData(page, itemsPerPage, token, tab) {
-      return await this.$ceicsservice.getTodos(page, itemsPerPage, token, tab)
+    async loadCarData(page, itemsPerPage, token, tab, filters) {
+      const apiFilters = {
+        placa: filters.placa,
+        documento: filters.documento,
+        modelo: filters.modelo,
+        condutor: filters.condutor, // Se o filtro 'condutor' for usado para eCondutor
+
+        dataEntradaInicio: filters.dataEntradaInicio
+          ? filters.dataEntradaInicio.toISOString().split('T')[0]
+          : null,
+        dataEntradaFim: filters.dataEntradaFim ? filters.dataEntradaFim.toISOString().split('T')[0] : null,
+        dataSaidaInicio: filters.dataSaidaInicio ? filters.dataSaidaInicio.toISOString().split('T')[0] : null,
+        dataSaidaFim: filters.dataSaidaFim ? filters.dataSaidaFim.toISOString().split('T')[0] : null,
+        horaEntradaInicio: filters.horaEntradaInicio,
+        horaEntradaFim: filters.horaEntradaFim,
+        horaSaidaInicio: filters.horaSaidaInicio,
+        horaSaidaFim: filters.horaSaidaFim,
+      };
+
+      // Limpar filtros nulos para não enviar para a API se não forem necessários
+      for (const key in apiFilters) {
+        if (apiFilters[key] === null || apiFilters[key] === '') {
+          delete apiFilters[key];
+        }
+      }
+      return await this.$ceicsservice.getTodos(page, itemsPerPage, token, tab, apiFilters);
     },
-    headerOrder(){
-      return [
-        'placa', 
-        'marcaModelo', 
-        'entrada', 
-        'destino', 
-        'saida',
-      ]
+    headerOrder() {
+      return ['placa', 'marcaModelo', 'entrada', 'destino', 'saida'];
     },
-    setColumns(){
+    setColumns() {
       return [
         'placa',
         'marcaModelo',
@@ -49,11 +64,11 @@ export default {
         'hSaida',
         'sRg',
         'sCondutor',
-        'destino'
-      ]
+        'destino',
+      ];
     },
-    setHeaderGroups(){
-      const  headerGroups = {
+    setHeaderGroups() {
+      const headerGroups = {
         entrada: {
           title: 'Entrada',
           children: [
@@ -72,9 +87,9 @@ export default {
             { key: 'sCondutor', title: 'Condutor' },
           ],
         },
-      }
-      return headerGroups
-    }
-  }
-}
+      };
+      return headerGroups;
+    },
+  },
+};
 </script>

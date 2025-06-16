@@ -4,8 +4,6 @@
     :get-header-order="headerOrder"
     :get-columns="setColumns"
     :get-header-groups="setHeaderGroups"
-    :filters="filters"
-    ref="baseTableRef"
   />
 </template>
 
@@ -14,15 +12,11 @@ import BaseTable from '@/components/BaseTable.vue';
 
 export default {
   components: {
-    BaseTable,
+    BaseTable
   },
-  name: 'TablePedestres', // Certifique-se de que o nome está correto
-  props: {
-    tab: String,
-    filters: Object, // Adicione esta prop
-  },
+  name: 'TablePedestres',
   methods: {
-      async loadPedestreData(page, itemsPerPage, token, tab, filters) {
+    async loadPedestreData(page, itemsPerPage, token, tab, filters) {
       const apiFilters = {
         documento: filters.documento,
         // Lógica condicional para nome (apenas pedestres)
@@ -46,22 +40,30 @@ export default {
 
       return await this.$pedestreService.getTodos(page, itemsPerPage, token, tab, apiFilters);
     },
-    headerOrder() {
-      return ['tDoc', 'nDoc', 'name', 'entrada', 'saida']; // Exemplo de ordem de cabeçalho para pedestres
-    },
-    setColumns() {
+    headerOrder(){
       return [
+        'name', 
+        'tDoc', 
+        'nDoc', 
+        'entrada',
+        'destino', 
+        'saida',
+      ]
+    },
+    setColumns(){
+      return [
+        'name',
         'tDoc',
         'nDoc',
-        'name',
         'entrada',
         'hEntrada',
         'saida',
         'hSaida',
-      ]; // Exemplo de colunas para pedestres
+        'destino'
+      ]
     },
-    setHeaderGroups() {
-      const headerGroups = {
+    setHeaderGroups(){
+      const  headerGroups = {
         entrada: {
           title: 'Entrada',
           children: [
@@ -76,9 +78,9 @@ export default {
             { key: 'hSaida', title: 'Hora' },
           ],
         },
-      };
-      return headerGroups;
-    },
-  },
-};
+      }
+      return headerGroups
+    }
+  }
+}
 </script>

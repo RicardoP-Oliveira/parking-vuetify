@@ -1,11 +1,9 @@
 <template>
   <BaseTable
-    :data-service="loadPedestreData"
+    :data-service="loadCarData"
     :get-header-order="headerOrder"
     :get-columns="setColumns"
     :get-header-groups="setHeaderGroups"
-    :filters="filters"
-    ref="baseTableRef"
   />
 </template>
 
@@ -14,19 +12,18 @@ import BaseTable from '@/components/BaseTable.vue';
 
 export default {
   components: {
-    BaseTable,
+    BaseTable
   },
-  name: 'TablePedestres', // Certifique-se de que o nome está correto
-  props: {
-    tab: String,
-    filters: Object, // Adicione esta prop
-  },
+  name: 'TableCarros',
   methods: {
-      async loadPedestreData(page, itemsPerPage, token, tab, filters) {
+    async loadCarData(page, itemsPerPage, token, tab, filters) {
       const apiFilters = {
+        placa: filters.placa,
         documento: filters.documento,
-        // Lógica condicional para nome (apenas pedestres)
-        pedestre: filters.condutor, 
+        modelo: filters.modelo,
+        // Lógica condicional para condutor (apenas carros)
+        condutor: filters.condutor, // Se o filtro 'condutor' for usado para eCondutor
+       
         dataEntradaInicio: filters.dataEntradaInicio ? filters.dataEntradaInicio.toISOString().split('T')[0] : null,
         dataEntradaFim: filters.dataEntradaFim ? filters.dataEntradaFim.toISOString().split('T')[0] : null,
         dataSaidaInicio: filters.dataSaidaInicio ? filters.dataSaidaInicio.toISOString().split('T')[0] : null,
@@ -37,36 +34,47 @@ export default {
         horaSaidaFim: filters.horaSaidaFim,
       };
 
-      // Limpar filtros nulos
+      // Limpar filtros nulos para não enviar para a API se não forem necessários
       for (const key in apiFilters) {
         if (apiFilters[key] === null || apiFilters[key] === '') {
           delete apiFilters[key];
         }
       }
-
-      return await this.$pedestreService.getTodos(page, itemsPerPage, token, tab, apiFilters);
+      return await this.$ceicsservice.getTodos(page, itemsPerPage, token, tab, apiFilters)
     },
-    headerOrder() {
-      return ['tDoc', 'nDoc', 'name', 'entrada', 'saida']; // Exemplo de ordem de cabeçalho para pedestres
-    },
-    setColumns() {
+    headerOrder(){
       return [
-        'tDoc',
-        'nDoc',
-        'name',
+        'placa', 
+        'marcaModelo', 
+        'entrada', 
+        'destino', 
+        'saida',
+      ]
+    },
+    setColumns(){
+      return [
+        'placa',
+        'marcaModelo',
         'entrada',
         'hEntrada',
+        'eRg',
+        'eCondutor',
         'saida',
         'hSaida',
-      ]; // Exemplo de colunas para pedestres
+        'sRg',
+        'sCondutor',
+        'destino'
+      ]
     },
-    setHeaderGroups() {
-      const headerGroups = {
+    setHeaderGroups(){
+      const  headerGroups = {
         entrada: {
           title: 'Entrada',
           children: [
             { key: 'entrada', title: 'Data' },
             { key: 'hEntrada', title: 'Hora' },
+            { key: 'eRg', title: 'Documento' },
+            { key: 'eCondutor', title: 'Condutor' },
           ],
         },
         saida: {
@@ -74,11 +82,13 @@ export default {
           children: [
             { key: 'saida', title: 'Data' },
             { key: 'hSaida', title: 'Hora' },
+            { key: 'sRg', title: 'Documento' },
+            { key: 'sCondutor', title: 'Condutor' },
           ],
         },
-      };
-      return headerGroups;
-    },
-  },
-};
+      }
+      return headerGroups
+    }
+  }
+}
 </script>

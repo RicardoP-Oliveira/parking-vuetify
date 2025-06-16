@@ -25,7 +25,7 @@
       "name": "2º Tenente"
      },
      {
-        "trato": "Asp",
+        "trato": "Asp Of",
         "name": "Aspirante"
      },
      {
@@ -61,11 +61,11 @@
       "name": "Soldado Aluno"
    },
      {
-        "trato": "Insp.(ª)",
+        "trato": "Insp.(a)",
         "name": "Inspetor(a)"
      },
      {
-        "trato": "Sr.(ª)",
+        "trato": "Sr.(a)",
         "name": "Senhor(a)"
      },
      {
@@ -73,7 +73,7 @@
          "name": "Doutor"
      },
      {
-         "trato": "Engº(a)",
+         "trato": "Eng.(a)",
          "name": "Engenheiro(a)"
      },
      {

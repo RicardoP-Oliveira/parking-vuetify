@@ -14,12 +14,112 @@ class PedestreController {
     const resposta = new Resposta();
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
+    
+    const {
+      pedestre,
+      documento,
+      dataEntradaInicio,
+      dataEntradaFim,
+      horaEntradaInicio,
+      horaEntradaFim,
+      dataSaidaInicio,
+      dataSaidaFim, 
+      horaSaidaInicio,
+      horaSaidaFim,
+    } = req.query;
+
+    console.log(req.query)
+
+    let whereCondition = {};
+
+    const conditions = [];
+
+    if (pedestre) {
+      conditions.push({ name: {[Op.iLike]: `%${pedestre}%`}});
+    }
+
+    if (documento) {
+      conditions.push({ nDoc: {[Op.iLike]: `%${documento}%`}});
+    }
+    
+    if (dataEntradaInicio || dataEntradaFim) {
+      const entradaDataCondition = {};
+      if (dataEntradaInicio) {
+        const formattedDate = dataEntradaInicio;
+        if (formattedDate) { // Garante que dateFormatter retornou algo válido
+          entradaDataCondition[Op.gte] = formattedDate;
+        }
+      }
+      if (dataEntradaFim) {
+        const formattedDate = dataEntradaFim;
+        if (formattedDate) { // Garante que dateFormatter retornou algo válido
+          entradaDataCondition[Op.lte] = formattedDate;
+        }
+      }
+
+      if (Reflect.ownKeys(entradaDataCondition).length > 0){
+        conditions.push({ entrada: entradaDataCondition });
+      }
+    }
+
+    if (dataSaidaInicio || dataSaidaFim) {
+      const saidaDateCondition = {};
+      if (dataSaidaInicio) {
+        const formattedDate = dataSaidaInicio;
+        if (formattedDate) {
+          saidaDateCondition[Op.gte] = formattedDate;
+        }
+      }
+      if (dataSaidaFim) {
+        const formattedDate = dataSaidaFim;
+        if (formattedDate) {
+          saidaDateCondition[Op.lte] = formattedDate;
+        }
+      }
+      if (Reflect.ownKeys(saidaDateCondition).length > 0) {
+        conditions.push({ saida: saidaDateCondition});
+      }
+    }
+
+    if (horaEntradaInicio || horaEntradaFim) {
+      const entradaTimeCondition = {};
+      if (horaEntradaInicio) {
+        entradaTimeCondition[Op.gte] = horaEntradaInicio;
+      }
+      if (horaEntradaFim) {
+        entradaTimeCondition[Op.lte] = horaEntradaFim;
+      }
+      if (Reflect.ownKeys(entradaTimeCondition).length > 0) {
+        conditions.push({ hEntrada: entradaTimeCondition});
+      }
+    }
+
+    if (horaSaidaInicio || horaSaidaFim) {
+      const saidaTimeCondition = {};
+      if (horaSaidaInicio) {
+        saidaTimeCondition[Op.gte] = horaSaidaInicio;
+      }
+      if (horaSaidaFim) {
+        saidaTimeCondition[Op.lte] = horaSaidaFim;
+      }
+      if (Reflect.ownKeys(saidaTimeCondition).length > 0) {
+        console.log("data:", saidaTimeCondition)
+        conditions.push({ hSaida: saidaTimeCondition});
+      }
+    }
+
+    if (conditions.length > 0) {
+      whereCondition = {[Op.and]: conditions};
+    } else {
+      whereCondition = {};
+    }
 
     try {
       if (perPage <= 0) {
-        perPage = await Pedestre.count();
+        perPage = await Pedestre.count({ where: whereCondition});
       }
       const { count, rows } = await Pedestre.findAndCountAll({
+        where: whereCondition,
         order: [['updatedAt', 'DESC']],
         offset: (page - 1) * perPage,
         limit: perPage,
@@ -93,11 +193,6 @@ class PedestreController {
 
     return res.json(pedestre)
   }
-  
-
-  async update(req, res) {}
-
-  async destroy(req, res) {}
 }
 
-    export default new PedestreController();
+export default new PedestreController();

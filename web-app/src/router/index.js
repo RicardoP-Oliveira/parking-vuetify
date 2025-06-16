@@ -52,36 +52,38 @@ async function myGuard(to, from, next) {
 
   const isValid = await isValidToken(token);
 
-  if (isValid) {
-    const options = {
-      headers: {
-        'Content-type': 'application/json;charset=UTF-8',
-        Authorization: `Bearer ${token}`,
-      },
-      method: 'POST',
-      }
+  next();
 
-      try {
-        const res = await fetch(caminho, options);
-        const data = await res.json();
+  // if (isValid) {
+  //   const options = {
+  //     headers: {
+  //       'Content-type': 'application/json;charset=UTF-8',
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //     method: 'POST',
+  //     }
 
-        if (!data.erro) {
-          const decoded = jwtDecode(token);
+  //     try {
+  //       const res = await fetch(caminho, options);
+  //       const data = await res.json();
+
+  //       if (!data.erro) {
+  //         const decoded = jwtDecode(token);
           
-          if (decoded.role === 1) {
-            next()
-          } else {
-            next({ name: 'Home' })
-          }
-        } else {
-          next({ name: 'Login' })
-        }
-      } catch (err) {
-        next({ name: 'Login' })
-    }
-  } else {
-      next({ name: 'Login' })
-  }
+  //         if (decoded.role === 1) {
+  //           next()
+  //         } else {
+  //           next({ name: 'Home' })
+  //         }
+  //       } else {
+  //         next({ name: 'Login' })
+  //       }
+  //     } catch (err) {
+  //       next({ name: 'Login' })
+  //   }
+  // } else {
+  //     next({ name: 'Login' })
+  // }
 }
 
 async function myLogin(to, from, next) {
