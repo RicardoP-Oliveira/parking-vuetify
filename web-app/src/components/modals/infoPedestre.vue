@@ -106,7 +106,7 @@ export default {
   props:{
     pedestre: Boolean,
   },
-  emits:['update:options','closeModal'],
+  emits:['closeModal'],
   data() {
     return {
       formTouched: false,
@@ -251,15 +251,21 @@ export default {
         'name': `${this.trato} ${this.orgaoSigla} ${this.nome.toUpperCase()}`,
         'destino': this.destino.toUpperCase()
       }
-      const salved = await this.$pedestreService.adicionar(this.form, this.token)
+      try {
+        const salved = await this.$pedestreService.adicionar(this.form, this.token); // Exemplo de serviço de pedestre
         if (salved) {
-          this.$emit('update:options');
-          this.close();
+          this.close(); // Fecha o modal, o que acionará o fluxo de atualização
+        } else {
+          console.error('[infoPedestre.vue] Erro ao salvar dados do pedestre.');
+          // Adicione aqui feedback ao utilizador sobre o erro
         }
+      } catch (error) {
+        console.error('[infoPedestre.vue] Erro na requisição de salvar pedestre:', error);
+        // Adicione aqui feedback ao utilizador sobre o erro da rede/API
+      }
     },
-    close(){
-      this.isPedestre = false;
-      this.$emit('closeModal', {from: this.$options.name})
+    close() {
+      this.$emit('closeModal', { from: this.$options.name }); // this.$options.name será 'infoPedestre'
     }
   },
   computed: {

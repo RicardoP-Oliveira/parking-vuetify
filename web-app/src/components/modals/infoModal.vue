@@ -98,10 +98,7 @@ export default {
   props:{
     dialog: Object,
   },
-  emits:[
-    'update:options',
-    'closeModal',
-  ],
+  emits:['closeModal'],
   data(){
     return {
       btn: null,
@@ -133,7 +130,7 @@ export default {
       } catch (error) {
         console.error('Erro ao processar as buscas: ', error);
       }
-   },
+    },
     getSearchPlaca(infoRes) {
       if(isNaN(this.search) || infoRes.erro) {
         return this.search;
@@ -204,24 +201,32 @@ export default {
       }
     },
     async salvar(){
-      this.form = {
+      if (this.placa !== undefined && this.placa !== '' && this.placa !== null) {
+        this.form = {
         'placa': this.placa.toUpperCase().trim(),
         'documento': this.documento.trim(),
         'marcaModelo': this.modelo ? this.modelo.toUpperCase().trim() : this.modelo,
         'condutor': this.gradua ? `${this.gradua} ${this.condutor.trim()}` : this.condutor,
         'destino': this.destino.toUpperCase().trim(),
         'owner': this.proprietario ? this.proprietario.toUpperCase().trim() : this.proprietario,
-      }
-      const salved = await this.$ceicsservice.adicionar(this.form, this.token)
-      if (salved) {
-        this.$emit('update:options');
-        this.close();
+        }
+        try {
+          const salved = await this.$ceicsservice.adicionar(this.form, this.token)
+          if (salved) {
+            this.close();
+          } else {
+              console.error('[infoModal.vue] Erro ao salvar dados do carro.');
+          // Adicione aqui feedback ao utilizador sobre o erro
+          }
+        } catch(erro) {
+          console.error('[infoModal.vue] Erro na requisição de salvar carro:', error);
+          // Adicione aqui feedback ao utilizador sobre o erro da rede/API
+        }
       }
     },
     close(){
-      this.isDialog = false
-      this.$emit('closeModal', {from: this.$options.name})
-    },
+      this.$emit('closeModal', { from: this.$options.name }); // this.$options.name será 'infoModal'
+    }
   },
   async mounted() {
     this.dbDest = this.$dbTarget;

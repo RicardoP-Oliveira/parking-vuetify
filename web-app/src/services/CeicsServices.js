@@ -1,6 +1,7 @@
 import ConfigClass from '../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/ceics`;
+const parking = `${ConfigClass.getUrlApi().toString()}/parking`;
 
 export default class CeicsService {
   static getTodos(page, perPage, token, key='', filters = {}) {

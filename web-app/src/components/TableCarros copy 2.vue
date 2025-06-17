@@ -1,11 +1,12 @@
 <template>
   <BaseTable
-    :data-service="loadPedestreData"
+    :data-service="loadCarData"
     :get-header-order="headerOrder"
     :get-columns="setColumns"
     :get-header-groups="setHeaderGroups"
     :filters="filters"
-    :tab="tab"
+    @update-btn="$emit('update-btn', $event)"
+    @changeTable="$emit('changeTable', $event)"
     ref="baseTableRef"
   />
 </template>
@@ -17,18 +18,24 @@ export default {
   components: {
     BaseTable,
   },
-  name: 'TablePedestres', // Certifique-se de que o nome está correto
+  name: 'TableCarros',
   props: {
     tab: String,
-    filters: Object, // Adicione esta prop
+    filters: Object, // Recebe a prop filters de default.vue e a passa para BaseTable
   },
+  emits: ['update-btn', 'changeTable'],
   methods: {
-      async loadPedestreData(page, itemsPerPage, token, tab, filters) {
+    async loadCarData(page, itemsPerPage, token, tab, filters) {
+      
       const apiFilters = {
+        placa: filters.placa,
         documento: filters.documento,
-        // Lógica condicional para nome (apenas pedestres)
-        pedestre: filters.condutor, 
-        dataEntradaInicio: filters.dataEntradaInicio ? filters.dataEntradaInicio.toISOString().split('T')[0] : null,
+        modelo: filters.modelo,
+        condutor: filters.condutor, // Se o filtro 'condutor' for usado para eCondutor
+
+        dataEntradaInicio: filters.dataEntradaInicio
+          ? filters.dataEntradaInicio.toISOString().split('T')[0]
+          : null,
         dataEntradaFim: filters.dataEntradaFim ? filters.dataEntradaFim.toISOString().split('T')[0] : null,
         dataSaidaInicio: filters.dataSaidaInicio ? filters.dataSaidaInicio.toISOString().split('T')[0] : null,
         dataSaidaFim: filters.dataSaidaFim ? filters.dataSaidaFim.toISOString().split('T')[0] : null,
@@ -38,28 +45,31 @@ export default {
         horaSaidaFim: filters.horaSaidaFim,
       };
 
-      // Limpar filtros nulos
+      // Limpar filtros nulos para não enviar para a API se não forem necessários
       for (const key in apiFilters) {
         if (apiFilters[key] === null || apiFilters[key] === '') {
           delete apiFilters[key];
         }
       }
-
-      return await this.$pedestreService.getTodos(page, itemsPerPage, token, tab, apiFilters);
+      return await this.$ceicsservice.getTodos(page, itemsPerPage, token, tab, apiFilters);
     },
     headerOrder() {
-      return ['tDoc', 'nDoc', 'name', 'entrada', 'saida']; // Exemplo de ordem de cabeçalho para pedestres
+      return ['placa', 'marcaModelo', 'entrada', 'destino', 'saida'];
     },
     setColumns() {
       return [
-        'tDoc',
-        'nDoc',
-        'name',
+        'placa',
+        'marcaModelo',
         'entrada',
         'hEntrada',
+        'eRg',
+        'eCondutor',
         'saida',
         'hSaida',
-      ]; // Exemplo de colunas para pedestres
+        'sRg',
+        'sCondutor',
+        'destino',
+      ];
     },
     setHeaderGroups() {
       const headerGroups = {
@@ -68,6 +78,8 @@ export default {
           children: [
             { key: 'entrada', title: 'Data' },
             { key: 'hEntrada', title: 'Hora' },
+            { key: 'eRg', title: 'Documento' },
+            { key: 'eCondutor', title: 'Condutor' },
           ],
         },
         saida: {
@@ -75,17 +87,19 @@ export default {
           children: [
             { key: 'saida', title: 'Data' },
             { key: 'hSaida', title: 'Hora' },
+            { key: 'sRg', title: 'Documento' },
+            { key: 'sCondutor', title: 'Condutor' },
           ],
         },
       };
       return headerGroups;
     },
   },
-  // watch: {
+  //  watch: {
   //   tab(newTab) {
-  //     if (newTab === 'pedestre') {
-  //       this.$refs.baseTableRef.applyFiltersFromParent();
-  //     } 
+  //     if (newTab === 'carro') {
+  //      this.$refs.baseTableRef.applyFiltersFromParent();
+  //     }
   //   }
   // },
 };

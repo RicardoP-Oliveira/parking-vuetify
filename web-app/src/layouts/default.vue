@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-if="isLoggedin" v-model="drawer" class="bg-deep-purple">
+  <v-navigation-drawer v-model="drawer" class="bg-deep-purple">
     <v-list>
       <v-list-item nav class="mx-auto px-auto text-center">
         <template v-slot:prepend>
@@ -276,98 +276,7 @@
       <v-list-item class="mt-2">
         <v-btn color="grey-darken-2" block @click="clearAllFilters"> Limpar Filtros </v-btn>
       </v-list-item>
-
-      <v-divider class="my-4"></v-divider>
-
-      <v-list-item title="Dashboard" link>
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-view-dashboard"></v-icon>
-            </template>
-            Dashboard
-          </v-tooltip>
-        </template>
-      </v-list-item>
-      <v-list-item title="Usuários" link>
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-account"></v-icon>
-            </template>
-            Usuários
-          </v-tooltip>
-        </template>
-      </v-list-item>
-      <v-list-item title="Veículos" link>
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-car"></v-icon>
-            </template>
-            Veículos
-          </v-tooltip>
-        </template>
-      </v-list-item>
-      <v-list-item title="Militares" link to="/report">
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-shield-account"></v-icon>
-            </template>
-            Militares
-          </v-tooltip>
-        </template>
-      </v-list-item>
-      <v-list-item title="Estacionamento" link to="/">
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-car-brake-parking"></v-icon>
-            </template>
-            Estacionamento
-          </v-tooltip>
-        </template>
-      </v-list-item>
-      <v-list-item title="Relatórios" link>
-        <template v-slot:prepend>
-          <v-tooltip location="bottom">
-            <template v-slot:activator="{ props }">
-              <v-icon v-bind="props" icon="mdi-chart-line"></v-icon>
-            </template>
-            Relatórios
-          </v-tooltip>
-        </template>
-        <template v-slot:append>
-          <v-icon icon="mdi-menu-right" size="x-small"></v-icon>
-        </template>
-        <v-menu activator="parent" location="end">
-          <v-list density="compact" nav class="bg-deep-purple">
-            <v-list-item
-              title="Serviço 24h"
-              value="report24"
-              @click="openDialog('Serviço 24h')"
-            />
-            <v-list-item title="Serviço 12h" value="report12" />
-          </v-list>
-        </v-menu>
-      </v-list-item>
     </v-list>
-
-    <template v-slot:append v-if="isLoggedin">
-      <v-list density="compact">
-        <v-list-item title="Logout" value="exit" @click="logout">
-          <template v-slot:prepend>
-            <v-tooltip location="bottom">
-              <template v-slot:activator="{ props }">
-                <v-icon v-bind="props" icon="mdi-logout"></v-icon>
-              </template>
-              Sair
-            </v-tooltip>
-          </template>
-        </v-list-item>
-      </v-list>
-    </template>
   </v-navigation-drawer>
 
   <v-app-bar color="bg-greey-light" flat height="75" elevation="2">
@@ -378,10 +287,6 @@
       size="small"
       class="mr-3 ms-3"
     />
-    <v-app-bar-title :text="$route.name" />
-    <template v-slot:append v-if="isLoggedin">
-      <v-btn variant="text" class="text-none"></v-btn>
-    </template>
 
     <template v-slot:extension>
       <v-col>
@@ -398,21 +303,28 @@
         <v-card-text>
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="carro">
+              <!-- Router-view que renderiza TableCarros.vue -->
               <router-view
+                v-slot="{ Component }"
+              >
+              <component
+                :is="Component"
                 @update-btn="updateBtn"
                 @changeTable="changeTable"
                 :tab="tab"
                 :filters="filters"
-                ref="tableCarro"
+                ref="tableCarrosWrapper"
               />
+              </router-view>
             </v-tabs-window-item>
             <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
+              <!-- Router-view que renderiza TablePedestres.vue -->
               <router-view
                 @update-btn="updateBtn"
                 @changeTable="changeTable"
                 :tab="tab"
                 :filters="filters"
-                ref="tablePedestre"
+                ref="tablePedestresWrapper"
               />
             </v-tabs-window-item>
           </v-tabs-window>
@@ -420,38 +332,15 @@
       </v-card>
     </v-main>
   </v-layout>
-
-  <v-dialog v-model="dialog" max-width="720" :services="services">
-    <v-card max-width="720" prepend-icon="mdi-update" :title="titleDialog">
-      <v-card-text>
-        <v-list>
-          <v-list-item v-for="(item, index) in services.dados" :key="index">
-            <v-row align="center">
-              <v-col>RG: {{ item.rg }}</v-col>
-              <v-col>Início: {{ item.dataInicio }}</v-col>
-              <v-col>Hora: {{ item.horaInicio }}</v-col>
-              <v-col>Término: {{ item.dataTermino ? item.dataTermino : 'Aberto' }}</v-col>
-              <v-col><v-btn @click="listarServico(item)">Detalhes</v-btn></v-col>
-            </v-row>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-      <template v-slot:actions>
-        <v-btn class="ms-auto" text="Ok" @click="dialog = false"></v-btn>
-      </template>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script>
 import { ref } from 'vue';
-import { jwtDecode } from 'jwt-decode';
-import { dateFormatterOutput } from '@/js/maxMin';
-import { VTimePicker } from 'vuetify/labs/VTimePicker'; // Importar VTimePicker
+import { VTimePicker } from 'vuetify/labs/VTimePicker';
 
 export default {
   components: {
-    VTimePicker, // Registrar VTimePicker
+    VTimePicker,
   },
   provide() {
     return {
@@ -462,26 +351,19 @@ export default {
   },
   data: () => ({
     drawer: false,
-    tab: 'carro',
-    services: [],
+    tab: 'carro', // Tab inicial
     focusRico: false,
     dataTable: ref(false),
-    isLoggedin: false,
-    items: 'loadItems',
-    dialog: ref(false),
-    titleDialog: '',
-    interval: null,
-    // --- PROPRIEDADES PARA FILTROS (MOVIDAS PARA CÁ) ---
     filters: {
       placa: null,
       documento: null,
       modelo: null,
-      condutor: null, // Campo unificado para condutor/nome
+      condutor: null,
       dataEntradaInicio: null,
       dataEntradaFim: null,
       dataSaidaInicio: null,
       dataSaidaFim: null,
-      horaEntradaInicio: null, // V-time-picker retorna string HH:MM
+      horaEntradaInicio: null,
       horaEntradaFim: null,
       horaSaidaInicio: null,
       horaSaidaFim: null,
@@ -494,17 +376,15 @@ export default {
     menuEntradaHoraFim: false,
     menuSaidaHora: false,
     menuSaidaHoraFim: false,
-    // ------------------------------------
   }),
+ 
   methods: {
     async updateBtn(info) {
-      if (info && info.from.name == 'Table') {
+      if (info && info.from && info.from.name == 'Table') {
         this.dataTable = true;
-        this.isLoggedin = true;
         this.drawer = false;
       } else {
         this.dataTable = false;
-        this.isLoggedin = true;
       }
     },
     setFalseDataTable() {
@@ -512,45 +392,61 @@ export default {
     },
 
     changeTable(value) {
-      if (value.from === 'infoModal') {
-        this.tab = 'carro';
-      } else if (value.from === 'infoPedestre') {
-        this.tab = 'pedestre';
+      let targetTab = this.tab;
+
+      if (value && typeof value === 'object' && value.from) {
+        if (value.from === 'infoModal') { 
+          targetTab = 'carro';
+        } else if (value.from === 'infoPedestre') { 
+          targetTab = 'pedestre';
+        }
+      } else if (typeof value === 'string') {
+        targetTab = value;
+      }
+
+      if (this.tab !== targetTab) {
+        this.tab = targetTab; 
       } else {
-        this.tab = value;
+        this.applyFilters(); 
       }
     },
-    logout() {
-      localStorage.clear();
-      this.beforeUnmount();
-      this.expToken = '';
-      this.tab = 'carro';
-      this.dataTable = false;
-      this.isLoggedin = false;
-      this.$router.push({ name: 'Login' });
-    },
-    // --- MÉTODOS DE FILTRO (MOVIDOS PARA CÁ) ---
+
     clearFilter(filterName) {
       this.filters[filterName] = null;
       this.applyFilters();
     },
+
     clearAllFilters() {
       for (const key in this.filters) {
         this.filters[key] = null;
       }
       this.applyFilters();
     },
+
+    // Método que instrui a tabela ativa a recarregar os seus dados
     applyFilters() {
-      // Chamar o método loadItems do componente filho (TableCarros ou TablePedestres)
-      // Usamos ref para acessar o componente filho
-      console.log(this.tab);
-      if (this.tab === 'carro' && this.$refs.tableCarro && this.$refs.tableCarro.$refs.baseTableRef) {
-        this.$refs.tableCarro.$refs.baseTableRef.applyFiltersFromParent();
-      } else if (this.tab === 'pedestre' && this.$refs.tablePedestre && this.$refs.tablePedestre.$refs.baseTableRef) {
-        this.$refs.tablePedestre.$refs.baseTableRef.applyFiltersFromParent();
-      }
+
+      this.$nextTick(() => {
+        // this.$refs.tableCarrosWrapper.refreshTable();
+    })
+
+      // console.log(`[layout.vue] A aplicar filtros para a tab ativa: "${this.tab}".`, this.$parent);
+
+      // // Acede à instância do TableBase através da sua wrapper (TableCarros/Pedestres)
+      // // e depois à sua ref interna 'baseTableRef'.
+      // if (this.tab === 'carro' && this.$refs.tableCarroWrapper && this.$refs.tableCarroWrapper.$refs.baseTableRef) {
+      //   console.log('[layout.vue] A chamar applyFiltersFromParent para a tabela de Veículos.');
+      //   this.$refs.tableCarroWrapper.$refs.baseTableRef.applyFiltersFromParent();
+      // } else if (this.tab === 'pedestre' && this.$refs.tablePedestreWrapper && this.$refs.tablePedestreWrapper.$refs.baseTableRef) {
+      //   console.log('[layout.vue] A chamar applyFiltersFromParent para a tabela de Pedestres.');
+      //   this.$refs.tablePedestreWrapper.$refs.baseTableRef.applyFiltersFromParent();
+      // } else {
+      //   console.warn(`[layout.vue] Não foi possível encontrar a referência para a tabela ativa na tab: "${this.tab}".`);
+      // }
     },
-    // --- FIM MÉTODOS DE FILTRO ---
   },
+  mounted() {
+    this.applyFilters(); // Carrega os dados da tab inicial ao montar
+  }
 };
 </script>

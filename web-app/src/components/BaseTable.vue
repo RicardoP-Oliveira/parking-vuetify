@@ -61,7 +61,6 @@
 
 <script>
 import { ref } from 'vue';
-import { jwtDecode } from 'jwt-decode';
 import infoPedestre from '@/components/modals/infoPedestre.vue';
 import infoModal from '@/components/modals/infoModal.vue';
 import { dateFormatterOutput } from '@/js/maxMin.js';
@@ -80,7 +79,7 @@ export default {
     changeTable: Function,
     filters: Object, // Recebe o objeto filters de default.vue
   },
-  emits: ['updateBtn', 'changeTable', 'update:options', 'closeModal'],
+  emits: ['update-btn', 'changeTable', 'update:options'],
   inject: ['dataTable'],
   name: 'Table',
   data() {
@@ -226,8 +225,7 @@ export default {
         }
       }, 200);
     },
-    closeModal(from) {
-      this.$emit('closeModal');
+    async closeModal(from) {
       this.modal.isOpen = false;
       this.clearIdent();
       this.$emit('changeTable', from);
@@ -247,6 +245,7 @@ export default {
   },
   watch: {
     tab(newTab) {
+      this.$emit('update-btn')
       this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       setTimeout(() => {
         this.setFocus();
@@ -261,7 +260,7 @@ export default {
     },
   },
   mounted() {
-    this.$emit('updateBtn');
+    this.$emit('update-btn');
     this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
   },
 };
