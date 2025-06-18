@@ -6,7 +6,7 @@
     },
     {
       "id": "2",
-      "local": "DI/CEAD"
+      "local": "DI"
     },
     {
       "id": "3",
@@ -63,10 +63,6 @@
     {
       "id": "16",
       "local": "PARQUEAMENTO"
-    },
-    {
-      "id": "17",
-      "local": "OUTRO"
     }
   ]
 }

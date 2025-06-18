@@ -1,21 +1,34 @@
+
 'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('ubms', {
+    await queryInterface.createTable('servicos', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
+      rg: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      unit: {
+      dataInicio: {
         allowNull: false,
-        type: Sequelize.STRING
+        type: Sequelize.DATEONLY
+      },
+      horaInicio: {
+        allowNull: false,
+        type: Sequelize.TIME
+      },
+      dataTermino: {
+        allowNull: false,
+        type: Sequelize.DATEONLY
+      },
+      horaTermino: {
+        allowNull: false,
+        type: Sequelize.TIME
       },
       createdAt: {
         allowNull: false,
@@ -28,6 +41,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('ubms');
+    await queryInterface.dropTable('servicos');
   }
 };

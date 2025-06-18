@@ -1,9 +1,9 @@
 export default  {
   dialect: 'postgres',
-  host: '127.0.0.1',
-  username: 'docker',
-  password: 'patro233',
-  database: 'guardaCeics',
+  host: 'localhost',
+  username: 'guarda',
+  password: 'pAtro@23',
+  database: 'db_ceics',
   define: {
     timestamps: true,
     timestampstz: true,

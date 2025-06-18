@@ -1,4 +1,5 @@
 <template>
+  <form>
     <v-img
       class="mx-auto my-6"
       max-width="228"
@@ -25,6 +26,8 @@
         placeholder="RG"
         prepend-inner-icon="mdi-account-outline"
         variant="outlined"
+        :error="!formLogin.documento && formTouched"
+        :error-messages="!formLogin.documento && formTouched ? '* Obrigatório' : ''"
       ></v-text-field>
 
       <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
@@ -32,6 +35,7 @@
       </div>
 
       <v-text-field
+        autocomplete="true"
         :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
         :type="visible ? 'text' : 'password'"
         density="compact"
@@ -39,7 +43,10 @@
         placeholder="Enter your password"
         prepend-inner-icon="mdi-lock-outline"
         variant="outlined"
+        @keypress.enter.prevent="logar"
         @click:append-inner="visible = !visible"
+        :error="!formLogin.password && formTouched"
+        :error-messages="!formLogin.password && formTouched ? '* Obrigatório' : ''"
       ></v-text-field>
 
       <v-btn
@@ -51,27 +58,21 @@
         @click="logar()"
       >
         Log In
-      </v-btn>
-
-      <!-- <v-card-text class="text-center">
-        <a
-          class="text-blue text-decoration-none"
-          href="#"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
-        </a>
-      </v-card-text> -->
+      </v-btn>  
     </v-card>
+  </form>
 </template>
 <script>
 
 export default {
-  emits: ['updateBtn'],
+  props: {
+    tab: String
+  },
+  emits: ['updateBtn', 'changeTable'],
   data: () => ({
     hide: false,
     visible: false,
+    formTouched: false,
     formLogin: {
       documento: '',
       password: '',
@@ -80,18 +81,26 @@ export default {
   }),
   methods: {
     async logar() {
+      this.formTouched = true;
+
+      if (!this.formLogin.documento || !this.formLogin.password) {
+        this.error = "Por favor, preencha todos os campos obrigatórios.";
+        this.hide = true;
+        return;
+      }
+      
       try {
-        const res = await this.$sessionservice.logar(this.formLogin);
-        if (res.error) { 
-          this.error = res.error;
-          this.hide = true;
-          this.$router.push('/login'); 
-        } else {
-            if (res.token) {
-              localStorage.setItem('token', res.token)
-              this.$router.push({ path: '/' }); 
-            } else {
-              this.$router.push(from)
+          const res = await this.$sessionservice.logar(this.formLogin);
+          if (res.error) { 
+            this.error = res.error;
+            this.hide = true;
+            this.$router.push('/login'); 
+          } else {
+              if (res.token) {
+                localStorage.setItem('token', res.token)
+                this.$router.push({ path: '/' }); 
+              } else {
+                this.$router.push(from)
             }
           }
         } catch (error) {

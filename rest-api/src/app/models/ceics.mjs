@@ -16,7 +16,6 @@ import  { Model, DataTypes } from "sequelize";
         sRg: DataTypes.STRING,
         sCondutor: DataTypes.STRING,
         destino: DataTypes.STRING,
-        owner: DataTypes.STRING,
       }, {
         sequelize,
         modelName: 'ceics',
@@ -52,6 +51,15 @@ import  { Model, DataTypes } from "sequelize";
         console.error('Ocorreu um erro: ', error);
         throw error;
       }
+    }
+
+    static async serviceDay(date) {
+      const service = await this.findAll({
+        where: {
+          saida: null 
+        },
+        order: [['updatedAt', 'DESC']]
+      })
     }
   }
 

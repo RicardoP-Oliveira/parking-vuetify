@@ -7,7 +7,8 @@ import Ubm from './ubm.mjs';
    static init(sequelize){
     super.init({
       placa: DataTypes.STRING,
-      marcaModelo: DataTypes.STRING,
+      marca: DataTypes.STRING,
+      modelo: DataTypes.STRING,
       userId: DataTypes.INTEGER,
       orgaoId: DataTypes.INTEGER,
       renavam: DataTypes.STRING
@@ -33,7 +34,7 @@ import Ubm from './ubm.mjs';
       } else if (placaRegex.test(car)) {
         searchCriteria.placa = car;
       } else {
-        searchCriteria.marcaModelo = car;
+        searchCriteria.marca = car;
       }
 
       try {

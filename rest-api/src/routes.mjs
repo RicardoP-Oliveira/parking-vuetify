@@ -8,13 +8,15 @@ import UbmController from './app/controllers/UbmController.mjs';
 import UserController from './app/controllers/UserController.mjs';
 import CeicsController from './app/controllers/CeicsController.mjs';
 import SessionController from './app/controllers/SessionController.mjs';
+import PedestreController from './app/controllers/PedestreController.mjs';
+import ServicoController from './app/controllers/ServicoController.mjs';
 
 const routes = new Router();
 const upload = multer(uploadConfig.getConfig());
 
 routes.post('/sessions', SessionController.store);
 
-routes.post('/sessions/validate', auth, SessionController.validate);
+routes.post('/sessions/validate', SessionController.validate);
 
 // -----  Rotas de UBM ---- //
 routes.get('/ubm',  UbmController.index);
@@ -32,15 +34,15 @@ routes.delete('/ubm/:id', UbmController.destroy);
 
 // -----  Rotas de USUÁRIOS ---- //
 
-routes.get('/user', auth, UserController.index);
+routes.get('/user', UserController.index);
 
-routes.get('/user/:id', auth, UserController.show);
+routes.get('/user/:id', UserController.show);
 
-routes.post('/user', auth, upload.single('foto'), UserController.store);
+routes.post('/user',  upload.single('foto'), UserController.store);
 
-routes.put('/user/:id', auth, upload.single('foto'), UserController.update);
+routes.patch('/user/:id',  upload.single('foto'), UserController.update);
 
-routes.delete('/user/:id', auth, UserController.destroy);
+routes.delete('/user/:id', UserController.destroy);
 
 // -----  Rotas de CARROS ---- //
 
@@ -59,9 +61,15 @@ routes.delete('/carro/:id', CarroController.destroy);
 // -----  Rotas de Estacionamento ---- //
 
 routes.post('/ceics',  auth, CeicsController.store);
-routes.post('/ceics/pedestre', auth, CeicsController.storePedestre);
-routes.get('/ceics', auth, CeicsController.index);
-routes.get('/ceics/:placa', auth, CeicsController.show);
-routes.get('/parking/:placa', auth, CeicsController.parking);
+routes.get('/ceics', CeicsController.index);
+routes.get('/ceics/:placa', CeicsController.show);
+routes.get('/parking/:placa', CeicsController.parking);
+
+routes.get('/pedestre', PedestreController.index);
+routes.post('/pedestre', PedestreController.store);
+routes.get('/pedestre/doc/:doc', PedestreController.show);
+
+routes.post('/servico', ServicoController.store);
+routes.get('/servico', ServicoController.index);
 
 export default routes;

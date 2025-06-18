@@ -1,60 +1,47 @@
-import Carro from '../models/carro.mjs';
-import Ceics from '../models/ceics.mjs';
 import Resposta from '../models/Resposta.mjs';
+import Pedestre from '../models/pedestre.mjs';
 import { Op } from 'sequelize';
 
-class CeicsController {
+function dateFormatter (data){
+  const dd = data.getDate();
+  const mm = data.getMonth() + 1;
+  const aaaa = data.getFullYear();
+  return `${aaaa}-${mm}-${dd}`;
+}
+
+class PedestreController {
   async index(req, res) {
     const resposta = new Resposta();
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
-
+    
     const {
-      placa,
+      pedestre,
       documento,
-      modelo,
-      condutor,
       dataEntradaInicio,
       dataEntradaFim,
-      dataSaidaInicio,
-      dataSaidaFim,
       horaEntradaInicio,
       horaEntradaFim,
+      dataSaidaInicio,
+      dataSaidaFim, 
       horaSaidaInicio,
-      horaSaidaFim
+      horaSaidaFim,
     } = req.query;
+
+    console.log(req.query)
 
     let whereCondition = {};
 
     const conditions = [];
 
-    if(placa) {
-      conditions.push({ placa: {[Op.iLike]: `%${placa}%`}});
+    if (pedestre) {
+      conditions.push({ name: {[Op.iLike]: `%${pedestre}%`}});
     }
-    
+
     if (documento) {
-      conditions.push({
-        [Op.or]: [
-          { eRg: { [Op.iLike]: `%${documento}%`}},
-          { sRg: { [Op.iLike]: `%${documento}%`}}
-        ]
-      });
+      conditions.push({ nDoc: {[Op.iLike]: `%${documento}%`}});
     }
     
-    if (modelo) {
-      conditions.push({ marcaModelo: { [Op.iLike]: `%${modelo}%`}});
-    }
-
-    if (condutor) {
-      console.log(condutor)
-      conditions.push({
-        [Op.or]: [
-          { eCondutor: { [Op.iLike]: `%${condutor}%`}},
-          { sCondutor: { [Op.iLike]: `%${condutor}%`}}  
-        ]
-      });
-    }
-
     if (dataEntradaInicio || dataEntradaFim) {
       const entradaDataCondition = {};
       if (dataEntradaInicio) {
@@ -128,117 +115,84 @@ class CeicsController {
     }
 
     try {
-      if(perPage <=0 ){
-        perPage = await Ceics.count({ where: whereCondition });
+      if (perPage <= 0) {
+        perPage = await Pedestre.count({ where: whereCondition});
       }
-
-      const { count, rows } = await Ceics.findAndCountAll({
-        order: [['updatedAt', 'DESC']],
+      const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
+        order: [['updatedAt', 'DESC']],
         offset: (page - 1) * perPage,
         limit: perPage,
       });
-
       resposta.dados = rows;
-      var total = count;  
-      
-    } catch(erro) {
-      console.error("Erro na busca dos dados: ", erro);
+      var total = count; 
+
+    } catch (erro) {
       resposta.erro = true;
       resposta.msg = "Ocorreu um erro na busca dos dados!"
-      resposta.dados = erro.message;
+      resposta.dados = erro;
     }
     return res.json([resposta, total]);
   }
 
   async show(req, res) {
     const resposta = new Resposta();
-    const { placa } = req.params;
-
+    const { doc } = req.params || '';
+    
     try {
-       const buscaCar = await Carro.findCar(placa);
-       const { veiculo, searchCriteria } = buscaCar;
-
-      if (!veiculo && (searchCriteria.id || searchCriteria.marca )) {
-        resposta.erro = true;
-        resposta.msg = 'Veículo não cadastrado!\nContate o Administrador.';
-      } else if (!veiculo && searchCriteria.placa){
-        resposta.msg = 'Veículo visitante.';
-        resposta.visitor = true;
-      }  else {
-        resposta.dados = buscaCar.veiculo;
-      }
-
-    } catch (error) {
-      resposta.erro = true;
-      resposta.msg = `Error: ${error}`;
-      resposta.dados = error;
-    }
-
-    return res.json(resposta);
-   
-  }
-
-  async parking(req, res) {
-    const resposta = new Resposta();
-    const { placa } = req.params;
-    try {
-       const buscaCar = await Ceics.findCar(placa);
-
-      if (buscaCar) {
-        resposta.dados = buscaCar;
+      const pedestre = await Pedestre.findOne({
+        order: [['updatedAt', 'DESC']],
+        where: {
+          nDoc: doc,
+          saida: null
+        }
+      })
+      if (pedestre) {
+        resposta.dados = pedestre;
       } else {
         resposta.erro = true;
-        resposta.msg = 'Não contas saída em aberto para este veículo!';
+        resposta.msg = "Nenhum registro encontrado!"
       }
 
+      
     } catch (error) {
       resposta.erro = true;
-      resposta.msg = `Error: ${error}`;
+      resposta.msg = "Ocorreu um erro na busca dos dados!"
     }
 
     return res.json(resposta);
   }
 
-  async store (req, res) {
-   const { placa, condutor, destino, documento, marcaModelo } = req.body;
-
-  const dataParking = {
-    placa: placa,
-    marcaModelo: marcaModelo,
-    eCondutor: condutor,
-    eRg: documento,
-    destino,
-    entrada: new Date(),
-    hEntrada: new Date().toLocaleTimeString(),
-  }
-
-  const vaga = await Ceics.findOne({
-    where: [
-      {
-        placa: placa
-      },
-      {
-        saida: null
-      }
-    ],
-    order: [['updatedAt', 'DESC']],
-  });
-
-  if(!vaga){
-      var saida = await Ceics.create(dataParking);
-  } else {
-    var dados = {
-      sCondutor: condutor,
-      sRg: documento,
-      saida: new Date(),
-      hSaida: new Date().toLocaleTimeString(),
+  async store(req, res) {
+    const body = req.body;
+    var pedestre;
+    
+    const data = {
+      ...body,
+      'entrada': dateFormatter(new Date()),
+      'hEntrada': new Date().toLocaleTimeString(),
     }
-    var saida = await vaga.update(dados);
-  }
 
-   return res.json(saida);
+    const entrada = await Pedestre.findOne({
+      where: {
+        nDoc: body.nDoc,
+        saida: null
+      },
+      order: [['updatedAt', 'DESC']]
+    })
+
+    if (!entrada) {
+      pedestre = await Pedestre.create(data);
+    } else {
+      const updatePedestre = {
+        'saida': dateFormatter(new Date()),
+        'hSaida': new Date().toLocaleTimeString(),
+      }
+      pedestre = await entrada.update(updatePedestre)
+    }
+
+    return res.json(pedestre)
   }
 }
 
-export default new CeicsController();
+export default new PedestreController();

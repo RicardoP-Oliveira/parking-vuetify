@@ -8,7 +8,7 @@ class UbmController {
   async index(req, res) {
     const resposta = new Resposta();
     try {
-      const ubms = await Ubm.findAll({ order: [['id', 'ASC']] });
+      const ubms = await Ubm.findAll({ order: [['name', 'ASC']] });
       if(!ubms.length) {
         resposta.msg = 'Não existe(m) unidade(s) cadastrada(s).';
       } else {

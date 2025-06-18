@@ -132,58 +132,32 @@ class UserController {
     const resposta = new Resposta();
     const { id } = req.params;
     const foto = req.file;
-    const {
-      gradua,
-      tipo_doc,
-      documento,
-      nGuerra,
-      ubmId,
-      orgaoId,
-      password_hash,
-      email,
-      cnh,
-    } = req.body;
-    let body = {};
+
     try {
       const user = await User.findByPk(id);
       if (!user) {
-        if (req.file) {
-          upload.delete(req, foto.filename);
-        }
+        if (req.file) upload.delete(req, foto.filename);
+        
         resposta.erro = true;
         resposta.msg = 'Usuário(a) não encontrado(a).';
-      } else {
-        if (!req.file) {
-          body = {
-            gradua,
-            tipo_doc,
-            documento,
-            nGuerra,
-            ubmId,
-            orgaoId,
-            email,
-            cnh,
-            password_hash,
-          };
-        } else {
-          body = {
-            gradua,
-            tipo_doc,
-            documento,
-            nGuerra,
-            ubmId,
-            orgaoId,
-            email,
-            cnh,
-            foto: foto.filename,
-            password_hash,
-          };
-        }
-        if (user.foto) {
-          var oldPicture = user.foto;
-        }
+        return res.json(resposta);
+      }
 
-        const updated = await (await user).update(body);
+      const body = {
+        ...(req.body.gradua && { gradua: req.body.gradua }),
+        ...(req.body.tipo_doc && { tipo_doc: req.body.tipo_doc }),
+        ...(req.body.nGuerra && { nGuerra: req.body.nGuerra }),
+        ...(req.body.ubmId && { ubmId: req.body.ubmId }),
+        ...(req.body.orgaoId && { orgaoId: req.body.orgaoId }),
+        ...(req.body.email && { email: req.body.email }),
+        ...(req.body.cnh && { cnh: req.body.cnh }),
+        ...(req.body.password && { password: req.body.password }),
+        ...(foto && { foto: foto.filename }),
+      };
+
+        const oldPicture = user.foto;
+
+        const updated = await user.update(body);
 
         if (updated) {
           resposta.erro = false;
@@ -192,7 +166,6 @@ class UserController {
             upload.delete(req, oldPicture);
           }
         }
-      }
     } catch (erro) {
       if (req.file) {
         upload.delete(req, foto.filename);
