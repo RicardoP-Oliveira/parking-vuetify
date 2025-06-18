@@ -6,6 +6,8 @@
     :get-header-groups="setHeaderGroups"
     :filters="filters"
     :tab="tab"
+    @update-btn="$emit('update-btn', $event)"
+    @changeTable="$emit('changeTable', $event)"
     ref="baseTableRef"
   />
 </template>
@@ -81,12 +83,5 @@ export default {
       return headerGroups;
     },
   },
-  // watch: {
-  //   tab(newTab) {
-  //     if (newTab === 'pedestre') {
-  //       this.$refs.baseTableRef.applyFiltersFromParent();
-  //     } 
-  //   }
-  // },
 };
 </script>

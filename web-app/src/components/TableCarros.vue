@@ -93,34 +93,6 @@ export default {
       };
       return headerGroups;
     },
-    refreshTable() {
-      if (this.$refs.baseTableRef && this.$refs.baseTableRef.applyFiltersFromParent) {
-        this.$refs.baseTableRef.applyFiltersFromParent();
-      } else {
-        console.warn('[TableCarros.vue] Não foi possível encontrar a referência para BaseTable para refresh.');
-      }
-    }
   },
-  // watch: {
-  //   tab(newTab, oldTab) {
-    
-  //       this.refreshTable();
-  //       this.$refs.baseTableRef.setFocus();
-    
-  //   },
-  //   filters: {
-  //     handler(newFilters, oldFilters) {
-  //       if (JSON.stringify(newFilters) !== JSON.stringify(oldFilters)) {
-  //         console.log(`[TableCarros.vue] Prop 'filters' atualizada. Forçando recarregamento da tabela de Carros.`);
-  //         this.refreshTable();
-  //       }
-  //     },
-  //     deep: true, // Observa mudanças dentro do objeto 'filters'
-  //   }
-  // },
-  mounted() {
-    this.refreshTable();
-    this.$emit('update-btn', { from: 'Table', name: this.$options.name }); // Emitindo para o layout.vue
-  }
 };
 </script>

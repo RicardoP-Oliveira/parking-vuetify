@@ -219,16 +219,19 @@ export default {
       }
     },
     setFocus() {
-      setTimeout(() => {
+      this.$nextTick(() => {
+        setTimeout(() => {
         if (this.$refs.ident) {
           this.$refs.ident.focus();
         }
-      }, 200);
+      }, 170);
+      })
     },
     async closeModal(from) {
       this.modal.isOpen = false;
       this.clearIdent();
-      this.$emit('changeTable', from);
+      this.$emit('changeTable', from)
+      this.applyFiltersFromParent();
       this.setFocus();
     },
     onUpdateOptions({ page, itemsPerPage }) {
@@ -249,7 +252,7 @@ export default {
       this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
       setTimeout(() => {
         this.setFocus();
-      }, 170);
+      }, 300);
     },
     // Monitora a prop 'filters' para recarregar os dados quando os filtros mudarem no pai
     filters: {
@@ -258,10 +261,6 @@ export default {
       },
       deep: true, // Importante para observar mudanças dentro do objeto filters
     },
-  },
-  mounted() {
-    this.$emit('update-btn');
-    this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
   },
 };
 </script>

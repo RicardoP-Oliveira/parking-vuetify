@@ -213,7 +213,7 @@ export default {
         try {
           const salved = await this.$ceicsservice.adicionar(this.form, this.token)
           if (salved) {
-            this.close();
+            this.close()
           } else {
               console.error('[infoModal.vue] Erro ao salvar dados do carro.');
           // Adicione aqui feedback ao utilizador sobre o erro
@@ -224,8 +224,9 @@ export default {
         }
       }
     },
-    close(){
-      this.$emit('closeModal', { from: this.$options.name }); // this.$options.name será 'infoModal'
+    close() {
+      this.isDialog = false;
+      this.$emit('closeModal', { from: this.$options.name });
     }
   },
   async mounted() {

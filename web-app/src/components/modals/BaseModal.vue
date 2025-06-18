@@ -63,6 +63,7 @@ export default {
   },
   methods: {
     close() {
+      console.log(this.$parent)
       this.$emit('close');
     },
     confirm() {
@@ -76,7 +77,7 @@ export default {
           button.blur(); // Remove o foco
           setTimeout(() => {
             button.focus(); // Foca novamente
-          }, 100); // Pequeno atraso para garantir que o foco seja redefinido
+          }, 170); // Pequeno atraso para garantir que o foco seja redefinido
         }
       });
     }

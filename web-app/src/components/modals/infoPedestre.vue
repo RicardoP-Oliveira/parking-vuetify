@@ -4,8 +4,8 @@
     :documento="documento"
     :confirmText="isAction"
     title="Controle de Pedestres"
-    @close="close"
     @confirm="salvar"
+    @close="close"
   >
   <v-row >
     <v-col class="px-2 py-1">
@@ -254,7 +254,7 @@ export default {
       try {
         const salved = await this.$pedestreService.adicionar(this.form, this.token); // Exemplo de serviço de pedestre
         if (salved) {
-          this.close(); // Fecha o modal, o que acionará o fluxo de atualização
+          this.close() // this.$options.name será 'infoPedestre'
         } else {
           console.error('[infoPedestre.vue] Erro ao salvar dados do pedestre.');
           // Adicione aqui feedback ao utilizador sobre o erro
@@ -265,7 +265,7 @@ export default {
       }
     },
     close() {
-      this.$emit('closeModal', { from: this.$options.name }); // this.$options.name será 'infoPedestre'
+      this.$emit('closeModal', { from: this.$options.name });
     }
   },
   computed: {

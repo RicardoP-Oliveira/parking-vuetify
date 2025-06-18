@@ -21,7 +21,6 @@
           clearable
           density="compact"
           @click:clear="clearFilter('placa')"
-          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-list-item>
       <v-list-item>
@@ -32,7 +31,6 @@
           clearable
           density="compact"
           @click:clear="clearFilter('documento')"
-          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-list-item>
       <v-list-item>
@@ -43,7 +41,6 @@
           clearable
           density="compact"
           @click:clear="clearFilter('modelo')"
-          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-list-item>
       <v-list-item>
@@ -54,7 +51,6 @@
           clearable
           density="compact"
           @click:clear="clearFilter('condutor')"
-          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-list-item>
 
@@ -81,7 +77,6 @@
             show-adjacent-months
             @update:model-value="
               menuEntradaData = false;
-              applyFilters();
             "
             :hide-header="true"
           ></v-date-picker>
@@ -110,7 +105,6 @@
             show-adjacent-months
             @update:model-value="
               menuEntradaDataFim = false;
-              applyFilters();
             "
             :hide-header="true"
           ></v-date-picker>
@@ -140,7 +134,6 @@
             show-adjacent-months
             @update:model-value="
               menuSaidaData = false;
-              applyFilters();
             "
             :hide-header="true"
           ></v-date-picker>
@@ -169,7 +162,6 @@
             show-adjacent-months
             @update:model-value="
               menuSaidaDataFim = false;
-              applyFilters();
             "
             :hide-header="true"
           ></v-date-picker>
@@ -193,7 +185,6 @@
           <v-time-picker
             v-model="filters.horaEntradaInicio"
             format="24hr"
-            @update:model-value="applyFilters()"
             title="Selecione a hora"
           ></v-time-picker>
         </v-menu>
@@ -217,7 +208,6 @@
             format="24hr"
             @update:model-value="
               menuEntradaHoraFim = false;
-              applyFilters();
             "
             title="Selecione a hora"
           ></v-time-picker>
@@ -240,7 +230,6 @@
           <v-time-picker
             v-model="filters.horaSaidaInicio"
             format="24hr"
-            @update:model-value="applyFilters()"
             title="Selecione a hora"
           ></v-time-picker>
         </v-menu>
@@ -264,31 +253,31 @@
             format="24hr"
             @update:model-value="
               menuSaidaHoraFim = false;
-              applyFilters();
             "
             title="Selecione a hora"
           ></v-time-picker>
         </v-menu>
       </v-list-item>
-      <v-list-item class="mt-4">
+      <!-- <v-list-item class="mt-4">
         <v-btn color="primary" block @click="applyFilters"> Aplicar Filtros </v-btn>
-      </v-list-item>
+      </v-list-item> -->
       <v-list-item class="mt-2">
         <v-btn color="grey-darken-2" block @click="clearAllFilters"> Limpar Filtros </v-btn>
       </v-list-item>
     </v-list>
   </v-navigation-drawer>
 
-  <v-app-bar color="bg-greey-light" flat height="75" elevation="2">
-    <v-app-bar-nav-icon
+  <v-app-bar color="bg-greey-light" flat height="15" elevation="2">
+  
+
+    <template v-slot:extension>
+        <v-app-bar-nav-icon
       icon="mdi-dots-vertical"
       @click="drawer = !drawer"
       elevation="1"
       size="small"
       class="mr-3 ms-3"
     />
-
-    <template v-slot:extension>
       <v-col>
         <v-tabs v-model="tab" fixed-tabs>
           <v-tab prepend-icon="mdi-car" value="carro">Veículos</v-tab>
@@ -379,6 +368,7 @@ export default {
   }),
  
   methods: {
+
     async updateBtn(info) {
       if (info && info.from && info.from.name == 'Table') {
         this.dataTable = true;
@@ -387,66 +377,31 @@ export default {
         this.dataTable = false;
       }
     },
+
     setFalseDataTable() {
       this.dataTable = false;
     },
 
     changeTable(value) {
-      let targetTab = this.tab;
 
-      if (value && typeof value === 'object' && value.from) {
-        if (value.from === 'infoModal') { 
-          targetTab = 'carro';
-        } else if (value.from === 'infoPedestre') { 
-          targetTab = 'pedestre';
-        }
-      } else if (typeof value === 'string') {
-        targetTab = value;
-      }
-
-      if (this.tab !== targetTab) {
-        this.tab = targetTab; 
+      if (value.from === 'infoModal') { 
+        this.tab = 'carro';
+      } else if (value.from === 'infoPedestre') { 
+        this.tab = 'pedestre';
       } else {
-        this.applyFilters(); 
+        this.tab = value;
       }
     },
 
     clearFilter(filterName) {
       this.filters[filterName] = null;
-      this.applyFilters();
     },
 
     clearAllFilters() {
       for (const key in this.filters) {
         this.filters[key] = null;
       }
-      this.applyFilters();
     },
-
-    // Método que instrui a tabela ativa a recarregar os seus dados
-    applyFilters() {
-
-      this.$nextTick(() => {
-        // this.$refs.tableCarrosWrapper.refreshTable();
-    })
-
-      // console.log(`[layout.vue] A aplicar filtros para a tab ativa: "${this.tab}".`, this.$parent);
-
-      // // Acede à instância do TableBase através da sua wrapper (TableCarros/Pedestres)
-      // // e depois à sua ref interna 'baseTableRef'.
-      // if (this.tab === 'carro' && this.$refs.tableCarroWrapper && this.$refs.tableCarroWrapper.$refs.baseTableRef) {
-      //   console.log('[layout.vue] A chamar applyFiltersFromParent para a tabela de Veículos.');
-      //   this.$refs.tableCarroWrapper.$refs.baseTableRef.applyFiltersFromParent();
-      // } else if (this.tab === 'pedestre' && this.$refs.tablePedestreWrapper && this.$refs.tablePedestreWrapper.$refs.baseTableRef) {
-      //   console.log('[layout.vue] A chamar applyFiltersFromParent para a tabela de Pedestres.');
-      //   this.$refs.tablePedestreWrapper.$refs.baseTableRef.applyFiltersFromParent();
-      // } else {
-      //   console.warn(`[layout.vue] Não foi possível encontrar a referência para a tabela ativa na tab: "${this.tab}".`);
-      // }
-    },
-  },
-  mounted() {
-    this.applyFilters(); // Carrega os dados da tab inicial ao montar
   }
 };
 </script>
