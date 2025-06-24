@@ -19,6 +19,7 @@
           :color="confirmColor"
           variant="flat"
           min-width="120"
+          :disabled="confirmButton"
         >
           {{ confirmText }}
         </v-btn>
@@ -53,6 +54,10 @@ export default {
     documento: {
       type: String,
       default: '',
+    },
+    confirmButton: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['confirm', 'close'],
@@ -63,7 +68,6 @@ export default {
   },
   methods: {
     close() {
-      console.log(this.$parent)
       this.$emit('close');
     },
     confirm() {
