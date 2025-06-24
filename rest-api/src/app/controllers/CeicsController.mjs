@@ -1,5 +1,6 @@
 import Carro from '../models/carro.mjs';
 import Ceics from '../models/ceics.mjs';
+import vtrAdd from '../models/vtradd.mjs';
 import Resposta from '../models/Resposta.mjs';
 import { Op } from 'sequelize';
 
@@ -154,19 +155,24 @@ class CeicsController {
   async show(req, res) {
     const resposta = new Resposta();
     const { placa } = req.params;
+    const defaultRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
 
     try {
-       const buscaCar = await Carro.findCar(placa);
-       const { veiculo, searchCriteria } = buscaCar;
-
-      if (!veiculo && (searchCriteria.id || searchCriteria.marca )) {
+      const veiculo = await Carro.findCar(placa);
+      
+      if (veiculo) {
+        // Se o veículo for encontrado
+        resposta.dados = veiculo;
+        resposta.msg = 'Veículo encontrado com sucesso!';
+      } else {
+        // Caso o veículo não encontrado
         resposta.erro = true;
-        resposta.msg = 'Veículo não cadastrado!\nContate o Administrador.';
-      } else if (!veiculo && searchCriteria.placa){
-        resposta.msg = 'Veículo visitante.';
-        resposta.visitor = true;
-      }  else {
-        resposta.dados = buscaCar.veiculo;
+        if (defaultRegex.test(placa)) {
+          resposta.msg = 'Visitante';
+          resposta.visitor = true
+        } else {
+          resposta.msg = 'Viatura não cadastrada!\nContate o Administrator do sistema.'
+        }    
       }
 
     } catch (error) {
@@ -183,10 +189,10 @@ class CeicsController {
     const resposta = new Resposta();
     const { placa } = req.params;
     try {
-       const buscaCar = await Ceics.findCar(placa);
-
-      if (buscaCar) {
-        resposta.dados = buscaCar;
+       const veiculo = await Ceics.findCar(placa);
+       
+      if (veiculo) {
+        resposta.dados = veiculo;
       } else {
         resposta.erro = true;
         resposta.msg = 'Não contas saída em aberto para este veículo!';
@@ -201,7 +207,7 @@ class CeicsController {
   }
 
   async store (req, res) {
-   const { placa, condutor, destino, documento, marcaModelo } = req.body;
+   const { placa, condutor, destino, documento, marcaModelo, owner } = req.body;
 
   const dataParking = {
     placa: placa,
@@ -226,7 +232,34 @@ class CeicsController {
   });
 
   if(!vaga){
+    try {
       var saida = await Ceics.create(dataParking);
+    } catch (error) {
+      console.warn(`[erro] Ocorreu o erro: ${error}`);
+    }
+    
+    const vtrPattern = /^([A-Z][A-Z0-9]{1,5}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/;
+
+    if (vtrPattern.test(marcaModelo) || vtrPattern.test(placa)) {
+      const addVtr = {
+        placa,
+        prefix: marcaModelo,
+        owner,
+        documento
+      }
+      try {
+        const exist = await vtrAdd.findOne({
+          where: {
+           placa: { [Op.iLike]: `%${placa}%`},
+          }});
+        if (!exist) {
+          await vtrAdd.create(addVtr);
+        }
+        
+      } catch (error) {
+        console.warn(`[erro] Ocorreu o erro: ${error}`);
+      } 
+    }
   } else {
     var dados = {
       sCondutor: condutor,

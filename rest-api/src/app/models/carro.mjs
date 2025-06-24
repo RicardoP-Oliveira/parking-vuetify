@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, Op } from 'sequelize';
 import User from './user.mjs';
 import Orgao from './orgao.mjs';
 import Ubm from './ubm.mjs';
@@ -26,16 +26,25 @@ import Ubm from './ubm.mjs';
 
     static async findCar(car) {
 
-      const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
-      let searchCriteria = {};
+      // const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
+      let conditions = [];
 
-      if (!isNaN(car) && car.length > 0) {
-        searchCriteria.id = car;
-      } else if (placaRegex.test(car)) {
-        searchCriteria.placa = car;
-      } else {
-        searchCriteria.marca = car;
+      const carAsNumber = parseInt(car, 10);
+      if (!isNaN(carAsNumber) &&  carAsNumber > 0) {
+        conditions.push({id: carAsNumber});
       }
+
+      conditions.push({placa: { [Op.iLike]: `%${car}%`}});
+      conditions.push({modelo: { [Op.iLike]: `%${car}%`}});
+
+      if (conditions.length === 0) {
+        console.warn("Nenhum critério de busca válido gerado para a entrada.");
+        return null;
+      }
+
+      let searchCriteria = {
+        [Op.or]: conditions
+      };
 
       try {
         const veiculo = await this.findOne({
@@ -63,7 +72,7 @@ import Ubm from './ubm.mjs';
           ]
         });
         
-        return ({veiculo, searchCriteria});
+        return (veiculo);
 
       } catch (error) {
         console.error('Ocorreu um erro: ', error);
