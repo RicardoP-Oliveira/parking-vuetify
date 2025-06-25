@@ -405,3 +405,13 @@ export default {
   }
 };
 </script>
+
+<style>
+/* Estilos globais ou para este componente */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; 
+}
+</style>
