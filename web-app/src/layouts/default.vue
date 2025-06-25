@@ -295,6 +295,7 @@
               <!-- Router-view que renderiza TableCarros.vue -->
               <router-view
                 v-slot="{ Component }"
+                @show-snackbar="handleShowSnackbar"
               >
               <component
                 :is="Component"
@@ -309,12 +310,18 @@
             <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
               <!-- Router-view que renderiza TablePedestres.vue -->
               <router-view
-                @update-btn="updateBtn"
-                @changeTable="changeTable"
-                :tab="tab"
-                :filters="filters"
-                ref="tablePedestresWrapper"
-              />
+                v-slot="{ Component }"
+                @show-snackbar="handleShowSnackbar"
+              >
+                <component
+                  :is="Component" 
+                  @update-btn="updateBtn"
+                  @changeTable="changeTable"
+                  :tab="tab"
+                  :filters="filters"
+                  ref="tablePedestresWrapper"
+                />
+               </router-view>
             </v-tabs-window-item>
           </v-tabs-window>
         </v-card-text>
@@ -338,6 +345,7 @@ export default {
       setFalseDataTable: this.setFalseDataTable,
     };
   },
+  emits: ['show-snackbar'],
   data: () => ({
     drawer: false,
     tab: 'carro', // Tab inicial
@@ -368,6 +376,9 @@ export default {
   }),
  
   methods: {
+    handleShowSnackbar(options) {
+      this.$emit('show-snackbar', options);
+    },
 
     async updateBtn(info) {
       if (info && info.from && info.from.name == 'Table') {
@@ -384,11 +395,13 @@ export default {
 
     changeTable(value) {
 
-      if (value.from === 'infoModal') { 
-        this.tab = 'carro';
-      } else if (value.from === 'infoPedestre') { 
-        this.tab = 'pedestre';
-      } else {
+      if (typeof value === 'object' && value.from) {
+        if (value.from === 'infoModal') { 
+          this.tab = 'carro';
+        } else if (value.from === 'infoPedestre') { 
+          this.tab = 'pedestre';
+        }
+      } else if (typeof value === 'string') {
         this.tab = value;
       }
     },
@@ -407,11 +420,5 @@ export default {
 </script>
 
 <style>
-/* Estilos globais ou para este componente */
-html, body, #app {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden; 
-}
+/*  */
 </style>
