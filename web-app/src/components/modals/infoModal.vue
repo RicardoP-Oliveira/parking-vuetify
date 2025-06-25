@@ -69,7 +69,7 @@
         @click:clear="clearPlaca"
         @keyup="convertToUpper"
         hide-details
-        width="100px"
+        width="150px"
         :variant="placa.length > 0 ? 'plain' : 'underlined'"
         :disabled="modelo.length === 0 ? true : false"
         />
@@ -129,7 +129,7 @@ export default {
       documento: '',
       gradua: '',
       nGuerra: '',
-      nGuerraPattern: /^[aA-zZ]+(?: [aA-zZ]+)*$/,
+      nGuerraPattern: /^((?:\dº )?[aA-zZ]+(?: [aA-zZ]+)*)$/,
       obm: '',
       modelo: '',
       proprietario: '',
