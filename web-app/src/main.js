@@ -25,6 +25,8 @@ import DbPGT from '@/config/dbPGT.json';
 import DbTarget from '@/config/dbTarget.json';
 import DbDoc from '@/config/dbDoc.json';
 
+import '@/assets/global.css';
+
 // Composables
 import { createApp } from 'vue'
 import VueBarcode from '@chenfengyuan/vue-barcode'
