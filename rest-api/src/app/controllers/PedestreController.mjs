@@ -28,8 +28,6 @@ class PedestreController {
       horaSaidaFim,
     } = req.query;
 
-    console.log(req.query)
-
     let whereCondition = {};
 
     const conditions = [];
@@ -103,7 +101,6 @@ class PedestreController {
         saidaTimeCondition[Op.lte] = horaSaidaFim;
       }
       if (Reflect.ownKeys(saidaTimeCondition).length > 0) {
-        console.log("data:", saidaTimeCondition)
         conditions.push({ hSaida: saidaTimeCondition});
       }
     }
@@ -137,8 +134,7 @@ class PedestreController {
 
   async show(req, res) {
     const resposta = new Resposta();
-    const { doc } = req.params || '';
-    
+    const { doc } = req.params;    
     try {
       const pedestre = await Pedestre.findOne({
         order: [['updatedAt', 'DESC']],

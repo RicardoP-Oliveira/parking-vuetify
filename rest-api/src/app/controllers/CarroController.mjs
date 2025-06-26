@@ -63,7 +63,6 @@ class CarroController {
           resposta.erro = true;
           resposta.msg = 'Carro já cadastrado';
         } else {
-          console.log(req.body)
           const carro = await Carro.create(req.body);
           if(carro){
             resposta.msg = 'Registro cadastrado com sucesso.';

@@ -25,60 +25,76 @@ import Ubm from './ubm.mjs';
     }
 
     static async findCar(car) {
-
-      // const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
-      let conditions = [];
+      
+      let veiculo = null;
 
       const carAsNumber = parseInt(car, 10);
+
       if (!isNaN(carAsNumber) &&  carAsNumber > 0) {
-        conditions.push({id: carAsNumber});
-      }
-
-      conditions.push({placa: { [Op.iLike]: `%${car}%`}});
-      conditions.push({modelo: { [Op.iLike]: `%${car}%`}});
-
-      if (conditions.length === 0) {
-        console.warn("Nenhum critério de busca válido gerado para a entrada.");
-        return null;
-      }
-
-      let searchCriteria = {
-        [Op.or]: conditions
-      };
-
-      try {
-        const veiculo = await this.findOne({
-          where: searchCriteria,
-          include: [{
-            model: User,
-            as:'user',
-            // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
-            include:[
-              {
-                model: Ubm,
-                as: 'ubm',
-                // attributes:['id', 'sigla']
+        try {
+          veiculo = await this.findOne({
+            where: { id: carAsNumber},
+            include: [{
+              model: User,
+              as: 'user',
+              include: [
+                { model: Ubm, as: 'ubm' },
+                { model: Orgao, as: 'orgaoU' }
+              ]
               },
               {
                 model: Orgao,
-                as: 'orgaoU'
+                as: 'orgao'
               }
             ]
-            },
-            {
-              model: Orgao,
-              as: 'orgao'
-            }
-          ]
-        });
-        
-        return (veiculo);
-
-      } catch (error) {
-        console.error('Ocorreu um erro: ', error);
-        throw error;
+          });
+        } catch (error) {
+          console.error('Erro ao buscar veículo por ID: ', error);
+          throw error;
+        }
       }
+
+      if(!veiculo) {
+        let conditions = [];
+
+        conditions.push({placa: { [Op.iLike]: `%${car}%`}});
+        conditions.push({modelo: { [Op.iLike]: `%${car}%`}});
+
+        if (conditions.length === 0) {
+          console.warn("Nenhum critério de busca válido gerado para a entrada.");
+          return null;
+        }
+
+        let searchCriteria = {
+          [Op.or]: conditions
+        };
+
+        try {
+          veiculo = await this.findOne({
+            where: searchCriteria,
+            include: [{
+              model: User,
+              as:'user',
+              include:[
+                { model: Ubm, as: 'ubm' },
+                { model: Orgao, as: 'orgaoU' }
+              ]
+              },
+              {
+                model: Orgao,
+                as: 'orgao'
+              }
+            ]
+          });
+        } catch (error) {
+          console.error('Ocorreu um erro: ', error);
+          throw error;
+        }
+      }
+
+      return (veiculo);
+
     }
   }
 
-  export default carro;
+export default carro;

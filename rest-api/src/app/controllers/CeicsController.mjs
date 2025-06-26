@@ -47,7 +47,6 @@ class CeicsController {
     }
 
     if (condutor) {
-      console.log(condutor)
       conditions.push({
         [Op.or]: [
           { eCondutor: { [Op.iLike]: `%${condutor}%`}},
@@ -117,7 +116,6 @@ class CeicsController {
         saidaTimeCondition[Op.lte] = horaSaidaFim;
       }
       if (Reflect.ownKeys(saidaTimeCondition).length > 0) {
-        console.log("data:", saidaTimeCondition)
         conditions.push({ hSaida: saidaTimeCondition});
       }
     }
