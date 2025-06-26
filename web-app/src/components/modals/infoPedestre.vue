@@ -1,6 +1,6 @@
 <template>
   <BaseModal
-    :isOpen="pedestre"
+    :isOpen="isPedestre"
     :documento="documento"
     :confirmText="isAction"
     title="Controle de Pedestres"
@@ -104,15 +104,16 @@ export default {
   },
   name: 'infoPedestre',
   props:{
-    pedestre: Boolean,
+    dialog: Object,
   },
   emits:['closeModal'],
   data() {
     return {
       formTouched: false,
       error:undefined,
-      isPedestre: this.pedestre,
+      isPedestre: this.dialog.isDialog,
       documento: '',
+      search: this.dialog.idPlaca,
       isAction: 'Entrada',
       tratoRegex: null,
       tipoDoc: '',
@@ -134,12 +135,9 @@ export default {
     async getDados(value){
       try {
         this.limparForm();
-
-        const search = `rg${value}`.trim();
-        const searchRg = value.trim();
         const [pedestreRes, pedestrePark] = await Promise.all([
-          this.$userservice.getId(search, this.token),
-          this.$pedestreService.getByDoc(searchRg, this.token)
+          this.$userservice.getId(this.search, this.token),
+          this.$pedestreService.getByDoc(this.search, this.token)
         ]);
         this.dados = pedestreRes
         this.processResult(pedestreRes, pedestrePark);
@@ -171,6 +169,7 @@ export default {
     },
     
     setDataForm(data, regex='') {
+      this.documento = this.search;
       this.tipoDoc =  this.tipoDoc || data.tDoc || data.tipo_doc;
       this.idOrgao =  this.idOrgao || regex.orgao || data.orgaoId;
       this.nome =  this.nome || regex.name || data.nGuerra;
@@ -304,11 +303,11 @@ export default {
       this.nome ? this.nome = this.nome.toUpperCase() : '';
     }
   },
-
   mounted() {
     this.getUnidades();
     this.getOrgaos();
     this.tratoRegex = this.tratoOptions;
+    this.getDados(this.search);
   }
 }
 </script>

@@ -78,10 +78,9 @@ export default {
       this.$nextTick(() => {
         // const identField = this.$refs.ident;
         if (button) {
-          button.blur(); // Remove o foco
           setTimeout(() => {
             button.focus(); // Foca novamente
-          }, 170); // Pequeno atraso para garantir que o foco seja redefinido
+          }, 200); // Pequeno atraso para garantir que o foco seja redefinido
         }
       });
     }

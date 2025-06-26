@@ -3,8 +3,8 @@ import ConfigClass from '../class/configClass';
 const caminho = `${ConfigClass.getUrlApi().toString()}/user`;
 
 export default class UserService {
-  static getId(id, token) {
-    return fetch(`${caminho}/${id}`, {
+  static getId(documento, token) {
+    return fetch(`${caminho}/${documento}`, {
       headers: {
         Authorization: token,
       }

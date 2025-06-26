@@ -121,6 +121,7 @@ export default {
   data(){
     return {
       btn: null,
+      ifPattern: /^#\d*$/,
       pattern: /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/,
       isAction: '',
       isDialog: this.dialog.isDialog,
@@ -157,6 +158,7 @@ export default {
     },
     async getDados() {
       try {
+        this.search = this.ifPattern.test(this.search) ? this.search.substring(1) : this.search;
         const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
         const searchPlaca = this.getSearchPlaca(infoRes);
         const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
@@ -223,11 +225,12 @@ export default {
     },
     async getUser(value) {
       try {
-        const res = await this.$userservice.getId(`rg${value.trim()}`, this.token);
-        if (!res.erro) {
-          this.condutor = !res.dados.orgaoU.sigla
-          ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
-          : `${res.dados.gradua.trim()} ${res.dados.orgaoU.sigla.trim()} ${res.dados.nGuerra.trim()}`;
+        const res = await this.$userservice.getId(value.trim(), this.token);
+        if (!res.erro && res.dados) {
+          const sigla = res.dados.orgaoU.sigla
+          this.condutor = sigla
+          ? `${res.dados.gradua.trim()} ${sigla.trim()} ${res.dados.nGuerra.trim()}`
+          : `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`;
           this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'CEICS';
           this.obm = res.dados.ubm.name;
         } else {
