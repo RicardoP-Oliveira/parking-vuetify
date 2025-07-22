@@ -132,7 +132,7 @@ export default {
     }
   },
   methods: {
-    async getDados(value){
+    async getDados(){
       try {
         this.limparForm();
         const [pedestreRes, pedestrePark] = await Promise.all([
@@ -141,6 +141,7 @@ export default {
         ]);
         this.dados = pedestreRes
         this.processResult(pedestreRes, pedestrePark);
+        
       } catch (error) {
         console.log('Erro ao buscar usuário', error);
       }
@@ -149,7 +150,9 @@ export default {
     processResult(pedestreRes, pedestrePark) {
       if((!pedestreRes.erro && pedestreRes.dados)){
         this.setDataForm(pedestreRes.dados)
-      } 
+      } else {
+        this.documento = this.search;
+      }
       if (!pedestrePark.erro && pedestrePark.dados) {
         this.isAction = 'Saída';
         const regex = this.mountRegex(pedestrePark.dados.name);
@@ -169,6 +172,7 @@ export default {
     },
     
     setDataForm(data, regex='') {
+      console.log(this.search)
       this.documento = this.search;
       this.tipoDoc =  this.tipoDoc || data.tDoc || data.tipo_doc;
       this.idOrgao =  this.idOrgao || regex.orgao || data.orgaoId;
@@ -307,7 +311,7 @@ export default {
     this.getUnidades();
     this.getOrgaos();
     this.tratoRegex = this.tratoOptions;
-    this.getDados(this.search);
+    this.getDados();
   }
 }
 </script>
