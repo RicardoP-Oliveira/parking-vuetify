@@ -2,7 +2,7 @@ import Carro from '../models/carro.mjs';
 import Ceics from '../models/ceics.mjs';
 import vtrAdd from '../models/vtradd.mjs';
 import Resposta from '../models/Resposta.mjs';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
 
 class CeicsController {
   async index(req, res) {
@@ -248,10 +248,16 @@ class CeicsController {
       try {
         const exist = await vtrAdd.findOne({
           where: {
-           placa: { [Op.iLike]: `%${placa}%`},
+           [Op.or]: [
+            {placa: { [Op.iLike]: `%${placa}%`}},
+            {prefix: { [Op.iLike]: `%${marcaModelo}%`}}
+           ]
+           
           }});
         if (!exist) {
           await vtrAdd.create(addVtr);
+        } else {
+          await vtrAdd.update(addVtr, {where: { id: exist.id}});
         }
         
       } catch (error) {
