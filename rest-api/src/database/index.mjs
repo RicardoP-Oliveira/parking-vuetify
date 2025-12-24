@@ -9,6 +9,9 @@ import Orgao from '../app/models/orgao.mjs';
 import Pedestre from '../app/models/pedestre.mjs';
 import Servico from '../app/models/servico.mjs';
 import vtrAdd from '../app/models/vtradd.mjs';
+import Target from '../app/models/target.mjs';
+import Document from '../app/models/documentos.mjs';
+import Hierarquia from '../app/models/hierarcar.mjs';
 
 const models = [
   Ubm,
@@ -18,7 +21,10 @@ const models = [
   Orgao,
   Pedestre,
   Servico,
-  vtrAdd
+  vtrAdd,
+  Target,
+  Document,
+  Hierarquia
 ];
 
 class Database {
