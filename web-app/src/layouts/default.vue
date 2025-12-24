@@ -59,21 +59,21 @@
           <template v-slot:activator="{ props }">
             <v-text-field
               :model-value="
-                filters.dataEntradaInicio
-                  ? new Date(filters.dataEntradaInicio).toLocaleDateString('pt-BR')
+                filters.dataInicio
+                  ? new Date(filters.dataInicio).toLocaleDateString('pt-BR')
                   : ''
               "
-              label="Data Entrada Início"
+              label="Data Início"
               variant="outlined"
               readonly
               v-bind="props"
               clearable
               density="compact"
-              @click:clear="clearFilter('dataEntradaInicio')"
+              @click:clear="clearFilter('dataInicio')"
             ></v-text-field>
           </template>
           <v-date-picker
-            v-model="filters.dataEntradaInicio"
+            v-model="filters.dataInicio"
             show-adjacent-months
             @update:model-value="
               menuEntradaData = false;
@@ -87,83 +87,28 @@
           <template v-slot:activator="{ props }">
             <v-text-field
               :model-value="
-                filters.dataEntradaFim
-                  ? new Date(filters.dataEntradaFim).toLocaleDateString('pt-BR')
+                filters.dataFim
+                  ? new Date(filters.dataFim).toLocaleDateString('pt-BR')
                   : ''
               "
-              label="Data Entrada Fim"
+              label="Data Fim"
               variant="outlined"
               readonly
               v-bind="props"
               clearable
               density="compact"
-              @click:clear="clearFilter('dataEntradaFim')"
+              @click:clear="clearFilter('dataFim')"
+              :disabled="!filters.dataInicio"
             ></v-text-field>
           </template>
           <v-date-picker
-            v-model="filters.dataEntradaFim"
+            v-model="filters.dataFim"
             show-adjacent-months
             @update:model-value="
               menuEntradaDataFim = false;
             "
             :hide-header="true"
-          ></v-date-picker>
-        </v-menu>
-      </v-list-item>
-
-      <v-list-item>
-        <v-menu v-model="menuSaidaData" :close-on-content-click="false" location="end">
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              :model-value="
-                filters.dataSaidaInicio
-                  ? new Date(filters.dataSaidaInicio).toLocaleDateString('pt-BR')
-                  : ''
-              "
-              label="Data Saída Início"
-              variant="outlined"
-              readonly
-              v-bind="props"
-              clearable
-              density="compact"
-              @click:clear="clearFilter('dataSaidaInicio')"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="filters.dataSaidaInicio"
-            show-adjacent-months
-            @update:model-value="
-              menuSaidaData = false;
-            "
-            :hide-header="true"
-          ></v-date-picker>
-        </v-menu>
-      </v-list-item>
-      <v-list-item>
-        <v-menu v-model="menuSaidaDataFim" :close-on-content-click="false" location="end">
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              :model-value="
-                filters.dataSaidaFim
-                  ? new Date(filters.dataSaidaFim).toLocaleDateString('pt-BR')
-                  : ''
-              "
-              label="Data Saída Fim"
-              variant="outlined"
-              readonly
-              v-bind="props"
-              clearable
-              density="compact"
-              @click:clear="clearFilter('dataSaidaFim')"
-            ></v-text-field>
-          </template>
-          <v-date-picker
-            v-model="filters.dataSaidaFim"
-            show-adjacent-months
-            @update:model-value="
-              menuSaidaDataFim = false;
-            "
-            :hide-header="true"
+            :min="filters.dataInicio"
           ></v-date-picker>
         </v-menu>
       </v-list-item>
@@ -172,18 +117,18 @@
         <v-menu v-model="menuEntradaHora" :close-on-content-click="false" location="end">
           <template v-slot:activator="{ props }">
             <v-text-field
-              :model-value="filters.horaEntradaInicio"
-              label="Hora Entrada Início"
+              :model-value="filters.horaInicio"
+              label="Hora Início"
               variant="outlined"
               readonly
               v-bind="props"
               clearable
               density="compact"
-              @click:clear="clearFilter('horaEntradaInicio')"
+              @click:clear="clearFilter('horaInicio')"
             ></v-text-field>
           </template>
           <v-time-picker
-            v-model="filters.horaEntradaInicio"
+            v-model="filters.horaInicio"
             format="24hr"
             title="Selecione a hora"
           ></v-time-picker>
@@ -193,18 +138,19 @@
         <v-menu v-model="menuEntradaHoraFim" :close-on-content-click="false" location="end">
           <template v-slot:activator="{ props }">
             <v-text-field
-              :model-value="filters.horaEntradaFim"
-              label="Hora Entrada Fim"
+              :model-value="filters.horaFim"
+              label="Hora Fim"
               variant="outlined"
               readonly
               v-bind="props"
               clearable
               density="compact"
-              @click:clear="clearFilter('horaEntradaFim')"
+              @click:clear="clearFilter('horaFim')"
+              :disabled="!filters.horaInicio"
             ></v-text-field>
           </template>
           <v-time-picker
-            v-model="filters.horaEntradaFim"
+            v-model="filters.horaFim"
             format="24hr"
             @update:model-value="
               menuEntradaHoraFim = false;
@@ -213,54 +159,6 @@
           ></v-time-picker>
         </v-menu>
       </v-list-item>
-      <v-list-item>
-        <v-menu v-model="menuSaidaHora" :close-on-content-click="false" location="end">
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              :model-value="filters.horaSaidaInicio"
-              label="Hora Saída Início"
-              variant="outlined"
-              readonly
-              v-bind="props"
-              clearable
-              density="compact"
-              @click:clear="clearFilter('horaSaidaInicio')"
-            ></v-text-field>
-          </template>
-          <v-time-picker
-            v-model="filters.horaSaidaInicio"
-            format="24hr"
-            title="Selecione a hora"
-          ></v-time-picker>
-        </v-menu>
-      </v-list-item>
-      <v-list-item>
-        <v-menu v-model="menuSaidaHoraFim" :close-on-content-click="false" location="end">
-          <template v-slot:activator="{ props }">
-            <v-text-field
-              :model-value="filters.horaSaidaFim"
-              label="Hora Saída Fim"
-              variant="outlined"
-              readonly
-              v-bind="props"
-              clearable
-              density="compact"
-              @click:clear="clearFilter('horaSaidaFim')"
-            ></v-text-field>
-          </template>
-          <v-time-picker
-            v-model="filters.horaSaidaFim"
-            format="24hr"
-            @update:model-value="
-              menuSaidaHoraFim = false;
-            "
-            title="Selecione a hora"
-          ></v-time-picker>
-        </v-menu>
-      </v-list-item>
-      <!-- <v-list-item class="mt-4">
-        <v-btn color="primary" block @click="applyFilters"> Aplicar Filtros </v-btn>
-      </v-list-item> -->
       <v-list-item class="mt-2">
         <v-btn color="grey-darken-2" block @click="clearAllFilters"> Limpar Filtros </v-btn>
       </v-list-item>
@@ -269,7 +167,6 @@
 
   <v-app-bar color="bg-greey-light" flat height="15" elevation="2">
   
-
     <template v-slot:extension>
         <v-app-bar-nav-icon
       icon="mdi-dots-vertical"
@@ -277,12 +174,27 @@
       elevation="1"
       size="small"
       class="mr-3 ms-3"
-    />
+      />
       <v-col>
-        <v-tabs v-model="tab" fixed-tabs>
+        <!-- <v-tabs v-model="tab" fixed-tabs>
           <v-tab prepend-icon="mdi-car" value="carro">Veículos</v-tab>
           <v-tab prepend-icon="mdi-walk" value="pedestre">Pedestres</v-tab>
-        </v-tabs>
+        </v-tabs> -->
+        <div class="d-flex align-center">
+          <v-tabs v-model="tab" fixed-tabs class="flex-grow-1">
+            <v-tab prepend-icon="mdi-car" value="carro">Veículos</v-tab>
+            <v-tab prepend-icon="mdi-walk" value="pedestre">Pedestres</v-tab>
+          </v-tabs>
+          <v-btn
+            v-if="hasActiveFilters"
+            icon="mdi-printer"
+            size="large"
+            variant="text"
+            color="grey-darken-2"
+            @click=""
+            class="ml-4"
+          ></v-btn>
+        </div>
       </v-col>
     </template>
   </v-app-bar>
@@ -356,24 +268,36 @@ export default {
       documento: null,
       modelo: null,
       condutor: null,
-      dataEntradaInicio: null,
-      dataEntradaFim: null,
-      dataSaidaInicio: null,
-      dataSaidaFim: null,
-      horaEntradaInicio: null,
-      horaEntradaFim: null,
-      horaSaidaInicio: null,
-      horaSaidaFim: null,
+      dataInicio: null,
+      dataFim: null,
+      //dataSaidaInicio: null,
+      //dataSaidaFim: null,
+      horaInicio: null,
+      horaFim: null,
+      //horaSaidaInicio: null,
+      //horaSaidaFim: null,
     },
     menuEntradaData: false,
     menuEntradaDataFim: false,
-    menuSaidaData: false,
-    menuSaidaDataFim: false,
+    //menuSaidaData: false,
+    //menuSaidaDataFim: false,
     menuEntradaHora: false,
     menuEntradaHoraFim: false,
-    menuSaidaHora: false,
-    menuSaidaHoraFim: false,
+    //menuSaidaHora: false,
+    //menuSaidaHoraFim: false,
   }),
+
+  computed: {
+    hasActiveFilters() {
+      for ( const key in this.filters) {
+        const value = this.filters[key]
+        if (value !== null && value !== undefined && value !== '') {
+          return true
+        }
+      }
+      return false
+    }
+  },
  
   methods: {
     handleShowSnackbar(options) {
