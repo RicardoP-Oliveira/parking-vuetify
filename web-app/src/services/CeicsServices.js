@@ -56,4 +56,5 @@ export default class CeicsService {
       method: 'POST',
     }).then((res) => res.json());
   }
+
 }

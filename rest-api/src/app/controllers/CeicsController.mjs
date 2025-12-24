@@ -15,12 +15,12 @@ class CeicsController {
       documento,
       modelo,
       condutor,
-      dataEntradaInicio,
-      dataEntradaFim,
+      dataInicio,
+      dataFim,
       dataSaidaInicio,
       dataSaidaFim,
-      horaEntradaInicio,
-      horaEntradaFim,
+      horaInicio,
+      horaFim,
       horaSaidaInicio,
       horaSaidaFim
     } = req.query;
@@ -55,16 +55,16 @@ class CeicsController {
       });
     }
 
-    if (dataEntradaInicio || dataEntradaFim) {
+    if (dataInicio || dataFim) {
       const entradaDataCondition = {};
-      if (dataEntradaInicio) {
-        const formattedDate = dataEntradaInicio;
+      if (dataInicio) {
+        const formattedDate = dataInicio;
         if (formattedDate) { // Garante que dateFormatter retornou algo válido
           entradaDataCondition[Op.gte] = formattedDate;
         }
       }
-      if (dataEntradaFim) {
-        const formattedDate = dataEntradaFim;
+      if (dataFim) {
+        const formattedDate = dataFim;
         if (formattedDate) { // Garante que dateFormatter retornou algo válido
           entradaDataCondition[Op.lte] = formattedDate;
         }
@@ -75,48 +75,16 @@ class CeicsController {
       }
     }
 
-    if (dataSaidaInicio || dataSaidaFim) {
-      const saidaDateCondition = {};
-      if (dataSaidaInicio) {
-        const formattedDate = dataSaidaInicio;
-        if (formattedDate) {
-          saidaDateCondition[Op.gte] = formattedDate;
-        }
-      }
-      if (dataSaidaFim) {
-        const formattedDate = dataSaidaFim;
-        if (formattedDate) {
-          saidaDateCondition[Op.lte] = formattedDate;
-        }
-      }
-      if (Reflect.ownKeys(saidaDateCondition).length > 0) {
-        conditions.push({ saida: saidaDateCondition});
-      }
-    }
-
-    if (horaEntradaInicio || horaEntradaFim) {
+    if (horaInicio || horaFim) {
       const entradaTimeCondition = {};
-      if (horaEntradaInicio) {
-        entradaTimeCondition[Op.gte] = horaEntradaInicio;
+      if (horaInicio) {
+        entradaTimeCondition[Op.gte] = horaInicio;
       }
-      if (horaEntradaFim) {
-        entradaTimeCondition[Op.lte] = horaEntradaFim;
+      if (horaFim) {
+        entradaTimeCondition[Op.lte] = horaFim;
       }
       if (Reflect.ownKeys(entradaTimeCondition).length > 0) {
         conditions.push({ hEntrada: entradaTimeCondition});
-      }
-    }
-
-    if (horaSaidaInicio || horaSaidaFim) {
-      const saidaTimeCondition = {};
-      if (horaSaidaInicio) {
-        saidaTimeCondition[Op.gte] = horaSaidaInicio;
-      }
-      if (horaSaidaFim) {
-        saidaTimeCondition[Op.lte] = horaSaidaFim;
-      }
-      if (Reflect.ownKeys(saidaTimeCondition).length > 0) {
-        conditions.push({ hSaida: saidaTimeCondition});
       }
     }
 

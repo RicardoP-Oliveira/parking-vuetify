@@ -18,6 +18,7 @@ import ubmService from '@/services/UbmServices';
 import orgaoService from '@/services/OrgaoServices';
 import pedestreService from '@/services/PedestreService';
 import servicoService from '@/services/ServicoServices';
+import targetService from '@/services/TargetService';
 
 
 // Bancos de dados
@@ -30,7 +31,6 @@ import '@/assets/global.css';
 // Composables
 import { createApp } from 'vue'
 import VueBarcode from '@chenfengyuan/vue-barcode'
-
 
 const app = createApp(App)
 
@@ -47,6 +47,7 @@ app.config.globalProperties.$ubmservice = ubmService;
 app.config.globalProperties.$orgaoservice = orgaoService;
 app.config.globalProperties.$pedestreService = pedestreService;
 app.config.globalProperties.$servicoService = servicoService;
+app.config.globalProperties.$targetService = targetService;
 
 registerPlugins(app)
 

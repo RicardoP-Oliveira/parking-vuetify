@@ -32,6 +32,7 @@
                 @keypress.enter.prevent="selectModal()"
               ></v-text-field>
             </v-col>
+            <v-col></v-col>
             <v-col>
             <v-data-table-footer
               :items-per-page-options="itemsPerPageOptions"

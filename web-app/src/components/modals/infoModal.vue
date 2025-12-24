@@ -1,5 +1,6 @@
 <template>
   <BaseModal
+    v-if="dialog"
     :isOpen="isDialog"
     :documento="documento"
     title="Controle de acesso"
@@ -227,9 +228,11 @@ export default {
       try {
         const res = await this.$userservice.getId(value.trim(), this.token);
         if (!res.erro && res.dados) {
-          const sigla = res.dados.orgaoU.sigla
-          this.condutor = sigla
-          ? `${res.dados.gradua.trim()} ${sigla.trim()} ${res.dados.nGuerra.trim()}`
+          const sigla = res.dados.orgaoU.sigla;
+          const siglaAjustada = sigla === 'CBMERJ' ? 'BM' : (sigla === 'PMERJ' ? 'PM' : sigla);
+          console.log('---> ' + siglaAjustada)
+          this.condutor = siglaAjustada
+          ? `${res.dados.gradua.trim()} ${siglaAjustada.trim()} ${res.dados.nGuerra.trim()}`
           : `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`;
           this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'CEICS';
           this.obm = res.dados.ubm.name;
@@ -285,7 +288,8 @@ export default {
     },
   },
   async mounted() {
-    this.dbDest = this.$dbTarget;
+    // this.dbDest = this.$dbTarget;
+    // this.dbDest = await 
     this.dbDest.target.map((element) => this.dados.push(element.local));
     await this.getDados();
   },

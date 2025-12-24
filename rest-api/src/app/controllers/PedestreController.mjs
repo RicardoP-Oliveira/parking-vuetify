@@ -18,10 +18,10 @@ class PedestreController {
     const {
       pedestre,
       documento,
-      dataEntradaInicio,
-      dataEntradaFim,
-      horaEntradaInicio,
-      horaEntradaFim,
+      dataInicio,
+      dataFim,
+      horaInicio,
+      horaFim,
       dataSaidaInicio,
       dataSaidaFim, 
       horaSaidaInicio,
@@ -40,16 +40,16 @@ class PedestreController {
       conditions.push({ nDoc: {[Op.iLike]: `%${documento}%`}});
     }
     
-    if (dataEntradaInicio || dataEntradaFim) {
+    if (dataInicio || dataFim) {
       const entradaDataCondition = {};
-      if (dataEntradaInicio) {
-        const formattedDate = dataEntradaInicio;
+      if (dataInicio) {
+        const formattedDate = dataInicio;
         if (formattedDate) { // Garante que dateFormatter retornou algo válido
           entradaDataCondition[Op.gte] = formattedDate;
         }
       }
-      if (dataEntradaFim) {
-        const formattedDate = dataEntradaFim;
+      if (dataFim) {
+        const formattedDate = dataFim;
         if (formattedDate) { // Garante que dateFormatter retornou algo válido
           entradaDataCondition[Op.lte] = formattedDate;
         }
@@ -79,13 +79,13 @@ class PedestreController {
       }
     }
 
-    if (horaEntradaInicio || horaEntradaFim) {
+    if (horaInicio || horaFim) {
       const entradaTimeCondition = {};
-      if (horaEntradaInicio) {
-        entradaTimeCondition[Op.gte] = horaEntradaInicio;
+      if (horaInicio) {
+        entradaTimeCondition[Op.gte] = horaInicio;
       }
-      if (horaEntradaFim) {
-        entradaTimeCondition[Op.lte] = horaEntradaFim;
+      if (horaFim) {
+        entradaTimeCondition[Op.lte] = horaFim;
       }
       if (Reflect.ownKeys(entradaTimeCondition).length > 0) {
         conditions.push({ hEntrada: entradaTimeCondition});
