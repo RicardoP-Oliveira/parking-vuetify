@@ -10,6 +10,9 @@ import CeicsController from './app/controllers/CeicsController.mjs';
 import SessionController from './app/controllers/SessionController.mjs';
 import PedestreController from './app/controllers/PedestreController.mjs';
 import ServicoController from './app/controllers/ServicoController.mjs';
+import DestinoController from './app/controllers/DestinoController.mjs';
+import DocumentController from './app/controllers/DocumentController.mjs';
+import HierarquiaController from './app/controllers/HierarquiaController.mjs';
 
 const routes = new Router();
 const upload = multer(uploadConfig.getConfig());
@@ -71,5 +74,14 @@ routes.get('/pedestre/doc/:doc', PedestreController.show);
 
 routes.post('/servico', ServicoController.store);
 routes.get('/servico', ServicoController.index);
+
+// ----- Rotas de Destino ----- //
+routes.get('/destino', DestinoController.index);
+
+// --- Documentos ----- ///
+routes.get('/document', DocumentController.index);
+
+// ---- Hierarquia ----- //
+routes.get('/hierarquia', HierarquiaController.index);
 
 export default routes;
