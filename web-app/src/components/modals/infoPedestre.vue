@@ -1,6 +1,6 @@
-<template>
+<!--<template>
   <BaseModal
-    :isOpen="pedestre"
+    :isOpen="isPedestre"
     :documento="documento"
     :confirmText="isAction"
     title="Controle de Pedestres"
@@ -61,7 +61,7 @@
           label="Nome"
           variant="underlined"
           v-model="nome"
-          @keyup="convertToUpper"
+          @input="convertToUpper"
           :error="!nome && formTouched"
           :error-messages="!nome && formTouched ? '* Obrigatório' : ''"
         >
@@ -104,15 +104,16 @@ export default {
   },
   name: 'infoPedestre',
   props:{
-    pedestre: Boolean,
+    dialog: Object,
   },
   emits:['closeModal'],
   data() {
     return {
       formTouched: false,
       error:undefined,
-      isPedestre: this.pedestre,
+      isPedestre: this.dialog.isDialog,
       documento: '',
+      search: this.dialog.idPlaca,
       isAction: 'Entrada',
       tratoRegex: null,
       tipoDoc: '',
@@ -123,7 +124,7 @@ export default {
       destino: '',
       orgaoSigla: '',
       dados: [],
-      dadosDestino: [],
+      destinoOptions: [],
       unidades: [],
       orgaos: [],
       form: {},
@@ -131,18 +132,31 @@ export default {
     }
   },
   methods: {
-    async getDados(value){
+    convertToUpper() {
+      this.nome ? this.nome = this.nome.toUpperCase() : '';
+    },
+
+    async carregarDestinos() {
+    try {
+      // Usando o tratamento que discutimos antes para evitar objetos circulares
+      const response = await this.$targetService.getTodos();
+      this.destinoOptions = response.map(tg => (tg.target));
+    } catch (e) {
+      console.error("Erro ao carregar destinos", e);
+    }
+  },
+
+    async getDados(){
       try {
         this.limparForm();
-
-        const search = `rg${value}`.trim();
-        const searchRg = value.trim();
+        const response = await this.$targetService.getTodos();
         const [pedestreRes, pedestrePark] = await Promise.all([
-          this.$userservice.getId(search, this.token),
-          this.$pedestreService.getByDoc(searchRg, this.token)
+          this.$userservice.getId(this.search, this.token),
+          this.$pedestreService.getByDoc(this.search, this.token)
         ]);
         this.dados = pedestreRes
         this.processResult(pedestreRes, pedestrePark);
+        
       } catch (error) {
         console.log('Erro ao buscar usuário', error);
       }
@@ -151,7 +165,9 @@ export default {
     processResult(pedestreRes, pedestrePark) {
       if((!pedestreRes.erro && pedestreRes.dados)){
         this.setDataForm(pedestreRes.dados)
-      } 
+      } else {
+        this.documento = this.search;
+      }
       if (!pedestrePark.erro && pedestrePark.dados) {
         this.isAction = 'Saída';
         const regex = this.mountRegex(pedestrePark.dados.name);
@@ -171,6 +187,7 @@ export default {
     },
     
     setDataForm(data, regex='') {
+      this.documento = this.search;
       this.tipoDoc =  this.tipoDoc || data.tDoc || data.tipo_doc;
       this.idOrgao =  this.idOrgao || regex.orgao || data.orgaoId;
       this.nome =  this.nome || regex.name || data.nGuerra;
@@ -180,18 +197,20 @@ export default {
         || (this.dadosDestino.includes(data.ubm?.name) 
         ? data.ubm?.name
         : 'CEICS');
-      this.orgaoSigla = regex.orgao || (data.orgaoU?.sigla || '');
+      const orgaoAjustado = data.orgaoU?.sigla === 'CBMERJ' ? 'BM' : (data.orgaoU?.sigla === 'PMERJ'
+        ? 'PM' : data.orgaoU?.sigla);
+      this.orgaoSigla = regex.orgao || (orgaoAjustado || '');
     },
 
     mountRegex(regex) {
-      const terms = ["BM", "PM", "EB", "MB", "MAER"]
+      const terms = ["CBMERJ", "PMERJ", "EB", "MB", "FAB"]
       const nameSplit = regex.split(/\s+/).filter(Boolean);
       const validTerms = terms.some(term => nameSplit.includes(term));
       if (validTerms) {
         return {
           trato: nameSplit[0],
           name: nameSplit.slice(2).join(' '),
-          orgao: nameSplit[1] || '', 
+          orgao: nameSplit[1]  === 'CBMERJ' ? 'BM' : (nameSplit[1] === 'PMERJ' ? 'PM' : nameSplit[1]) 
         }
       } else {
         return {
@@ -210,6 +229,7 @@ export default {
         console.log(ubmRes.msg);
       }
     },
+
     async getOrgaos() {
       const orgaoRes = await this.$orgaoservice.getOrgaos();
       if (!orgaoRes.erro) {
@@ -266,6 +286,10 @@ export default {
     },
     close() {
       this.$emit('closeModal', { from: this.$options.name });
+    },
+    async destinoOptions() {
+      const target = await this.$targetService.getTodos();
+      return target.map(tg => (tg.target))
     }
   },
   computed: {
@@ -291,24 +315,155 @@ export default {
     unidadesOptions() {
       return this.unidades.map(u => ({id: u.obm.id, name: u.obm.name}))
     },
-    destinoOptions() {
-      return this.dadosDestino = this.$dbTarget.target.map(d => (d.local))
-    },
+    
     tratoOptions() {
       return this.$dbPgt.pgt.map(t => ({trato: t.trato, name: t.name}))
     },
     docOptions() {
       return this.$dbDoc.doc.map(d => ({sigla: d.sigla, name: d.nome}))
     },
-    convertToUpper() {
-      this.nome ? this.nome = this.nome.toUpperCase() : '';
-    }
+    
   },
-
-  mounted() {
+    mounted() {
     this.getUnidades();
     this.getOrgaos();
     this.tratoRegex = this.tratoOptions;
+    this.getDados();
+    this.carregarDestinos();
   }
 }
+</script> -->
+
+<template>
+  <BaseModal
+    v-if="dialog"
+    :isOpen="dialog.isDialog"
+    :documento="documento"
+    :confirmText="isAction"
+    title="Controle de Pedestres"
+    @confirm="salvar"
+    @close="close"
+  >
+    <v-row>
+      <v-col class="px-2 py-1">
+        <v-text-field
+          autofocus
+          label="Documento"
+          variant="underlined"
+          v-model="documento"
+          :error="showError"
+          :error-messages="errorMessage"
+          @blur="formTouched = true"
+        />
+      </v-col>
+
+      <v-col class="px-2 py-1">
+        <v-select
+          :items="docOptions"
+          item-title="sigla"
+          item-value="sigla"
+          label="Tipo Doc"
+          variant="underlined"
+          v-model="tipoDoc"
+        />
+      </v-col>
+
+      <v-col class="px-2 py-1">
+        <v-select
+          :items="orgaosOptions"
+          item-title="orgao"
+          item-value="id"
+          label="Órgão"
+          variant="underlined"
+          v-model="idOrgao"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="tratoOptions"
+          item-title="abrev"
+          item-value="abrev"
+          label="Posto/Grad/Tratam"
+          variant="underlined"
+          v-model="trato"
+        />
+      </v-col>
+
+      <v-col class="px-2 py-1">
+        <v-text-field
+          label="Nome"
+          variant="underlined"
+          v-model="nome"
+          @input="convertToUpper"
+          :error="!nome && formTouched"
+          :error-messages="!nome && formTouched ? '* Obrigatório' : ''"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="unidadesOptions"
+          item-value="id"
+          item-title="name"
+          label="UBM"
+          variant="underlined"
+          v-model="idUbm"
+        />
+      </v-col>
+
+      <v-col cols="4" class="px-2 py-1">
+        <v-select
+          :items="destinoOptions"
+          label="Destino"
+          variant="underlined"
+          v-model="destino"
+          :error="!destino && formTouched"
+          :error-messages="!destino && formTouched ? '* Obrigatório' : ''"
+        />
+      </v-col>
+    </v-row>
+  </BaseModal>
+</template>
+
+<script setup>
+import BaseModal from '@/components/modals/BaseModal.vue'
+import { usePedestreForm } from '@/composables/usePedestreForm'
+
+const props = defineProps({
+  dialog: { type: Object, required: true }
+})
+
+const emit = defineEmits(['closeModal'])
+
+const {
+  documento,
+  tipoDoc,
+  idOrgao,
+  trato,
+  nome,
+  idUbm,
+  destino,
+  isAction,
+  formTouched,
+
+  docOptions,
+  tratoOptions,
+  orgaosOptions,
+  unidadesOptions,
+  destinoOptions,
+
+  isPedestre,
+  showError,
+  errorMessage,
+
+  convertToUpper,
+  salvar,
+  close
+} = usePedestreForm(props, emit)
 </script>
+

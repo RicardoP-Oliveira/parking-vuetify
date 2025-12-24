@@ -1,5 +1,6 @@
 <template>
   <BaseModal
+    v-if="dialog"
     :isOpen="isDialog"
     :documento="documento"
     title="Controle de acesso"
@@ -7,6 +8,7 @@
     :saveData="salvar"
     @confirm="salvar"
     @close="close"
+    :confirmButton="!isValidForm"
   >
     <v-row >
       <v-col class="px-0 py-1 font-weight-bold" align="end">
@@ -41,19 +43,37 @@
       </v-col> 
     </v-row>
     <v-row>
-      <v-col class="px-0 py-1 font-weight-bold" align="end">
+      <v-col class="px-0 pt-2 font-weight-bold" align="end">
           Condutor:
       </v-col>
-      <v-col class="px-2 py-1">
-          {{ condutor }}
+      <v-col class="px-2 py-0">
+        <v-text-field
+        density="compact"
+        v-model="condutor"
+        variant="underlined"
+        hide-details
+        :rules="[validCondutor]"
+        />  
       </v-col>  
     </v-row>
     <v-row>
-      <v-col class="px-0 py-1 font-weight-bold" align="end">
+      <v-col class="px-0 pt-2 font-weight-bold" align="end">
           Placa:
       </v-col>
-      <v-col class="px-2 py-1">
-          {{ placa }}
+      <v-col class="px-2 py-0">
+        <v-text-field
+        density="compact"
+        v-model="placa"
+        :rules="[validatePlaca]"
+        clearable
+        :maxlength="getLength()"
+        @click:clear="clearPlaca"
+        @keyup="convertToUpper"
+        hide-details
+        width="150px"
+        :variant="placa.length > 0 ? 'plain' : 'underlined'"
+        :disabled="modelo.length === 0 ? true : false"
+        />
       </v-col>  
     </v-row>
     <v-row >
@@ -102,6 +122,8 @@ export default {
   data(){
     return {
       btn: null,
+      ifPattern: /^#\d*$/,
+      pattern: /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/,
       isAction: '',
       isDialog: this.dialog.isDialog,
       placa: '',
@@ -109,6 +131,7 @@ export default {
       documento: '',
       gradua: '',
       nGuerra: '',
+      nGuerraPattern: /^((?:\dº )?[aA-zZ]+(?: [aA-zZ]+)*)$/,
       obm: '',
       modelo: '',
       proprietario: '',
@@ -120,9 +143,23 @@ export default {
     }
   },
   methods:{    
-    
+   validatePlaca(value) {
+      return this.pattern.test(value) || 'Placa inválida';
+    },
+    validCondutor(value) {
+      return this.nGuerraPattern.test(value) || 'Não satisfaz às exigências';
+    },
+    clearPlaca() {
+      this.placa = '';
+    },
+    getLength() {
+      if (this.pattern.test(this.placa)) {
+        return 7;
+      }
+    },
     async getDados() {
       try {
+        this.search = this.ifPattern.test(this.search) ? this.search.substring(1) : this.search;
         const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
         const searchPlaca = this.getSearchPlaca(infoRes);
         const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
@@ -135,7 +172,7 @@ export default {
       if(isNaN(this.search) || infoRes.erro) {
         return this.search;
       }
-      return infoRes.visitor ? this.search : infoRes.dados.placa || '';
+      return infoRes.visitor ? this.search : infoRes.dados.placa ||  '';
     },
     processResults(infoRes, parkingRes) {
       if (!parkingRes.erro && parkingRes.dados) {
@@ -146,11 +183,13 @@ export default {
         this.processInfo(infoRes.dados);
       } else if (infoRes.visitor) {
         this.isAction = "Entrada";
-        this.placa = this.search;
-      } 
-      else {
-        alert(infoRes.msg);
-        this.close();
+        this.placa = infoRes.visitor ? this.search : '';
+        this.getOwner(null);
+      } else {
+        // alert(infoRes.msg);
+        this.isAction = "Entrada";
+        this.modelo = !infoRes.visitor ? this.search : '';
+        this.getOwner(null);
       }
     },
     setParkingData(dados, info) {
@@ -164,13 +203,15 @@ export default {
       this.getUser(this.documento);
     },
     getOwner(value) {
-      if (value.userId) {
+      if (value && value.userId) {
          const orgao = value.user.orgaoU.sigla || '';
          const gradua = value.user.gradua || '';
          const name = value.user.nGuerra || '';
          this.proprietario = `${gradua} ${orgao} ${name}`;
-      } else {
+      } else if(value && value.orgaoId) {
           this.proprietario = value.orgao.orgao || 'Desconhecido';
+      } else {
+        this.proprietario = 'NFPA'
       }
     },
     processInfo(res) {
@@ -185,11 +226,14 @@ export default {
     },
     async getUser(value) {
       try {
-        const res = await this.$userservice.getId(`rg${value.trim()}`, this.token);
-        if (!res.erro) {
-          this.condutor = !res.dados.orgaoU.sigla
-          ? `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`
-          : `${res.dados.gradua.trim()} ${res.dados.orgaoU.sigla.trim()} ${res.dados.nGuerra.trim()}`;
+        const res = await this.$userservice.getId(value.trim(), this.token);
+        if (!res.erro && res.dados) {
+          const sigla = res.dados.orgaoU.sigla;
+          const siglaAjustada = sigla === 'CBMERJ' ? 'BM' : (sigla === 'PMERJ' ? 'PM' : sigla);
+          console.log('---> ' + siglaAjustada)
+          this.condutor = siglaAjustada
+          ? `${res.dados.gradua.trim()} ${siglaAjustada.trim()} ${res.dados.nGuerra.trim()}`
+          : `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`;
           this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'CEICS';
           this.obm = res.dados.ubm.name;
         } else {
@@ -208,7 +252,7 @@ export default {
         'marcaModelo': this.modelo ? this.modelo.toUpperCase().trim() : this.modelo,
         'condutor': this.gradua ? `${this.gradua} ${this.condutor.trim()}` : this.condutor,
         'destino': this.destino.toUpperCase().trim(),
-        'owner': this.proprietario ? this.proprietario.toUpperCase().trim() : this.proprietario,
+        'owner': this.proprietario ? this.proprietario.toUpperCase().trim() : '',
         }
         try {
           const salved = await this.$ceicsservice.adicionar(this.form, this.token)
@@ -229,8 +273,23 @@ export default {
       this.$emit('closeModal', { from: this.$options.name });
     }
   },
+  computed: {
+    isValidPlaca() {
+      return this.pattern.test(this.placa);
+    },
+    isCondutor() {
+      return this.nGuerraPattern.test(this.condutor);
+    },
+    isValidForm() {
+      return this.isValidPlaca && this.isCondutor;
+    },
+    convertToUpper() {
+      this.placa = this.placa ? this.placa.toUpperCase() : '';
+    },
+  },
   async mounted() {
-    this.dbDest = this.$dbTarget;
+    // this.dbDest = this.$dbTarget;
+    // this.dbDest = await 
     this.dbDest.target.map((element) => this.dados.push(element.local));
     await this.getDados();
   },

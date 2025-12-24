@@ -19,6 +19,7 @@
           :color="confirmColor"
           variant="flat"
           min-width="120"
+          :disabled="confirmButton"
         >
           {{ confirmText }}
         </v-btn>
@@ -53,6 +54,10 @@ export default {
     documento: {
       type: String,
       default: '',
+    },
+    confirmButton: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['confirm', 'close'],
@@ -63,7 +68,6 @@ export default {
   },
   methods: {
     close() {
-      console.log(this.$parent)
       this.$emit('close');
     },
     confirm() {
@@ -74,10 +78,9 @@ export default {
       this.$nextTick(() => {
         // const identField = this.$refs.ident;
         if (button) {
-          button.blur(); // Remove o foco
           setTimeout(() => {
             button.focus(); // Foca novamente
-          }, 170); // Pequeno atraso para garantir que o foco seja redefinido
+          }, 200); // Pequeno atraso para garantir que o foco seja redefinido
         }
       });
     }

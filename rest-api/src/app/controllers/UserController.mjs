@@ -48,42 +48,21 @@ class UserController {
 
   async show(req, res) {
     const resposta = new Resposta();
+    const { id } = req.params;
     try {
-      const param = req.params.id.substring(0, 2) === 'rg' ? 'rg' : 'id';
-
-      if (param === 'rg') {
-        const id = req.params.id.substring(2);
-        var user = await User.findOne({
-          where: { documento: id },
-          include: [
-            {
-              model: Ubm,
-              as: 'ubm',
-            },
-            {
-              model: Orgao,
-              as: 'orgaoU',
-            },
-          ],
-        });
-      }
-
-      if (param === 'id') {
-        const id = req.params.id;
-        var user = await User.findOne({
-          where: { id: id },
-          include: [
-            {
-              model: Ubm,
-              as: 'ubm',
-            },
-            {
-              model: Orgao,
-              as: 'orgaoU',
-            },
-          ],
-        });
-      }
+      let user = await User.findOne({
+        where: { documento: id},
+        include: [
+          {
+            model: Ubm,
+            as: 'ubm',
+          },
+          {
+            model: Orgao,
+            as: 'orgaoU',
+          },
+        ],
+      });
 
       if (!user) {
         resposta.erro = true;

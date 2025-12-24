@@ -15,7 +15,6 @@ class ServicoController {
 
   async store(req, res) {
     const resposta = new Resposta();
-    console.log('Aqui')
     res.json({"ServicoController.store": req.body})
   }
 

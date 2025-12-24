@@ -1,0 +1,6 @@
+html body #app {
+  height: 100vh;
+  display: flex; /* Transforma v-application em flex container */
+  flex-direction: column; /* Para empilhar v-app-bar, v-main, v-footer verticalmente */
+  overflow: hidden;
+}

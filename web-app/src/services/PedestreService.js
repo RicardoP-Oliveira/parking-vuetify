@@ -29,8 +29,8 @@ export default class PedestreService {
     }).then((res) => res.json());
   }
 
-  static getByDoc(doc, token) {
-    return fetch(`${caminho}/doc/${doc}`, {
+  static getByDoc(documento, token) {
+    return fetch(`${caminho}/doc/${documento}`, {
       headers: {
         Authorization: token,
       }

@@ -30,14 +30,10 @@ export default {
         documento: filters.documento,
         // Lógica condicional para nome (apenas pedestres)
         pedestre: filters.condutor, 
-        dataEntradaInicio: filters.dataEntradaInicio ? filters.dataEntradaInicio.toISOString().split('T')[0] : null,
-        dataEntradaFim: filters.dataEntradaFim ? filters.dataEntradaFim.toISOString().split('T')[0] : null,
-        dataSaidaInicio: filters.dataSaidaInicio ? filters.dataSaidaInicio.toISOString().split('T')[0] : null,
-        dataSaidaFim: filters.dataSaidaFim ? filters.dataSaidaFim.toISOString().split('T')[0] : null,
-        horaEntradaInicio: filters.horaEntradaInicio,
-        horaEntradaFim: filters.horaEntradaFim,
-        horaSaidaInicio: filters.horaSaidaInicio,
-        horaSaidaFim: filters.horaSaidaFim,
+        dataInicio: filters.dataInicio ? filters.dataInicio.toISOString().split('T')[0] : null,
+        dataFim: filters.dataFim ? filters.dataFim.toISOString().split('T')[0] : null,
+        horaInicio: filters.horaInicio,
+        horaFim: filters.horaFim,
       };
 
       // Limpar filtros nulos
@@ -50,13 +46,14 @@ export default {
       return await this.$pedestreService.getTodos(page, itemsPerPage, token, tab, apiFilters);
     },
     headerOrder() {
-      return ['tDoc', 'nDoc', 'name', 'entrada', 'saida']; // Exemplo de ordem de cabeçalho para pedestres
+      return ['tDoc', 'nDoc', 'name', 'destino', 'entrada', 'saida']; // Exemplo de ordem de cabeçalho para pedestres
     },
     setColumns() {
       return [
         'tDoc',
         'nDoc',
         'name',
+        'destino',
         'entrada',
         'hEntrada',
         'saida',

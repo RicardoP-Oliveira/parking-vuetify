@@ -1,5 +1,5 @@
 'use strict';
-import  { Model, DataTypes } from "sequelize";
+import  { Model, DataTypes, Op } from "sequelize";
 
   class ceics extends Model {
 
@@ -25,23 +25,21 @@ import  { Model, DataTypes } from "sequelize";
 
     static async findCar(car) {
 
-      const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
-      const vtrRegex = /^[A-Z]{1,4}[0-9]?-\d{3}$/;
-      let searchCriteria = { saida: null };
-
       if (!isNaN(car)) {
-        return false;
+        return null;
       }
-      
-      if (placaRegex.test(car)) {
-        searchCriteria.placa = car;
-      } else if (vtrRegex.test(car)) {
-        searchCriteria.marcaModelo = car;
-      }
+
+      let criteria = { [Op.or]: 
+        [
+          {placa: { [Op.iLike]: `%${car}%`}},
+          {marcaModelo: {[Op.iLike]: `%${car}%`}}
+        ],
+        saida: null
+      };
 
       try {
         const veiculo = await this.findOne({
-          where: searchCriteria,
+          where: criteria,
           order: [['createdAt', 'DESC']]
         });
 

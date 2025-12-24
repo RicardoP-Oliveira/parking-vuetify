@@ -1,5 +1,6 @@
 {
-  "pgt": [
+  "pgt": 
+  [
      {
         "trato": "Cel",
         "name": "Coronel"
@@ -57,28 +58,24 @@
         "name": "Soldado"
      },
      {
-      "trato": "SdAl",
-      "name": "Soldado Aluno"
-   },
-     {
-        "trato": "Insp.(a)",
+        "trato": "Insp(a)",
         "name": "Inspetor(a)"
      },
      {
-        "trato": "Sr.(a)",
+        "trato": "Sr(a)",
         "name": "Senhor(a)"
      },
      {
-         "trato": "Dr.(a)",
+         "trato": "Dr(a)",
          "name": "Doutor"
      },
      {
-         "trato": "Eng.(a)",
+         "trato": "Eng(a)",
          "name": "Engenheiro(a)"
      },
      {
-         "trato": "Prof.(a)",
-         "name:": "Professor(a)"
+         "trato": "Prof(a)",
+         "name": "Professor(a)"
      }
   ]
 }

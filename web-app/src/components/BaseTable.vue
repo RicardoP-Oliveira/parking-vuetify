@@ -1,10 +1,8 @@
 <template>
-  <v-app>
-    <v-responsive>
-      <v-data-table-server
+  
+        <v-data-table-server
         :items-per-page="pageSize"
         density="compact"
-        height="600"
         fixed-header
         items-per-page-text="Resultado por página"
         :page="pageNow"
@@ -19,12 +17,12 @@
       >
         <template v-slot:top>
           <v-row class="px-4 pt-4">
-            <v-col cols="2">
+            <v-col :cols="tab === 'carro' ? 2 : 3">
               <v-text-field
                 v-model="ident"
-                ref="ident"
+                ref="identRef"
                 autofocus
-                label="Identificador/Placa"
+                label="Id|Placa|Documento|Prefixo"
                 variant="outlined"
                 :rules="[validateIdent]"
                 clearable
@@ -34,6 +32,7 @@
                 @keypress.enter.prevent="selectModal()"
               ></v-text-field>
             </v-col>
+            <v-col></v-col>
             <v-col>
             <v-data-table-footer
               :items-per-page-options="itemsPerPageOptions"
@@ -45,22 +44,20 @@
       </v-data-table-server>
       <infoModal
         v-if="modal.isOpen && modal.type === 'carro'"
-        :dialog="{ isDialog: modal.isOpen, idPlaca: modal.idPlaca }"
+        :dialog="{ isDialog: modal.isOpen, idPlaca: ident }"
         @update:options="loadItems"
         @closeModal="closeModal"
       />
       <infoPedestre
         v-if="modal.isOpen && modal.type === 'pedestre'"
-        :pedestre="modal.isOpen"
+        :dialog="{ isDialog: modal.isOpen, idPlaca: ident }"
         @update:options="loadItems"
         @closeModal="closeModal"
       />
-    </v-responsive>
-  </v-app>
+
 </template>
 
 <script>
-import { ref } from 'vue';
 import infoPedestre from '@/components/modals/infoPedestre.vue';
 import infoModal from '@/components/modals/infoModal.vue';
 import { dateFormatterOutput } from '@/js/maxMin.js';
@@ -79,35 +76,42 @@ export default {
     changeTable: Function,
     filters: Object, // Recebe o objeto filters de default.vue
   },
-  emits: ['update-btn', 'changeTable', 'update:options'],
+  emits: ['update-btn', 'changeTable', 'update:options', 'show-snackbar'],
   inject: ['dataTable'],
   name: 'Table',
   data() {
     return {
+      valid: false,
       modal: {
         isOpen: false,
-        idPlaca: '',
         type: null,
       },
       token: `Bearer ${localStorage.getItem('token')}`,
       ident: '',
       pageSize: 50,
       pageNow: 1,
-      itemsPerPageOptions: ref([
+      itemsPerPageOptions: [
         { value: 50, title: '50' },
         { value: 100, title: '100' },
         { value: 200, title: '200' },
         { value: 500, title: '500' },
         { value: 1000, title: '1000' },
-      ]),
+      ],
       serverItems: [],
       totalItems: 0,
       generatedHeaders: [],
-      headerOrder: this.getHeaderOrder(),
-      displayColuns: this.getColumns(),
-      columnNameMap: this.setNamesMap(),
-      headerGroups: this.getHeaderGroups(),
+      headerOrder: [],
+      displayColuns: [],
+      columnNameMap: {},
+      headerGroups: {},
     };
+  },
+  created() {
+    this.headerOrder = this.getHeaderOrder();
+    this.displayColuns = this.getColumns();
+    this.columnNameMap = this.setNamesMap();
+    this.headerGroups = this.getHeaderGroups();
+    this.loadItems();
   },
   methods: {
     // Novo método para ser chamado pelo pai para aplicar os filtros
@@ -189,31 +193,36 @@ export default {
     },
 
     selectModal() {
-      if (this.$refs.ident.isValid) {
+      const ifPattern = /^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$/;
+      if (this.ident !== '' || this.ident.length > 0) {
         this.modal.isOpen = true;
-        this.modal.type = this.ident.length > 0 ? 'carro' : 'pedestre';
-        this.modal.idPlaca = this.ident.length > 0 ? this.ident : '';
+        this.modal.type = ifPattern.test(this.ident) ? 'carro' : 'pedestre';
+      } else {
+        this.$emit('show-snackbar', {
+          message: 'Campo obrigatório.',
+          color: 'error',
+          timeout: 3000
+        })
       }
     },
     clearIdent() {
       this.ident = '';
     },
     validateIdent(value) {
-      const pattern = /^([0-9]{1,4}$|^[A-Z0-9]{2,6}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/;
+      const pattern = /^(?!0+\d?)([0-9]{1,11}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$)/;
       return value.length === 0 || pattern.test(value) || 'Identificador inválido';
     },
     getLength() {
-      const placaMercosulRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
-      const placaAntigaRegex = /^[A-Z]{3}\d{4}$/; // Adicionando regex para placa antiga (AAA1234)
+      const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
       const vtrRegex = /^[A-Z]{1,4}\d?-\d{3}$/;
-      const identNumericoRegex = /^\d{2,4}$/;
+      const docRegex = /^\d{1,11}$/;
 
-      if (placaMercosulRegex.test(this.ident) || placaAntigaRegex.test(this.ident)) {
+      if (placaRegex.test(this.ident)) {
         return 7;
       } else if (vtrRegex.test(this.ident)) {
         return this.ident.length; // Ou um valor máximo se houver
-      } else if (identNumericoRegex.test(this.ident)) {
-        return 4;
+      } else if (docRegex.test(this.ident)) {
+        return 11;
       } else {
         return 10; // Valor padrão para outros casos
       }
@@ -221,8 +230,8 @@ export default {
     setFocus() {
       this.$nextTick(() => {
         setTimeout(() => {
-        if (this.$refs.ident) {
-          this.$refs.ident.focus();
+        if (this.$refs.identRef) {
+          this.$refs.identRef.focus();
         }
       }, 170);
       })
@@ -232,6 +241,7 @@ export default {
       this.clearIdent();
       this.$emit('changeTable', from)
       this.applyFiltersFromParent();
+      this.ident = '';
       this.setFocus();
     },
     onUpdateOptions({ page, itemsPerPage }) {
@@ -272,5 +282,8 @@ tbody tr:nth-of-type(odd) {
 
 tbody tr:hover {
   color: #f07272;
+}
+.flex-table {
+  height: 88vh;
 }
 </style>
