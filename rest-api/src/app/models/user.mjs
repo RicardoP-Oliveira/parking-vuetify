@@ -12,6 +12,8 @@ import bcrypt from 'bcryptjs';
         nGuerra: DataTypes.STRING,
         ubmId: DataTypes.INTEGER,
         orgaoId: DataTypes.INTEGER,
+        idTipoDoc: DataTypes.INTEGER,
+        idGrad: DataTypes.INTEGER,
         // role: DataTypes.INTEGER,
 	      // cnh: DataTypes.STRING,
         // foto: DataTypes.STRING,
@@ -59,6 +61,8 @@ import bcrypt from 'bcryptjs';
       this.belongsTo(models.ubm, { foreignKey: "ubmId", as: "ubm" });
       this.hasMany(models.carro, { foreignKey: "userId", as: "carros" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgaoU"});
+      this.belongsTo(models.documentos, { foreignKey: "idTipoDoc", as: "tipoDoc"})
+      this.belongsTo(models.hierarquias, { foreignKey: "idGrad", as: "hierarquia"})
     }
 
 
