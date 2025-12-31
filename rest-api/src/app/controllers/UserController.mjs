@@ -2,8 +2,9 @@ import User from '../models/user.mjs';
 import Resposta from '../models/Resposta.mjs';
 import uploadConfig from '../../config/upload.mjs';
 import Ubm from '../models/ubm.mjs';
-import Carro from '../models/carro.mjs';
 import Orgao from '../models/orgao.mjs';
+import Doc from '../models/documentos.mjs'
+import Order from '../models/hierarcar.mjs'
 
 const upload = uploadConfig;
 class UserController {
@@ -29,6 +30,14 @@ class UserController {
             model: Orgao,
             as: 'orgaoU',
           },
+          {
+            model: Doc,
+            as: 'tipoDoc',
+          },
+          {
+            model: Order,
+            as: 'hierarquia'
+          }
         ],
       });
 
@@ -61,6 +70,14 @@ class UserController {
             model: Orgao,
             as: 'orgaoU',
           },
+          {
+            model: Doc,
+            as: 'tipoDoc',
+          },
+          {
+            model: Order,
+            as: 'hierarquia'
+          }
         ],
       });
 
