@@ -176,6 +176,7 @@ export function usePedestreForm(props, emit, serviceMock = null) {
         pedestre.getPedestreByDoc(documento.value)
       ])
 
+      console.log(userRes)
       if (currentRequest !== requestId) return
 
       if (!userRes?.erro && userRes?.dados) {

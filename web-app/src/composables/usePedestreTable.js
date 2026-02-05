@@ -22,7 +22,7 @@ export function usePedestreTable(pedestreService) {
 
         // remove filtros vazios
         Object.keys(apiFilters).forEach((key) => {
-            if (apiFilters[key] === null || apiFilter[key] === '') {
+            if (apiFilters[key] === null || apiFilters[key] === '') {
                 delete apiFilters[key];
             }
         });
