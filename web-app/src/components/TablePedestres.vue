@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { getCurrentInstance } from 'vue';
 import BaseTable from '@/components/BaseTable.vue';
 import {usePedestreTable} from '@/composables/usePedestreTable';
 
@@ -26,14 +27,14 @@ export default {
     filters: Object,
   },
   setup(_, { emit }) {
+    const { proxy } = getCurrentInstance();
+
     const {
       loadPedestreData,
       headerOrder,
       setColumns,
       setHeaderGroups,
-    } = usePedestreTable(
-      getCurrentInstance().proxy.$pedestreService
-    );
+    } = usePedestreTable(proxy.$pedestreService);
 
     return {
       loadPedestreData,
