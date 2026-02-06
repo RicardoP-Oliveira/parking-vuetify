@@ -274,7 +274,83 @@ export default {
   },
 };
 </script>
+<!--<template>
+  <v-data-table-server
+    v-model:page="page"
+    v-model:items-per-page="itemsPerPage"
+    :items-length="totalItems"
+    :headers="headers"
+    :items="items"
+    :loading="loading"
+    density="compact"
+    fixed-header
+    items-per-page-text="Resultado por página"
+    @update:options="onUpdateOptions"
+    hide-default-footer
+    class="flex-table"
+    hover
+  >
+    <template #top>
+      <slot name="top" />
+    </template>
+  </v-data-table-server>
+</template>
 
+<script setup>
+import { useServerTable } from '@/composables/useServerTable';
+import { useTableHeaders } from '@/composables/useTableHeaders';
+
+const props = defineProps({
+  dataService: Function,
+  tab: String,
+  filters: Object,
+  headerOrder: Array,
+  columns: Array,
+  headerGroups: Object,
+  nameMap: Object,
+  widthMap: Object,
+});
+
+const emit = defineEmits(['update:options']);
+
+const {
+  page,
+  itemsPerPage,
+  totalItems,
+  items,
+  load,
+  onUpdateOptions,
+} = useServerTable(props, emit);
+
+const resolvedHeaderOrder = computed(() =>
+  typeof props.getHeaderOrder === 'function'
+    ? props.getHeaderOrder()
+    : props.getHeaderOrder
+);
+
+const resolvedColumns = computed(() =>
+  typeof props.getColumns === 'function'
+    ? props.getColumns()
+    : props.getColumns
+);
+
+const resolvedHeaderGroups = computed(() =>
+  typeof props.getHeaderGroups === 'function'
+    ? props.getHeaderGroups()
+    : props.getHeaderGroups
+);
+
+const { headers } = useTableHeaders({
+  headerOrder: resolvedHeaderOrder,
+  columns: props.resolvedColumns,
+  headerGroups: resolvedHeaderGroups,
+  nameMap: props.nameMap,
+  widthMap: props.widthMap,
+});
+
+load();
+
+</script> -->
 <style>
 tbody tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, 0.05);
