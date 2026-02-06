@@ -16,6 +16,10 @@ import  { Model, DataTypes, Op } from "sequelize";
         sRg: DataTypes.STRING,
         sCondutor: DataTypes.STRING,
         destino: DataTypes.STRING,
+        eGradua: DataTypes.STRING,
+        eOrgao: DataTypes.STRING,
+        sGradua: DataTypes.STRING,
+        sOrgao: DataTypes.STRING,
       }, {
         sequelize,
         modelName: 'ceics',
