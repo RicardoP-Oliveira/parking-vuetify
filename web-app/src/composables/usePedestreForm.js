@@ -14,10 +14,10 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   ======================== */
   const documento = ref('')
   const tipoDoc = ref('')
-  const idOrgao = ref('')
+  const idOrgao = ref(null)
   const trato = ref('')
   const nome = ref('')
-  const idUbm = ref('')
+  const idUbm = ref(null)
   const destino = ref('')
   const orgaoSigla = ref('')
   const isAction = ref(ACTIONS.ENTRADA)
