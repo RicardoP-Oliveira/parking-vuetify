@@ -173,7 +173,7 @@ class CeicsController {
   }
 
   async store (req, res) {
-   const { placa, condutor, destino, documento, marcaModelo, owner } = req.body;
+   const { placa, condutor, destino, documento, marcaModelo, gradua, orgao } = req.body;
 
   const dataParking = {
     placa: placa,
@@ -181,6 +181,8 @@ class CeicsController {
     eCondutor: condutor,
     eRg: documento,
     destino,
+    eGradua: gradua,
+    eOrgao: orgao,
     entrada: new Date(),
     hEntrada: new Date().toLocaleTimeString(),
   }
@@ -236,6 +238,8 @@ class CeicsController {
     var dados = {
       sCondutor: condutor,
       sRg: documento,
+      sGradua: gradua,
+      sOrgao: orgao,
       saida: new Date(),
       hSaida: new Date().toLocaleTimeString(),
     }
