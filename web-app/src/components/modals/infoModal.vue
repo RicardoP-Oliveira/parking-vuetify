@@ -107,7 +107,35 @@
   </BaseModal>
 </template>
 
-<script>
+<script setup>
+import { useCarroForm } from '@/composables/useCarroForm'
+
+const props = defineProps({ dialog: Object })
+const emit = defineEmits(['closeModal'])
+
+const {
+  placa,
+  documento,
+  condutor,
+  destino,
+  modelo,
+  validCondutor,
+  validatePlaca,
+  proprietario,
+  obm,
+  dados,
+  isDialog,
+  isAction,
+  isValidForm,
+  salvar,
+  close,
+  convertToUpper,
+  clearPlaca,
+  getLength,
+  getUser,
+} = useCarroForm(props, emit)
+</script>
+<!--<script>
 import BaseModal from '@/components/modals/BaseModal.vue';
 
 export default {
@@ -163,6 +191,7 @@ export default {
         const infoRes = await this.$ceicsservice.getInfo(this.search, this.token);
         const searchPlaca = this.getSearchPlaca(infoRes);
         const parkingRes = await this.$ceicsservice.getParking(searchPlaca, this.token);
+        console.log(infoRes)
         this.processResults(infoRes, parkingRes);
       } catch (error) {
         console.error('Erro ao processar as buscas: ', error);
@@ -230,12 +259,12 @@ export default {
         if (!res.erro && res.dados) {
           const sigla = res.dados.orgaoU.sigla;
           const siglaAjustada = sigla === 'CBMERJ' ? 'BM' : (sigla === 'PMERJ' ? 'PM' : sigla);
-          console.log('---> ' + siglaAjustada)
           this.condutor = siglaAjustada
           ? `${res.dados.gradua.trim()} ${siglaAjustada.trim()} ${res.dados.nGuerra.trim()}`
           : `${res.dados.gradua.trim()} ${res.dados.nGuerra.trim()}`;
           this.destino = this.dados.includes(res.dados.ubm.name) ? res.dados.ubm.name : 'CEICS';
           this.obm = res.dados.ubm.name;
+          console.log(res.dados)
         } else {
           this.condutor = '';
         }
@@ -290,8 +319,8 @@ export default {
   async mounted() {
     // this.dbDest = this.$dbTarget;
     // this.dbDest = await 
-    this.dbDest.target.map((element) => this.dados.push(element.local));
+    //this.dbDest.target.map((element) => this.dados.push(element.local));
     await this.getDados();
   },
 }
-</script>
+</script>-->
