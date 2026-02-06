@@ -9,7 +9,7 @@ export function useCarroTable(carroService) {
   ) => {
     const apiFilters = {
       documento: filters.documento,
-      pedestre: filters.condutor,
+      condutor: filters.condutor,
       dataInicio: filters.dataInicio
           ? filters.dataInicio.toISOString().split('T')[0]
           : null,
