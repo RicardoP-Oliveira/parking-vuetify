@@ -8,6 +8,21 @@ const ACTIONS = {
   SAIDA: 'Saída'
 }
 
+const ORGAO_MAP = {
+    CBMERJ: 'BM',
+    PMERJ: 'PM',
+    PCERJ: 'PC',
+    RFB: 'RFB',
+    "TCE/RJ": 'TCE',
+    EB: 'EB',
+    FAB: 'FAB',
+    PRF: 'PRF',
+    PF: 'PF',
+    "MP/RJ": 'MP',
+    MB: 'MB',
+    SEAP: 'SEAP'
+}
+
 export function useCarroForm(props, emit, serviceMock = null) {
     const service = useServices(serviceMock)
 
@@ -25,14 +40,15 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const proprietario = ref('')
     const idUbm = ref(null)
     const idOrgao = ref(null)
-    const dados = ref([])
+    const gradua = ref ('')
     const obm = ref('')
+    const orgao = ref('')
 
     const search = ref('')
     const form = ref({})
 
     const pattern = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/
-    const nGuerraPattern = /^((?:\dº )?[aA-zZ]+(?: [aA-zZ]+)*)$/
+    const nGuerraPattern = /^((?:\dº )?[aA-zZÀ-ÿ.()ª]+(?: [aA-zZÀ-ÿ.()ª]+)*)$/
     const ifPattern = /^#\d*$/
 
     const unidades = ref([])
@@ -49,6 +65,11 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const isValidPlaca = computed(() => pattern.test(placa.value))
     const isCondutor = computed(() => nGuerraPattern.test(condutor.value))
     const isValidForm =computed(() => isValidPlaca.value && isCondutor.value)
+    const orgaoMap = computed(() =>
+        Object.fromEntries(
+            orgaos.value.map(o => [o.sigla, o.id])
+        )
+    )
 
     /* ========================
      HELPERS
@@ -76,6 +97,9 @@ export function useCarroForm(props, emit, serviceMock = null) {
     }
   }
 
+  const mapOrgaoSigla = sigla =>
+   sigla in ORGAO_MAP ? ORGAO_MAP[sigla] : ''
+
   /* ========================
      CORE LOGIC
   ======================== */
@@ -85,11 +109,14 @@ export function useCarroForm(props, emit, serviceMock = null) {
   }
 
   const processInfo = res => {
+    console.log(res)
     placa.value ||= res.placa
     modelo.value ||= `${res.marca} ${res.modelo}`
     documento.value = res.user?.documento || ''
-    getOwner(res)
+    // getOwner(res)
     if (documento.value) getUser(documento.value)
+    gradua.value = res.user.gradua
+    orgao.value = res.user.orgaoU.sigla
   }
 
   const setParkingData = (dados, info) => {
@@ -128,7 +155,6 @@ export function useCarroForm(props, emit, serviceMock = null) {
       const infoRes = await service.getInfo(search.value)
       const searchPlaca = getSearchPlaca(infoRes)
       const parkingRes = await service.getParking(searchPlaca)
-
       processResults(infoRes, parkingRes)
     } catch (e) {
       console.error('[useCarroForm] Erro ao buscar dados', e)
@@ -141,13 +167,13 @@ export function useCarroForm(props, emit, serviceMock = null) {
       if (!res.erro && res.dados) {
         const sigla = res.dados.orgaoU.sigla
         const siglaFix =
-          sigla === 'CBMERJ' ? 'BM' : sigla === 'PMERJ' ? 'PM' : sigla
+          sigla === 'CBMERJ' ? 'BM' : sigla === 'PMERJ' ? 'PM' : ''
 
         condutor.value = siglaFix
           ? `${res.dados.gradua} ${siglaFix} ${res.dados.nGuerra}`
           : `${res.dados.gradua} ${res.dados.nGuerra}`
 
-        destino.value = dados.value.includes(res.dados.ubm.name)
+        destino.value = destinoOptions.value.includes(res.dados.ubm.name)
           ? res.dados.ubm.name
           : 'CEICS'
 
@@ -170,11 +196,22 @@ export function useCarroForm(props, emit, serviceMock = null) {
       marcaModelo: modelo.value?.toUpperCase().trim(),
       condutor: condutor.value.trim(),
       destino: destino.value.toUpperCase().trim(),
-      owner: proprietario.value.toUpperCase().trim()
+      owner: proprietario.value.toUpperCase().trim(),
+      gradua: gradua.value.toUpperCase().trim(),
+      orgao: orgao.value.toUpperCase().trim()
     }
 
+    console.log(form.value)
+
+    console.log(
+        'SIGLA ORIGINAL:', 
+        orgao.value,
+        'SIGLA EXIBIÇÂO:', 
+        mapOrgaoSigla(orgao.value)
+    )
+
     try {
-      await service.salvarCarro(form.value)
+      //await service.salvarCarro(form.value)
       close()
     } catch (e) {
       console.error('[useCarroForm] Erro ao salvar', e)
@@ -211,7 +248,13 @@ export function useCarroForm(props, emit, serviceMock = null) {
      MOUNTED
   ======================== */
   onMounted(async () => {
-    dados.value = await service.getDestinos()
+    const [
+        destinoRes,
+    ] = await Promise.all([
+        service.getDestinos()
+    ])
+
+    destinoOptions.value = (destinoRes || []).map(d => d.target)
   })
 
   /* ========================
@@ -226,9 +269,10 @@ export function useCarroForm(props, emit, serviceMock = null) {
     condutor,
     destino,
     modelo,
+    destinoOptions,
     proprietario,
+    gradua,
     obm,
-    dados,
 
     isValidForm,
     convertToUpper,
