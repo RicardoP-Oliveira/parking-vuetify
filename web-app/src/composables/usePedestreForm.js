@@ -6,6 +6,21 @@ const ACTIONS = {
   SAIDA: 'Saída'
 }
 
+const ORGAO_MAP = {
+    CBMERJ: 'BM',
+    PMERJ: 'PM',
+    PCERJ: 'PC',
+    RFB: 'RFB',
+    "TCE/RJ": 'TCE',
+    EB: 'EB',
+    FAB: 'FAB',
+    PRF: 'PRF',
+    PF: 'PF',
+    "MP/RJ": 'MP',
+    MB: 'MB',
+    SEAP: 'SEAP'
+}
+
 export function usePedestreForm(props, emit, serviceMock = null) {
   const pedestre = useServices(serviceMock)
 
@@ -83,34 +98,20 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     isAction.value = ACTIONS.ENTRADA
   }
 
-  const mountRegex = (text = '') => {
-    const termos = ['CBMERJ', 'PMERJ', 'EB', 'MB', 'FAB']
-    const split = text.trim().split(/\s+/)
+   const mapOrgaoSigla = sigla =>
+   sigla in ORGAO_MAP ? ORGAO_MAP[sigla] : ''
 
-    if (!split.length) return {}
+   const ORGAO_MAP_INVERSO = Object.fromEntries(
+      Object.entries(ORGAO_MAP).map(([key, value]) => [value, key])
+   );
 
-    if (termos.some(t => split.includes(t))) {
-      return {
-        trato: split[0],
-        orgao:
-          split[1] === 'CBMERJ'
-            ? 'BM'
-            : split[1] === 'PMERJ'
-            ? 'PM'
-            : split[1],
-        name: split.slice(2).join(' ')
-      }
-    }
+  function unmapOrgaoSigla(sigla) {
+    return ORGAO_MAP_INVERSO[sigla] || sigla;
+  } 
 
-    return {
-      trato: split[0],
-      name: split.slice(1).join(' '),
-      ubm: 'VISITANTE'
-    }
-  }
-
-  const setDataForm = (data, regex = {}) => {
+  const setDataForm = (data) => {
     lastData.value = data
+    console.log(data)
 
     if (!tipoDoc.value && (data.tDoc || data.tipo_doc)) {
       tipoDoc.value = data.tDoc || data.tipo_doc
@@ -121,15 +122,15 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     }
 
     if (!trato.value) {
-      trato.value = regex.trato || data.gradua || ''
+      trato.value = data.gradua || data.tHierarq
     }
 
     if (!nome.value) {
-      nome.value = regex.name || data.nGuerra || ''
+      nome.value =  data.nGuerra || data.name
     }
 
     if (!idUbm.value) {
-      idUbm.value = regex.ubm || data.ubmId || ''
+      idUbm.value =  data.ubmId
     }
 
     if (!unidades.value.length || !destinoOptions.value.length) return
@@ -148,14 +149,10 @@ export function usePedestreForm(props, emit, serviceMock = null) {
         : data.destino || 'CEICS'
     }
 
-    if (!orgaoSigla.value) {
-      orgaoSigla.value =
-        data.orgaoU?.sigla === 'CBMERJ'
-          ? 'BM'
-          : data.orgaoU?.sigla === 'PMERJ'
-          ? 'PM'
-          : data.orgaoU?.sigla || ''
+    if (!orgaoSigla.value && data?.orgaoU?.sigla) {
+      orgaoSigla.value = mapOrgaoSigla(data?.orgaoU?.sigla)
     }
+
   }
 
   /* ========================
@@ -176,18 +173,18 @@ export function usePedestreForm(props, emit, serviceMock = null) {
         pedestre.getPedestreByDoc(documento.value)
       ])
 
-      console.log(userRes)
       if (currentRequest !== requestId) return
+
+      if (!pedestreRes?.erro && pedestreRes?.dados) {
+        isAction.value = ACTIONS.SAIDA
+        // const regex = mountRegex(pedestreRes.dados.name)
+        setDataForm(pedestreRes.dados,userRes)
+      }
 
       if (!userRes?.erro && userRes?.dados) {
         setDataForm(userRes.dados)
       }
 
-      if (!pedestreRes?.erro && pedestreRes?.dados) {
-        isAction.value = ACTIONS.SAIDA
-        const regex = mountRegex(pedestreRes.dados.name)
-        setDataForm(pedestreRes.dados, regex)
-      }
     } catch (e) {
       console.error('[usePedestreForm] Erro ao buscar dados', e)
     }
@@ -200,10 +197,10 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     const payload = {
       nDoc: documento.value.trim(),
       tDoc: tipoDoc.value,
-      name: [trato.value, orgaoSigla.value, nome.value]
-        .filter(Boolean)
-        .join(' '),
-      destino: destino.value.toUpperCase()
+      name: nome.value,
+      destino: destino.value.toUpperCase(),
+      tHierarq: trato.value,
+      orgaoS: orgaoSigla.value,
     }
 
     try {
