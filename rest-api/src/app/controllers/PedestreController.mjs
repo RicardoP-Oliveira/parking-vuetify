@@ -3,7 +3,9 @@ import Pedestre from '../models/pedestre.mjs';
 import Orgao from '../models/orgao.mjs';
 import Gradua from '../models/hierarcar.mjs';
 import Doc from '../models/documentos.mjs';
+import User from '../models/user.mjs';
 import { Op } from 'sequelize';
+import database from '../../database/index.mjs';
 
 function dateFormatter (data){
   const dd = data.getDate();
@@ -177,35 +179,70 @@ class PedestreController {
   }
 
   async store(req, res) {
-    const body = req.body;
-    var pedestre;
-    
-    const data = {
-      ...body,
-      'entrada': dateFormatter(new Date()),
-      'hEntrada': new Date().toLocaleTimeString(),
-    }
+  const t = await database.connection.transaction()
 
+  try {
+    const body = req.body
+
+    console.log('[debug] ', body)
+
+    // 1️⃣ Buscar ou criar USER
+    let user = await User.findOne({
+      where: { documento: body.nDoc },
+      transaction: t
+    })
+
+    console.log('[user] ', user )
+
+    if (!user) {
+      user = await User.create({
+        documento: body.nDoc,
+        nGuerra: body.name,
+        docId: body.docId,
+        graduaId: body.graduaId,
+        orgaoId: body.orgaoId,
+        ubmId: body.ubmId
+      }, { transaction: t })
+    }
+    // 2️⃣ Verificar entrada aberta
     const entrada = await Pedestre.findOne({
       where: {
         nDoc: body.nDoc,
         saida: null
       },
-      order: [['updatedAt', 'DESC']]
+      order: [['updatedAt', 'DESC']],
+      transaction: t
     })
-
+    console.log('[entrada] ', entrada)
+    let pedestre
+    console.log('[body] ', body)
     if (!entrada) {
-      pedestre = await Pedestre.create(data);
+      pedestre = await Pedestre.create({
+        ...body,
+        entrada: dateFormatter(new Date()),
+        hEntrada: new Date().toLocaleTimeString()
+      }, { transaction: t })
     } else {
-      const updatePedestre = {
-        'saida': dateFormatter(new Date()),
-        'hSaida': new Date().toLocaleTimeString(),
-      }
-      pedestre = await entrada.update(updatePedestre)
+      pedestre = await entrada.update({
+        saida: dateFormatter(new Date()),
+        hSaida: new Date().toLocaleTimeString()
+      }, { transaction: t })
     }
 
-    return res.json(pedestre)
+    await t.commit()
+    return res.json({ user, pedestre })
+
+  } catch (e) {
+    await t.rollback()
+    console.error('🔥 ERRO:', e)
+    return res.status(500).json({
+      erro: true,
+      msg: e.message,
+      errors: e.errors
+    })
   }
+}
+
 }
 
 export default new PedestreController();

@@ -25,10 +25,10 @@
         <v-select
           :items="docOptions"
           item-title="sigla"
-          item-value="sigla"
+          item-value="id"
           label="Tipo Doc"
           variant="underlined"
-          v-model="tipoDoc"
+          v-model="idDoc"
         />
       </v-col>
 
@@ -49,10 +49,10 @@
         <v-select
           :items="tratoOptions"
           item-title="abrev"
-          item-value="abrev"
+          item-value="id"
           label="Posto/Grad/Tratam"
           variant="underlined"
-          v-model="trato"
+          v-model="idGradua"
         />
       </v-col>
 
@@ -106,11 +106,11 @@ const emit = defineEmits(['closeModal'])
 
 const {
   documento,
-  tipoDoc,
+  idDoc,
   idOrgao,
-  trato,
   nome,
   idUbm,
+  idGradua,
   destino,
   isAction,
   formTouched,

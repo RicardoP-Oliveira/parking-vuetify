@@ -37,7 +37,7 @@ export function usePedestreTable(pedestreService) {
     };
 
     const headerOrder = () => [
-        'tDoc',
+        'docId',
         'nDoc',
         'name',
         'destino',
@@ -46,7 +46,7 @@ export function usePedestreTable(pedestreService) {
     ];
 
     const setColumns = () => [
-        'tDoc',
+        'docId',
         'nDoc',
         'name',
         'destino',
