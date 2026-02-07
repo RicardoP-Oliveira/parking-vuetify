@@ -19,3 +19,8 @@ export function normalizeText(v) {
   return value.length ? value : null;
 }
 
+export function toUpperSafe(value) {
+  return typeof value === 'string'
+    ? value.trim().toUpperCase()
+    : ''
+}

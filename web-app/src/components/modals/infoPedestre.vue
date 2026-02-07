@@ -61,7 +61,6 @@
           label="Nome"
           variant="underlined"
           v-model="nome"
-          @input="convertToUpper"
           :error="!nome && formTouched"
           :error-messages="!nome && formTouched ? '* Obrigatório' : ''"
         />
@@ -125,7 +124,6 @@ const {
   showError,
   errorMessage,
 
-  convertToUpper,
   salvar,
   close
 } = usePedestreForm(props, emit)

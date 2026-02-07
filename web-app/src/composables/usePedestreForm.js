@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
-import { normalizeText } from '@/js/maxMin'
+import { normalizeText, toUpperSafe } from '@/js/maxMin'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
@@ -73,9 +73,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   /* ========================
      HELPERS
   ======================== */
-  const convertToUpper = () => {
-    nome.value = nome.value?.toUpperCase() || ''
-  }
 
   const limparForm = () => {
     nome.value = ''
@@ -97,11 +94,11 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     idUbm.value ??= data.ubmId || data.ubm.ubmId
     nome.value ||= data.nGuerra || data.name
     
-    resolverDestino()
+    resolverDestino(data)
 
   } 
 
-  const resolverDestino = () => {
+  const resolverDestino = (data = null) => {
     if (!unidades.value?.length || !destinoOptions.value?.length) return;
 
     const nomeUbm = unidades.value
@@ -111,6 +108,8 @@ export function usePedestreForm(props, emit, serviceMock = null) {
 
     if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
       destino.value = nomeUbm;
+    } else {
+      destino.value = data.destino
     }
   }
 
@@ -215,6 +214,10 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     }
   })
 
+  watch(nome, (val) => {
+  nome.value = toUpperSafe(val)
+})
+
   /* ========================
      MOUNTED
   ======================== */
@@ -263,7 +266,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     showError,
     errorMessage,
 
-    convertToUpper,
     salvar,
     close
   }
