@@ -1,5 +1,8 @@
 import Resposta from '../models/Resposta.mjs';
 import Pedestre from '../models/pedestre.mjs';
+import Orgao from '../models/orgao.mjs';
+import Gradua from '../models/hierarcar.mjs';
+import Doc from '../models/documentos.mjs';
 import { Op } from 'sequelize';
 
 function dateFormatter (data){
@@ -117,6 +120,20 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
+        include: [
+          {
+            model: Orgao,
+            as: '_orgao'
+          },
+          {
+            model: Gradua,
+            as: '_grad'
+          },
+          {
+            model: Doc,
+            as: '_doc'
+          }
+        ],
         order: [['updatedAt', 'DESC']],
         offset: (page - 1) * perPage,
         limit: perPage,
