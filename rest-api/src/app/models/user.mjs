@@ -6,14 +6,12 @@ import bcrypt from 'bcryptjs';
 
     static init(sequelize){
       super.init({
-        gradua: DataTypes.STRING,
         documento: DataTypes.STRING,
-        tipo_doc: DataTypes.STRING,
         nGuerra: DataTypes.STRING,
         ubmId: DataTypes.INTEGER,
         orgaoId: DataTypes.INTEGER,
-        idTipoDoc: DataTypes.INTEGER,
-        idGrad: DataTypes.INTEGER,
+        docId: DataTypes.INTEGER,
+        graduaId: DataTypes.INTEGER,
         // role: DataTypes.INTEGER,
 	      // cnh: DataTypes.STRING,
         // foto: DataTypes.STRING,
@@ -61,8 +59,8 @@ import bcrypt from 'bcryptjs';
       this.belongsTo(models.ubm, { foreignKey: "ubmId", as: "ubm" });
       this.hasMany(models.carro, { foreignKey: "userId", as: "carros" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgaoU"});
-      this.belongsTo(models.documentos, { foreignKey: "idTipoDoc", as: "tipoDoc"})
-      this.belongsTo(models.hierarquias, { foreignKey: "idGrad", as: "hierarquia"})
+      this.belongsTo(models.documentos, { foreignKey: "docId", as: "tipoDoc"})
+      this.belongsTo(models.hierarquias, { foreignKey: "graduaId", as: "hierarquia"})
     }
 
 

@@ -29,6 +29,9 @@ export function useServices(mock = null) {
     getUsuarioByDoc: (documento) =>
       UserService.getId(documento, token),
 
+    storeUser: (documento) => 
+      UserService.adicionar(documento, token),
+
     /* ========================
        CEICS
     ======================== */

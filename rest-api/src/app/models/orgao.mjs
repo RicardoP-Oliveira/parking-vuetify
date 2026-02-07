@@ -6,7 +6,8 @@ class orgao extends Model {
     super.init(
       {
         orgao: DataTypes.STRING,
-        sigla: DataTypes.STRING
+        sigla: DataTypes.STRING,
+        siglaCurta: DataTypes.STRING,
       },
       {
         sequelize,
@@ -18,8 +19,9 @@ class orgao extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.user, { foreignKey: "orgaoId", as: "users"});
-    this.hasMany(models.carro, { foreignKey: "orgaoId", as: "carros"});
+    this.hasMany(models.user, { foreignKey: "orgaoId", as: "users" });
+    this.hasMany(models.carro, { foreignKey: "orgaoId", as: "carros" });
+    this.hasMany(models.pedestre, { foreignKey: "orgaoId", as: "pedestres" });
   }
 }
 

@@ -15,6 +15,10 @@ class hierarquia extends Model {
         )
         return this;
     }
+
+    static associate(models) {
+      this.hasMany(models.pedestre, { foreignKey: "graduaId", as: "_pedestres" });
+    }
 }
 
 export default hierarquia;
