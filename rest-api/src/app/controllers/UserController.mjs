@@ -97,9 +97,11 @@ class UserController {
   async store(req, res) {
     const resposta = new Resposta();
     const foto = req.file;
+    const { documento } = req.body
+
     try {
       const userExists = await User.findOne({
-        where: { documento: req.body.documento },
+        where: { documento: documento },
       });
       if (userExists) {
         if (req.file) {
