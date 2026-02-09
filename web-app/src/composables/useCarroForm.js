@@ -71,6 +71,10 @@ export function useCarroForm(props, emit, serviceMock = null) {
         )
     )
 
+    const tratoOptions = computed(() =>
+      hierarquia.value.map(t => ({ id: t.id, abrev: t.abrev }))
+    )
+
     /* ========================
      HELPERS
   ======================== */
@@ -250,12 +254,17 @@ export function useCarroForm(props, emit, serviceMock = null) {
   onMounted(async () => {
     const [
         destinoRes,
+        hierarquiaRes
     ] = await Promise.all([
-        service.getDestinos()
+        service.getDestinos(),
+        service.getTratos()
     ])
 
     destinoOptions.value = (destinoRes || []).map(d => d.target)
+    hierarquia.value= hierarquiaRes || []
   })
+
+
 
   /* ========================
      EXPOSE
@@ -271,7 +280,8 @@ export function useCarroForm(props, emit, serviceMock = null) {
     modelo,
     destinoOptions,
     proprietario,
-    gradua,
+  
+    
     obm,
 
     isValidForm,
