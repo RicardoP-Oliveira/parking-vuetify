@@ -2,6 +2,8 @@ import Carro from '../models/carro.mjs';
 import Ceics from '../models/ceics.mjs';
 import vtrAdd from '../models/vtradd.mjs';
 import Resposta from '../models/Resposta.mjs';
+import Orgao from '../models/orgao.mjs';
+import Hierarquia from '../models/hierarcar.mjs';
 import { Op, where } from 'sequelize';
 
 class CeicsController {
@@ -102,6 +104,16 @@ class CeicsController {
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
         where: whereCondition,
+        include: [
+          {
+            model: Orgao,
+            as: '_orgaoC',
+          },
+          {
+            model: Hierarquia,
+            as: '_gradC'
+          }
+        ],
         offset: (page - 1) * perPage,
         limit: perPage,
       });
