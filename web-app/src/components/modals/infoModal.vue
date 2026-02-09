@@ -18,14 +18,6 @@
           {{ obm }}
       </v-col>  
     </v-row>
-    <!--<v-row>
-      <v-col class="px-0 py-1 font-weight-bold" align="end">
-          Proprietário:
-      </v-col>
-      <v-col class="px-2 py-1">
-          {{ proprietario }}
-      </v-col>  
-    </v-row>-->
     <v-row> 
       <v-col class="px-0 pt-2 font-weight-bold" align="end">
           Documento:
