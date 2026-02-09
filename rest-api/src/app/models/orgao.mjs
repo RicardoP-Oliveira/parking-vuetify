@@ -22,6 +22,7 @@ class orgao extends Model {
     this.hasMany(models.user, { foreignKey: "orgaoId", as: "users" });
     this.hasMany(models.carro, { foreignKey: "orgaoId", as: "carros" });
     this.hasMany(models.pedestre, { foreignKey: "orgaoId", as: "pedestres" });
+    this.hasMany(models.ceics, { foreignKey: "eOrgaoId", as: "ceics" })
   }
 }
 
