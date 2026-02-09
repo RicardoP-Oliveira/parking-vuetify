@@ -121,6 +121,17 @@ export default {
     },
 
     async loadItems({ page = this.pageNow, itemsPerPage = this.pageSize } = {}) {
+      const ORGAOS_PERMITIDOS = [
+        'BM',
+        'PM',
+        'PC',
+        'EB',
+        'FAB',
+        'PRF',
+        'PF',
+        'MB',
+        'SEAP'
+      ] 
       try {
         // Passa o objeto filters diretamente da prop
         const res = await this.dataService(page, itemsPerPage, this.token, this.tab, this.filters);
@@ -129,6 +140,28 @@ export default {
           this.displayColuns.forEach((column) => {
             if (column === 'entrada' || column === 'saida') {
               filteredItem[column] = dateFormatterOutput(item[column]);
+            } else if (column === 'eCondutor') {
+              filteredItem.eCondutor = [
+                item._gradC?.abrev,
+                item._orgaoC?.siglaCurta,
+                ORGAOS_PERMITIDOS.includes(item.eOrgaoId) ? item.eOrgaoId : '',
+                item.eCondutor
+              ].filter(Boolean).join(' ');
+            } else if (column === 'sCondutor') {
+                filteredItem.sCondutor = [
+                item.sGradId ? item._gradC?.abrev : null,
+                item.sORgaoId ? item._orgaoC?.siglaCurta : null,
+                ORGAOS_PERMITIDOS.includes(item.sOrgaoId) ? item.sOrgaoId : '',
+                item.sCondutor
+              ].filter(Boolean).join(' ');
+            } else if (column === 'docId') {
+                filteredItem.docId = item._doc?.sigla
+            } else if (column === 'name') {
+                filteredItem.name = [
+                  item._grad?.abrev,
+                  ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
+                  item.name
+                ].filter(Boolean).join(' ');
             } else {
               filteredItem[column] = item[column];
             }
@@ -153,8 +186,9 @@ export default {
         hEntrada: 'Hora',
         hSaida: 'Hora',
         name: 'Pedestre',
-        tDoc: 'Tipo Documento',
+        docId: 'Tipo Documento',
         nDoc: 'Documento',
+        eGradua: 'Gradua'
       };
     },
     generateHeaders() {
@@ -274,83 +308,7 @@ export default {
   },
 };
 </script>
-<!--<template>
-  <v-data-table-server
-    v-model:page="page"
-    v-model:items-per-page="itemsPerPage"
-    :items-length="totalItems"
-    :headers="headers"
-    :items="items"
-    :loading="loading"
-    density="compact"
-    fixed-header
-    items-per-page-text="Resultado por página"
-    @update:options="onUpdateOptions"
-    hide-default-footer
-    class="flex-table"
-    hover
-  >
-    <template #top>
-      <slot name="top" />
-    </template>
-  </v-data-table-server>
-</template>
 
-<script setup>
-import { useServerTable } from '@/composables/useServerTable';
-import { useTableHeaders } from '@/composables/useTableHeaders';
-
-const props = defineProps({
-  dataService: Function,
-  tab: String,
-  filters: Object,
-  headerOrder: Array,
-  columns: Array,
-  headerGroups: Object,
-  nameMap: Object,
-  widthMap: Object,
-});
-
-const emit = defineEmits(['update:options']);
-
-const {
-  page,
-  itemsPerPage,
-  totalItems,
-  items,
-  load,
-  onUpdateOptions,
-} = useServerTable(props, emit);
-
-const resolvedHeaderOrder = computed(() =>
-  typeof props.getHeaderOrder === 'function'
-    ? props.getHeaderOrder()
-    : props.getHeaderOrder
-);
-
-const resolvedColumns = computed(() =>
-  typeof props.getColumns === 'function'
-    ? props.getColumns()
-    : props.getColumns
-);
-
-const resolvedHeaderGroups = computed(() =>
-  typeof props.getHeaderGroups === 'function'
-    ? props.getHeaderGroups()
-    : props.getHeaderGroups
-);
-
-const { headers } = useTableHeaders({
-  headerOrder: resolvedHeaderOrder,
-  columns: props.resolvedColumns,
-  headerGroups: resolvedHeaderGroups,
-  nameMap: props.nameMap,
-  widthMap: props.widthMap,
-});
-
-load();
-
-</script> -->
 <style>
 tbody tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, 0.05);
