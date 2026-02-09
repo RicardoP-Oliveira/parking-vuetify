@@ -143,17 +143,18 @@ export default {
             } else if (column === 'eCondutor') {
               filteredItem.eCondutor = [
                 item._gradC?.abrev,
-                item._orgaoC?.siglaCurta,
-                ORGAOS_PERMITIDOS.includes(item.eOrgaoId) ? item.eOrgaoId : '',
+                item.eOrgaoId != null &&
+                ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+                ? item._orgaoC?.siglaCurta : '',
                 item.eCondutor
               ].filter(Boolean).join(' ');
             } else if (column === 'sCondutor') {
                 filteredItem.sCondutor = [
                 item.sGraduaId ? item._gradC?.abrev ?? null
                 : null,
-                item.sOrgaoId ? item._orgaoC?.siglaCurta ?? null
-                : null,
-                ORGAOS_PERMITIDOS.includes(item.sOrgaoId) ? item.sOrgaoId : '',
+                item.sOrgaoId != null &&
+                ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+                ? item._orgaoC?.siglaCurta : '',
                 item.sCondutor
               ].filter(Boolean).join(' ');
             } else if (column === 'docId') {
