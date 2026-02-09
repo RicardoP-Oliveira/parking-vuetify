@@ -149,8 +149,10 @@ export default {
               ].filter(Boolean).join(' ');
             } else if (column === 'sCondutor') {
                 filteredItem.sCondutor = [
-                item.sGradId ? item._gradC?.abrev : null,
-                item.sORgaoId ? item._orgaoC?.siglaCurta : null,
+                item.sGraduaId ? item._gradC?.abrev ?? null
+                : null,
+                item.sOrgaoId ? item._orgaoC?.siglaCurta ?? null
+                : null,
                 ORGAOS_PERMITIDOS.includes(item.sOrgaoId) ? item.sOrgaoId : '',
                 item.sCondutor
               ].filter(Boolean).join(' ');
