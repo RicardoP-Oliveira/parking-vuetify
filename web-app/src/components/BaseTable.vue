@@ -104,6 +104,16 @@ export default {
       displayColuns: [],
       columnNameMap: {},
       headerGroups: {},
+      columnsMap: {
+      nome: { width: 450, align: 'center' },
+      tipoDoc: { width: 130, align: 'center' },
+      numDoc: { width: 160, align: 'center' },
+      entrada: { width: 110 },
+      hEntrada: { width: 90 },
+      saida: { width: 110 },
+      hSaida: { width: 90 },
+      destino: {width: 110, align: 'center'}
+    },
     };
   },
   created() {
@@ -122,57 +132,79 @@ export default {
 
     async loadItems({ page = this.pageNow, itemsPerPage = this.pageSize } = {}) {
       const ORGAOS_PERMITIDOS = [
-        'BM',
-        'PM',
-        'PC',
-        'EB',
-        'FAB',
-        'PRF',
-        'PF',
-        'MB',
-        'SEAP'
+        'BM', 'PM', 'PC', 'EB', 'FAB', 'PRF', 'PF', 'MB', 'SEAP'
       ] 
+
       try {
         // Passa o objeto filters diretamente da prop
-        const res = await this.dataService(page, itemsPerPage, this.token, this.tab, this.filters);
+        const res = await this.dataService(
+          page,
+          itemsPerPage,
+          this.token,
+          this.tab,
+          this.filters
+        )
+
         this.serverItems = res[0].dados.map((item) => {
-          let filteredItem = {};
+          const user = item.user ?? {}
+          const docUser = user.docUser ?? {}
+          const gradua = user.hierarquia ?? {}
+          const orgao = user.orgaoU ?? {}
+
+          const filteredItem = {}
+
           this.displayColuns.forEach((column) => {
-            if (column === 'entrada' || column === 'saida') {
-            //   filteredItem[column] = dateFormatterOutput(item[column]);
-            // } else if (column === 'eCondutor') {
-            //   filteredItem.eCondutor = [
-            //     // item._gradC?.abrev,
-            //     // item.eOrgaoId != null &&
-            //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-            //     // ? item._orgaoC?.siglaCurta : '',
-            //     item.eCondutor
-            //   ].filter(Boolean).join(' ');
-            // } else if (column === 'sCondutor') {
-            //     filteredItem.sCondutor = [
-            //     // item.sGraduaId ? item._gradC?.abrev ?? null
-            //     // : null,
-            //     // item.sOrgaoId != null &&
-            //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-            //     // ? item._orgaoC?.siglaCurta : '',
-            //     item.sCondutor
-            //   ].filter(Boolean).join(' ');
-            // } else if (column === 'docId') {
-            //     filteredItem.docId = item._doc?.sigla
-            // } else if (column === 'name') {
-            //     filteredItem.name = [
-            //       // item._grad?.abrev,
-            //       // ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
-            //       item.name
-            //     ].filter(Boolean).join(' ');
-            } else {
-              filteredItem[column] = item[column];
+            switch (column) {
+              case 'tipoDoc':
+                filteredItem.tipoDoc = docUser.sigla ?? ''
+                break
+              
+              case 'numDoc':
+                filteredItem.numDoc = user.documento ?? ''
+                break
+
+              case 'nome':
+                filteredItem.nome = [
+                  gradua.abrev,
+                  ORGAOS_PERMITIDOS.includes(orgao.siglaCurta)
+                    ? orgao.siglaCurta
+                    : null,
+                  user.nGuerra
+                ].filter(Boolean).join(' ')
+                break
+
+              case 'entrada':
+                filteredItem.entrada = item.entrada
+                ? dateFormatterOutput(item.entrada)
+                : ''
+                break
+
+              case 'hEntrada':
+                filteredItem.hEntrada = item.hEntrada ?? ''
+                break
+              
+              case 'saida':
+                filteredItem.saida = item.saida
+                ? dateFormatterOutput(item.saida)
+                : ''
+                break
+
+              case 'hSaida':
+                filteredItem.hSaida = item.hSaida ?? ''
+                break
+
+              default:
+                filteredItem[column] = item[column] ?? ''
+
             }
-          });
-          return filteredItem;
-        });
+          })
+
+          return filteredItem
+        })
+        
         this.totalItems = res[1];
         this.generateHeaders();
+
       } catch (error) {
         console.error('Erro ao carregar itens do servidor:', error);
       }
@@ -188,38 +220,101 @@ export default {
         saida: 'Data',
         hEntrada: 'Hora',
         hSaida: 'Hora',
-        name: 'Pedestre',
-        docId: 'Tipo Documento',
-        nDoc: 'Documento',
-        eGradua: 'Gradua'
+        nome: 'Pedestre',
+        tipoDoc: 'Tipo Documento',
+        numDoc: 'Documento',
       };
     },
+
     generateHeaders() {
-      const headers = [];
-      this.headerOrder.forEach((headerKey) => {
-        if (this.headerGroups[headerKey]) {
-          const group = this.headerGroups[headerKey];
+      const headers = []
+
+      this.headerOrder.forEach((key) => {
+
+        // 🔹 HEADER AGRUPADO
+        if (this.headerGroups[key]) {
+          const group = this.headerGroups[key]
+
           headers.push({
             title: group.title,
             align: 'center',
-            children: group.children.map((child) => ({
-              title: this.columnNameMap[child.key] || child.key.charAt(0).toUpperCase() + child.key.slice(1),
-              key: child.key,
-              align: 'center',
-            })),
-          });
-        } else {
-          headers.push({
-            title:
-              this.columnNameMap[headerKey] || headerKey.charAt(0).toUpperCase() + headerKey.slice(1),
-            key: headerKey,
-            align: 'center',
-            width: this.getWidth(headerKey),
-          });
+            children: group.children.map((child) => {
+              const col = this.columnsMap?.[child.key] ?? {}
+
+              return {
+                key: child.key,
+                title: this.columnNameMap[child.key] ?? child.title ?? child.key,
+                align: col.align ?? 'center',
+                width: col.width ?? 100
+              }
+            })
+          })
+
+          return
         }
-      });
-      this.generatedHeaders = headers;
+
+        // 🔹 HEADER SIMPLES
+        const col = this.columnsMap?.[key] ?? {}
+
+        headers.push({
+          key,
+          title: this.columnNameMap[key] ?? key,
+          align: col.align ?? 'center',
+          width: col.width ?? 100
+        })
+      })
+
+      this.generatedHeaders = headers
     },
+    // generateHeaders() {
+    //   const headers = [];
+
+    //   this.headerOrder.forEach((key) => 
+    //   {
+    //     if (this.headerGroups[key]) {
+    //       const group = this.headerGroups[key];
+
+    //       headers.push({
+    //         title: group.title,
+    //         align: 'center',
+    //         children: group.children.map(child => {
+    //           const col = this.columnsMap[child.key] ?? {}
+
+    //           return {
+    //             key: child.key,
+    //             title: this.columnNameMap[child.key] ?? child.title ?? child.key,
+    //             align: col?.align ?? 'center',
+    //             width: col?.width ?? 100
+    //           }
+    //         })
+    //       })
+
+    //       return
+    //     }
+
+    //     const col = this.columnsMap[key]
+
+    //     headers.push({
+    //       key,
+    //       title: this.columnNameMap[key] ?? key,
+    //       align: col?.align ?? 'center',
+    //       width: col?.width ?? 100
+    //     })
+    //   })
+
+    //   //     });
+    //   //   } else {
+    //   //     headers.push({
+    //   //       title:
+    //   //         this.columnNameMap[headerKey] || headerKey.charAt(0).toUpperCase() + headerKey.slice(1),
+    //   //       key: headerKey,
+    //   //       align: 'center',
+    //   //       width: this.getWidth(headerKey),
+    //   //     });
+    //   //   }
+    //   // });
+    //   this.generatedHeaders = headers;
+    // },
     getWidth(value) {
       if (value === 'eCondutor' || value === 'sCondutor') {
         return '200px';
@@ -323,4 +418,50 @@ tbody tr:hover {
 .flex-table {
   height: 88vh;
 }
+
+.v-data-tabe table {
+  table-layout: fixed;
+}
+
+.v-data-table tc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
+
+
+//     }
+        //     if (column === 'entrada' || column === 'saida') {
+        //     //   filteredItem[column] = dateFormatterOutput(item[column]);
+        //     // } else if (column === 'eCondutor') {
+        //     //   filteredItem.eCondutor = [
+        //     //     // item._gradC?.abrev,
+        //     //     // item.eOrgaoId != null &&
+        //     //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+        //     //     // ? item._orgaoC?.siglaCurta : '',
+        //     //     item.eCondutor
+        //     //   ].filter(Boolean).join(' ');
+        //     // } else if (column === 'sCondutor') {
+        //     //     filteredItem.sCondutor = [
+        //     //     // item.sGraduaId ? item._gradC?.abrev ?? null
+        //     //     // : null,
+        //     //     // item.sOrgaoId != null &&
+        //     //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+        //     //     // ? item._orgaoC?.siglaCurta : '',
+        //     //     item.sCondutor
+        //     //   ].filter(Boolean).join(' ');
+        //     // } else if (column === 'docId') {
+        //     //     filteredItem.docId = item._doc?.sigla
+        //     // } else if (column === 'name') {
+        //     //     filteredItem.name = [
+        //     //       // item._grad?.abrev,
+        //     //       // ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
+        //     //       item.name
+        //     //     ].filter(Boolean).join(' ');
+        //     } else {
+        //       filteredItem[column] = item[column];
+        //     }
+        //   });
+        //   return filteredItem;
+        // });
