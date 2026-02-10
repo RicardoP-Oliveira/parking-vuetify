@@ -5,7 +5,7 @@ import Orgao from '../models/orgao.mjs'
 import Ubm from '../models/ubm.mjs'
 import Documentos from '../models/documentos.mjs'
 import Hierarquia from '../models/hierarcar.mjs'
-import { Op } from 'sequelize'
+import { Op, Sequelize } from 'sequelize'
 import database from '../../database/index.mjs'
 
 function dateFormatter (data){
@@ -123,18 +123,43 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
-        include: [{
-            model: User,
-            as: 'user',
-            include: [
-              { model: Orgao, as: 'orgaoU' },
-              { model: Ubm, as: 'ubm'},
-              { model: Documentos, as: 'docUser' },
-              { model: Hierarquia, as: 'hierarquia'},          
-            ]
-          },
-        ],
+        // include: [{
+        //     model: User,
+        //     as: 'user',
+        //     include: [
+        //       { model: Orgao, as: 'orgaoU' },
+        //       { model: Ubm, as: 'ubm'},
+        //       { model: Documentos, as: 'docUser' },
+        //       { model: Hierarquia, as: 'hierarquia'},          
+        //     ]
+        //   },
+        // ],
         order: [['updatedAt', 'DESC']],
+         attributes: [
+            'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
+            [Sequelize.col('user.id'), 'userId'],
+            [Sequelize.col('user.documento'), 'doc'],
+            [Sequelize.col('user.nGuerra'), 'nGuerra'],
+            [Sequelize.col('user.graduaId'), 'graduaId'],
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'idDoc'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla']
+          ],
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: [],
+              include: [
+                { model: Hierarquia, as: 'hierarquia', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] },
+                { model: Documentos, as: 'docUser', attributes: []}
+              ]
+            }
+          ],
         offset: (page - 1) * perPage,
         limit: perPage,
       });
@@ -146,7 +171,6 @@ class PedestreController {
       resposta.msg = "Ocorreu um erro na busca dos dados!"
       resposta.dados = erro;
     }
-
     return res.json([resposta, total]);
   }
 

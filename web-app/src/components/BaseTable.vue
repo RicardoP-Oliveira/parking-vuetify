@@ -144,32 +144,27 @@ export default {
           this.tab,
           this.filters
         )
-
         this.serverItems = res[0].dados.map((item) => {
-          const user = item.user ?? {}
-          const docUser = user.docUser ?? {}
-          const gradua = user.hierarquia ?? {}
-          const orgao = user.orgaoU ?? {}
 
           const filteredItem = {}
 
           this.displayColuns.forEach((column) => {
             switch (column) {
               case 'tipoDoc':
-                filteredItem.tipoDoc = docUser.sigla ?? ''
+                filteredItem.tipoDoc = item.docSigla ?? ''
                 break
               
               case 'numDoc':
-                filteredItem.numDoc = user.documento ?? ''
+                filteredItem.numDoc = item.doc ?? ''
                 break
 
               case 'nome':
                 filteredItem.nome = [
-                  gradua.abrev,
-                  ORGAOS_PERMITIDOS.includes(orgao.siglaCurta)
-                    ? orgao.siglaCurta
+                  item.graduaAbrev,
+                  ORGAOS_PERMITIDOS.includes(item.orgaoSigla)
+                    ? item.orgaoSigla
                     : null,
-                  user.nGuerra
+                  item.nGuerra
                 ].filter(Boolean).join(' ')
                 break
 
