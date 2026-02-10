@@ -63,44 +63,22 @@ class UserController {
       let user = await User.findOne({
         where: { documento: id},
         attributes: [
-            'id',
-            [Sequelize.col('documento'), 'doc'],
-            [Sequelize.col('nGuerra'), 'nGuerra'],
-            [Sequelize.col('graduaId'), 'graduaId'],
-            [Sequelize.col('ubmId'), 'ubmId'],
-            [Sequelize.col('orgaoId'), 'orgaoId'],
-            [Sequelize.col('docId'), 'docId'],
-          ],
-          // include: [
-          //   {
-          //     model: User,
-          //     as: 'user',
-          //     attributes: [],
-              // include: [
-              //   { model: Hierarquia, as: 'hierarquia', attributes: [] },
-              //   { model: Orgao, as: 'orgaoU', attributes: [] },
-              //   { model: Documentos, as: 'docUser', attributes: []}
-              // ]
-          //   }
-          // ],
-        // include: [
-        //   {
-        //     model: Ubm,
-        //     as: 'ubm',
-        //   },
-        //   {
-        //     model: Orgao,
-        //     as: 'orgaoU',
-        //   },
-        //   {
-        //     model: Doc,
-        //     as: 'docUser',
-        //   },
-        //   {
-        //     model: Order,
-        //     as: 'hierarquia'
-        //   }
-        // ],
+          'id',
+          [Sequelize.col('documento'), 'doc'],
+          [Sequelize.col('nGuerra'), 'nGuerra'],
+          [Sequelize.col('graduaId'), 'graduaId'],
+          [Sequelize.col('ubmId'), 'ubmId'],
+          [Sequelize.col('orgaoId'), 'orgaoId'],
+          [Sequelize.col('docId'), 'docId'],
+          [Sequelize.col('hierarquia.abrev'), 'graduaAbrev'],
+          [Sequelize.col('orgaoU.siglaCurta'), 'orgaoSigla'],
+          [Sequelize.col('ubm.name'), 'nomeUbm'],
+         ],
+         include: [
+          { model: Order, as: 'hierarquia', attributes: [] },
+          { model: Orgao, as: 'orgaoU', attributes: [] },
+          { model: Ubm, as: 'ubm', attributes: [] },
+         ],
       });
 
       if (!user) {

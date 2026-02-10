@@ -77,14 +77,15 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col class="px-0 py-1 font-weight-bold" align="end">
+      <v-col class="px-0 py-2 font-weight-bold" align="end">
           Destino:
       </v-col>
-      <v-col class="px-2 py-1">
+      <v-col class="px-2 py-0">
         <v-select
           :items="destinoOptions"
-          density="comfortable"
-          variant="outlined"
+          density="compact"
+          variant="underlined"
+          width="120px"
           v-model="destino"
         >
         </v-select>  

@@ -2,6 +2,8 @@
 
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
+import UbmService from '@/services/UbmServices'
+import { data } from 'vue-barcode'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
@@ -85,8 +87,26 @@ export function useCarroForm(props, emit, serviceMock = null) {
     }
   }
 
-  const mapOrgaoSigla = sigla =>
-   sigla in ORGAO_MAP ? ORGAO_MAP[sigla] : ''
+  const resolveNome = (data) => [
+    data.graduaAbrev, data.orgaoSigla, data?.condutor || data?.nGuerra
+  ].filter(Boolean).join(' ')
+
+   const resolverDestino = (data = null) => {
+    if (!data.ubmId) return;
+
+    const nomeUbm = unidades.value
+      .find(u => u.obm.id === data?.ubmId)
+      ?.obm?.name
+      ?.toUpperCase();
+
+    if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
+      destino.value = nomeUbm;
+    } else {
+      destino.value = data.destino ?? ''
+    }
+  }
+
+
 
   /* ========================
      CORE LOGIC
@@ -97,15 +117,26 @@ export function useCarroForm(props, emit, serviceMock = null) {
   }
 
   const processInfo = res => {
-    console.log('carros ',res)
+    console.log('[processInfo] ', res)
     placa.value ||= res.placa
     modelo.value ||= `${res.marca} ${res.modelo}`
     documento.value = res.user?.documento || ''
     // getOwner(res)
     if (documento.value) getUser(documento.value)
     //gradua.value = res.user.gradua
-    orgao.value = res.user.orgaoU.sigla
   }
+
+  const setDataForm = (data = null) => {
+    if (!data) return
+
+    placa.value = data.placa ?? placa.value
+    modelo.value = data.marca ?? modelo.value
+    documento.value = data.documento ?? documento.value
+    condutor.value = resolveNome(data) ?? condutor.value
+    obm.value = data.nomeUbm ?? obm.value
+    resolverDestino(data)
+  }
+
 
   const setParkingData = (dados, info) => {
     placa.value = dados.placa
@@ -122,7 +153,8 @@ export function useCarroForm(props, emit, serviceMock = null) {
       setParkingData(parkingRes.dados, infoRes)
     } else if (!infoRes.erro && infoRes.dados) {
       isAction.value = 'Entrada'
-      processInfo(infoRes.dados)
+      // processInfo(infoRes.dados)
+      setDataForm(infoRes.dados)
     } else if (infoRes.visitor) {
       isAction.value = 'Entrada'
       placa.value = search.value
@@ -153,19 +185,13 @@ export function useCarroForm(props, emit, serviceMock = null) {
     try {
       const res = await service.getUsuarioByDoc(value.trim())
       if (!res.erro && res.dados) {
-        const sigla = res.dados.orgaoU.sigla
-        const siglaFix =
-          sigla === 'CBMERJ' ? 'BM' : sigla === 'PMERJ' ? 'PM' : ''
 
-        condutor.value = siglaFix
-          ? `${res.dados.gradua} ${siglaFix} ${res.dados.nGuerra}`
-          : `${res.dados.gradua} ${res.dados.nGuerra}`
+        const user = res.dados
 
-        destino.value = destinoOptions.value.includes(res.dados.ubm.name)
-          ? res.dados.ubm.name
-          : 'CEICS'
+        condutor.value = resolveNome(res.dados)
+       resolverDestino(res.dados)
+        obm.value = user.nomeUbm
 
-        obm.value = res.dados.ubm.name
       } else {
         condutor.value = ''
       }
@@ -230,13 +256,15 @@ export function useCarroForm(props, emit, serviceMock = null) {
   ======================== */
   onMounted(async () => {
     const [
-        destinoRes,
-        hierarquiaRes
+      uniddadeRes,
+      destinoRes,
+      hierarquiaRes
     ] = await Promise.all([
-        service.getDestinos(),
-        service.getTratos()
+      service.getUnidades(),
+      service.getDestinos(),
+      service.getTratos()
     ])
-
+    unidades.value = uniddadeRes.dados || []
     destinoOptions.value = (destinoRes || []).map(d => d.target)
     hierarquia.value= hierarquiaRes || []
   })
@@ -274,3 +302,32 @@ export function useCarroForm(props, emit, serviceMock = null) {
   }
 }   
 
+// const getUser = async value => {
+//     try {
+//       const res = await service.getUsuarioByDoc(value.trim())
+//       if (!res.erro && res.dados) {
+
+//         const user = res.dados
+
+//         console.log(user)
+//         // const sigla = res.dados.orgaoU.sigla
+//         // const siglaFix =
+//         //   sigla === 'CBMERJ' ? 'BM' : sigla === 'PMERJ' ? 'PM' : ''
+
+//         // condutor.value = siglaFix
+//         //   ? `${res.dados.gradua} ${siglaFix} ${res.dados.nGuerra}`
+//         //   : `${res.dados.gradua} ${res.dados.nGuerra}`
+
+//         // destino.value = destinoOptions.value.includes(res.dados.ubm.name)
+//         //   ? res.dados.ubm.name
+//           // : 'CEICS'
+
+//         obm.value = user.nomeObm
+//       } else {
+//         condutor.value = ''
+//       }
+//     } catch (e) {
+//       console.error('[useCarroForm] Erro ao buscar usuário', e)
+//       condutor.value = ''
+//     }
+//   }

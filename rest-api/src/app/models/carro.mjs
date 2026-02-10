@@ -1,4 +1,4 @@
-import { Model, DataTypes, Op } from 'sequelize';
+import { Model, DataTypes, Op, Sequelize } from 'sequelize';
 import User from './user.mjs';
 import Orgao from './orgao.mjs';
 import Ubm from './ubm.mjs';
@@ -36,21 +36,34 @@ import Document from './documentos.mjs';
         try {
           veiculo = await this.findOne({
             where: { id: carAsNumber},
-            include: [{
+            attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.documento'), 'documento'],
+            [Sequelize.col('user.nGuerra'), 'condutor'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'docId'],
+            [Sequelize.col('user.graduaId'), 'guaduaId'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+              
+          ],
+          include: [
+            {
               model: User,
-              as: 'user',
+              as:'user',
+              attributes: [],
               include: [
-                { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' },
-                { model: Document, as: 'docUser'},
-                { model: Order, as: 'hierarquia' }
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Document, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
               ]
-              },
-              {
-                model: Orgao,
-                as: 'orgao'
-              }
-            ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
+          ]
           });
         } catch (error) {
           console.error('Erro ao buscar veículo por ID: ', error);
@@ -59,6 +72,8 @@ import Document from './documentos.mjs';
       }
 
       if(!veiculo) {
+
+        console.log('!veiculo ', car)
         let conditions = [];
 
         conditions.push({placa: { [Op.iLike]: `%${car}%`}});
@@ -76,21 +91,34 @@ import Document from './documentos.mjs';
         try {
           veiculo = await this.findOne({
             where: searchCriteria,
-            include: [{
+             attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.documento'), 'documento'],
+            [Sequelize.col('user.nGuerra'), 'condutor'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'docId'],
+            [Sequelize.col('user.graduaId'), 'guaduaId'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+              
+          ],
+          include: [
+            {
               model: User,
               as:'user',
-              include:[
-                { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' },
-                { model: Document, as: 'docUser'},
-                { model: Order, as: 'hierarquia' }
+              attributes: [],
+              include: [
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Document, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
               ]
-              },
-              {
-                model: Orgao,
-                as: 'orgao'
-              }
-            ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
+          ]
           });
         } catch (error) {
           console.error('Ocorreu um erro: ', error);

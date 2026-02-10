@@ -89,7 +89,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   const setDataForm = (data = null) => {
     lastData.value = data
     if (!data) return
-    console.log(data)
 
     const user = data.user ?? {}
 

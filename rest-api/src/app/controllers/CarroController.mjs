@@ -1,10 +1,11 @@
-import Carro from '../models/carro.mjs';
-import Resposta from '../models/Resposta.mjs';
-import Ubm from '../models/ubm.mjs';
-import User from '../models/user.mjs';
-import Orgao from '../models/orgao.mjs';
-import Doc from '../models/documentos.mjs';
-import Order from '../models/hierarcar.mjs';
+import Carro from '../models/carro.mjs'
+import Resposta from '../models/Resposta.mjs'
+import Ubm from '../models/ubm.mjs'
+import User from '../models/user.mjs'
+import Orgao from '../models/orgao.mjs'
+import Doc from '../models/documentos.mjs'
+import Order from '../models/hierarcar.mjs'
+import { Sequelize } from 'sequelize'
 
 class CarroController {
   async index(req, res) {
@@ -89,31 +90,43 @@ class CarroController {
       const resposta = new Resposta();
       try {
 
-        const carroExists = await Carro.findOne({where: {id: id}}, {
+        const carroExists = await Carro.findOne(
+          {
+          where: {id: id}, 
+          attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.documento'), 'documento'],
+            [Sequelize.col('user.nGuerra'), 'condutor'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'docId'],
+            [Sequelize.col('user.graduaId'), 'guaduaId'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
 
-          // attributes: ['id', 'placa', 'marca'],
-          include: [{
-            model: User,
-            as:'user',
-            // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
-            include:
-              {
-                required: true,
-                model: Ubm,
-                as: 'ubm',
-                // attributes:['id', 'sigla']
-              }
-            },
+          ],
+          include: [
             {
-              model: Orgao,
-              as: 'orgao'
-            }
+              model: User,
+              as:'user',
+              attributes: [],
+              include: [
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Doc, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
+              ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
           ]
       });
         if (!carroExists) {
           resposta.erro = true;
           resposta.msg = 'Carro não encontrado.';
         } else {
+
           resposta.dados = carroExists;
         }
       } catch (erro) {
@@ -129,25 +142,36 @@ class CarroController {
       const resposta = new Resposta();
       try {
 
-        const carroExists = await Carro.findOne({where: {placa: placa}}, {
+        const carroExists = await Carro.findOne(
+          {
+            where: {placa: placa},
+          attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.documento'), 'documento'],
+            [Sequelize.col('user.nGuerra'), 'condutor'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'docId'],
+            [Sequelize.col('user.graduaId'), 'guaduaId'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
 
-          // attributes: ['id', 'placa', 'marca'],
-          include: [{
-            model: User,
-            as:'user',
-            // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
-            include:
-              {
-                required: true,
-                model: Ubm,
-                as: 'ubm',
-                // attributes:['id', 'sigla']
-              }
-            },
+          ],
+          include: [
             {
-              model: Orgao,
-              as: 'orgao'
-            }
+              model: User,
+              as:'user',
+              attributes: [],
+              include: [
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Doc, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
+              ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
           ]
       });
         if (!carroExists) {
