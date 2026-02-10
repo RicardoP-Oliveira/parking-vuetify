@@ -146,7 +146,7 @@ class PedestreController {
       resposta.msg = "Ocorreu um erro na busca dos dados!"
       resposta.dados = erro;
     }
-    console.log(resposta)
+
     return res.json([resposta, total]);
   }
 
@@ -159,7 +159,10 @@ class PedestreController {
         where: {
           nDoc: doc,
           saida: null
-        }
+        },
+        include: [
+          { model: User, as: 'user'}
+        ]
       })
       if (pedestre) {
         resposta.dados = pedestre;
@@ -183,27 +186,24 @@ class PedestreController {
   try {
     const body = req.body
 
-    console.log('[debug] ', body)
-
     // 1️⃣ Buscar ou criar USER
     let user = await User.findOne({
-      where: { documento: body.nDoc },
-      transaction: t
+      where: { documento: body.nDoc }
     })
-
-    console.log('[user] ', user )
 
     if (!user) {
       user = await User.create({
         documento: body.nDoc,
         nGuerra: body.name,
-        docId: body.docId,
-        graduaId: body.graduaId,
-        orgaoId: body.orgaoId,
-        ubmId: body.ubmId
+        orgaoId: body.idOrgao,
+        ubmId: body.idUbm,
+        docId: body.idDoc,
+        graduaId: body.idGradua
+      
       }, { transaction: t })
     }
-    // 2️⃣ Verificar entrada aberta
+
+    //2️⃣ Verificar entrada aberta
     const entrada = await Pedestre.findOne({
       where: {
         nDoc: body.nDoc,
@@ -212,12 +212,15 @@ class PedestreController {
       order: [['updatedAt', 'DESC']],
       transaction: t
     })
-    console.log('[entrada] ', entrada)
+
     let pedestre
-    console.log('[body] ', body)
+
+    const {userId, ...safeBody} = body
+
     if (!entrada) {
       pedestre = await Pedestre.create({
-        ...body,
+        ...safeBody,
+        userId: user.id,
         entrada: dateFormatter(new Date()),
         hEntrada: new Date().toLocaleTimeString()
       }, { transaction: t })

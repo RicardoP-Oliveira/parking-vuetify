@@ -17,11 +17,12 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   const nome = ref('')
   const destino = ref('')
 
-  const idDoc = ref(null)
-  const idGradua = ref(null)
+
+  const userId = ref(null)
   const idOrgao = ref(null)
+  const idDoc = ref(null)
   const idUbm = ref(null)
- 
+  const idGradua = ref(null)
  
   const isAction = ref(ACTIONS.ENTRADA)
   const formTouched = ref(false)
@@ -77,10 +78,7 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   const limparForm = () => {
     nome.value = ''
     destino.value = ''
-    idDoc.value = null
-    idGradua.value = null
-    idOrgao.value = null
-    idUbm.value = null
+    userId.value = null
     isAction.value = ACTIONS.ENTRADA
   }
 
@@ -88,28 +86,34 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     lastData.value = data
     if (!data) return
 
-    idDoc.value ??= data.docId
-    idGradua.value ??= data.graduaId
-    idOrgao.value ??= data.orgaoId
-    idUbm.value ??= data.ubmId || data.ubm.ubmId
-    nome.value ||= data.nGuerra || data.name
+    const user = data.user ?? {}
+
+    userId.value ??= data.id ?? data.userId
+    idDoc.value ??= user.docId ?? data.docId ?? null
+    idOrgao.value ??= user.orgaoId ?? data.orgaoId ?? null
+    idUbm.value ??= user.ubmId ?? data.ubmId ?? null
+    idGradua.value ??= user.graduaId ?? data.graduaId ?? null
+    nome.value ||= data.nGuerra || data.name || ''
     
-    resolverDestino(data)
+    resolverDestino({
+      ...data,
+      ubmId: user.ubmId
+    })
 
   } 
 
   const resolverDestino = (data = null) => {
-    if (!unidades.value?.length || !destinoOptions.value?.length) return;
+    if (!data.ubmId) return;
 
     const nomeUbm = unidades.value
-      .find(u => u.obm.id === idUbm.value)
+      .find(u => u.obm.id === data?.ubmId)
       ?.obm?.name
       ?.toUpperCase();
 
     if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
       destino.value = nomeUbm;
     } else {
-      destino.value = data.destino
+      destino.value = data.destino ?? ''
     }
   }
 
@@ -128,7 +132,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
         pedestre.getUsuarioByDoc(documento.value),
         pedestre.getPedestreByDoc(documento.value)
       ])
-      console.log('user: ',userRes)
 
       if (currentRequest !== requestId) return
 
@@ -163,14 +166,14 @@ export function usePedestreForm(props, emit, serviceMock = null) {
 
     const payload = {
       nDoc: normalizeText(documento.value),
-      docId: idDoc.value,
       name: normalizeText(nome.value),
-      destino: destino.value.toUpperCase(),
-      graduaId: idGradua.value,
-      orgaoId: idOrgao.value,
-      ubmId: idUbm.value,
+      destino: normalizeText(destino.value),
+      userId: userId.value,
+      idGradua: idGradua.value,
+      idUbm: idUbm.value,
+      idOrgao: idOrgao.value,
+      idDoc: idDoc.value,
     }
-
     try {
       await pedestre.salvarPedestre(payload)
       close()
@@ -249,10 +252,11 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   ======================== */
   return {
     documento,
-    idDoc,
-    idOrgao,
     nome,
+    userId,
+    idOrgao,
     idUbm,
+    idDoc,
     idGradua,
     destino,
     isAction,
