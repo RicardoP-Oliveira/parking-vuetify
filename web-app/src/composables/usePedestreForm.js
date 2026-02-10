@@ -79,26 +79,28 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     nome.value = ''
     destino.value = ''
     userId.value = null
+    idOrgao.value = null
+    idDoc.value = null
+    idUbm.value = null
+    idGradua.value = null
     isAction.value = ACTIONS.ENTRADA
   }
 
   const setDataForm = (data = null) => {
     lastData.value = data
     if (!data) return
+    console.log(data)
 
     const user = data.user ?? {}
 
     userId.value ??= data.id ?? data.userId
-    idDoc.value ??= user.docId ?? data.docId ?? null
+    idDoc.value ??= user.docId ?? data.idDoc ?? null
     idOrgao.value ??= user.orgaoId ?? data.orgaoId ?? null
     idUbm.value ??= user.ubmId ?? data.ubmId ?? null
     idGradua.value ??= user.graduaId ?? data.graduaId ?? null
     nome.value ||= data.nGuerra || data.name || ''
     
-    resolverDestino({
-      ...data,
-      ubmId: user.ubmId
-    })
+    resolverDestino(data)
 
   } 
 
