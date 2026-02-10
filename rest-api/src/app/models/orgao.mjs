@@ -1,7 +1,7 @@
 'use strict';
 import { Model, DataTypes } from 'sequelize';
 
-class orgao extends Model {
+class Orgao extends Model {
   static init(sequelize) {
     super.init(
       {
@@ -21,10 +21,10 @@ class orgao extends Model {
   static associate(models) {
     this.hasMany(models.user, { foreignKey: "orgaoId", as: "users" });
     this.hasMany(models.carro, { foreignKey: "orgaoId", as: "carros" });
-    this.hasMany(models.pedestre, { foreignKey: "orgaoId", as: "pedestres" });
-    this.hasMany(models.ceics, { foreignKey: "eOrgaoId", as: "ceics" })
+    // this.hasMany(models.pedestre, { foreignKey: "orgaoId", as: "pedestres" });
+    // this.hasMany(models.ceics, { foreignKey: "eOrgaoId", as: "ceics" })
   }
 }
 
-export default orgao;
+export default Orgao;
 

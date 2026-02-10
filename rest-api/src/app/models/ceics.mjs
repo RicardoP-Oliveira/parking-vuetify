@@ -1,7 +1,7 @@
 'use strict';
 import  { Model, DataTypes, Op } from "sequelize";
 
-  class ceics extends Model {
+  class Ceics extends Model {
 
     static init(sequelize){
       super.init({
@@ -70,4 +70,4 @@ import  { Model, DataTypes, Op } from "sequelize";
     }
   }
 
-  export default ceics;
+  export default Ceics;

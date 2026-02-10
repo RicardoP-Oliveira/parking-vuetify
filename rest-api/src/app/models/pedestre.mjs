@@ -1,6 +1,6 @@
 'use strict';
 import { Model, DataTypes } from 'sequelize';
-class pedestre extends Model {
+class Pedestre extends Model {
 
   static init(sequelize){
     super.init({
@@ -15,6 +15,7 @@ class pedestre extends Model {
       ubmId: DataTypes.INTEGER,
       graduaId: DataTypes.INTEGER,
       docId: DataTypes.INTEGER,
+      userId: DataTypes.INTEGER,
     }, {
       sequelize,
       modelName: 'pedestre',
@@ -23,10 +24,8 @@ class pedestre extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "_orgao" });
-    this.belongsTo(models.hierarquias, { foreignKey: "graduaId", as: "_grad" });
-    this.belongsTo(models.documentos, { foreignKey: "docId", as: "_doc" });
+    this.belongsTo(models.user, { foreignKey: "userId", as: "user" });
   }
 }
 
-export default pedestre;
+export default Pedestre;

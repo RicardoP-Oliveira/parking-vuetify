@@ -139,32 +139,32 @@ export default {
           let filteredItem = {};
           this.displayColuns.forEach((column) => {
             if (column === 'entrada' || column === 'saida') {
-              filteredItem[column] = dateFormatterOutput(item[column]);
-            } else if (column === 'eCondutor') {
-              filteredItem.eCondutor = [
-                item._gradC?.abrev,
-                item.eOrgaoId != null &&
-                ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-                ? item._orgaoC?.siglaCurta : '',
-                item.eCondutor
-              ].filter(Boolean).join(' ');
-            } else if (column === 'sCondutor') {
-                filteredItem.sCondutor = [
-                item.sGraduaId ? item._gradC?.abrev ?? null
-                : null,
-                item.sOrgaoId != null &&
-                ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-                ? item._orgaoC?.siglaCurta : '',
-                item.sCondutor
-              ].filter(Boolean).join(' ');
-            } else if (column === 'docId') {
-                filteredItem.docId = item._doc?.sigla
-            } else if (column === 'name') {
-                filteredItem.name = [
-                  item._grad?.abrev,
-                  ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
-                  item.name
-                ].filter(Boolean).join(' ');
+            //   filteredItem[column] = dateFormatterOutput(item[column]);
+            // } else if (column === 'eCondutor') {
+            //   filteredItem.eCondutor = [
+            //     // item._gradC?.abrev,
+            //     // item.eOrgaoId != null &&
+            //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+            //     // ? item._orgaoC?.siglaCurta : '',
+            //     item.eCondutor
+            //   ].filter(Boolean).join(' ');
+            // } else if (column === 'sCondutor') {
+            //     filteredItem.sCondutor = [
+            //     // item.sGraduaId ? item._gradC?.abrev ?? null
+            //     // : null,
+            //     // item.sOrgaoId != null &&
+            //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
+            //     // ? item._orgaoC?.siglaCurta : '',
+            //     item.sCondutor
+            //   ].filter(Boolean).join(' ');
+            // } else if (column === 'docId') {
+            //     filteredItem.docId = item._doc?.sigla
+            // } else if (column === 'name') {
+            //     filteredItem.name = [
+            //       // item._grad?.abrev,
+            //       // ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
+            //       item.name
+            //     ].filter(Boolean).join(' ');
             } else {
               filteredItem[column] = item[column];
             }

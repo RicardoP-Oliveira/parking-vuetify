@@ -8,21 +8,6 @@ const ACTIONS = {
   SAIDA: 'Saída'
 }
 
-const ORGAO_MAP = {
-    CBMERJ: 'BM',
-    PMERJ: 'PM',
-    PCERJ: 'PC',
-    RFB: 'RFB',
-    "TCE/RJ": 'TCE',
-    EB: 'EB',
-    FAB: 'FAB',
-    PRF: 'PRF',
-    PF: 'PF',
-    "MP/RJ": 'MP',
-    MB: 'MB',
-    SEAP: 'SEAP'
-}
-
 export function useCarroForm(props, emit, serviceMock = null) {
     const service = useServices(serviceMock)
 
@@ -37,10 +22,9 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const condutor = ref('')
     const destino = ref('')
     const modelo = ref('')
-    const proprietario = ref('')
     const idUbm = ref(null)
     const idOrgao = ref(null)
-    const gradua = ref ('')
+  
     const obm = ref('')
     const orgao = ref('')
 
@@ -113,13 +97,13 @@ export function useCarroForm(props, emit, serviceMock = null) {
   }
 
   const processInfo = res => {
-    console.log(res)
+    console.log('carros ',res)
     placa.value ||= res.placa
     modelo.value ||= `${res.marca} ${res.modelo}`
     documento.value = res.user?.documento || ''
     // getOwner(res)
     if (documento.value) getUser(documento.value)
-    gradua.value = res.user.gradua
+    //gradua.value = res.user.gradua
     orgao.value = res.user.orgaoU.sigla
   }
 
@@ -200,19 +184,12 @@ export function useCarroForm(props, emit, serviceMock = null) {
       marcaModelo: modelo.value?.toUpperCase().trim(),
       condutor: condutor.value.trim(),
       destino: destino.value.toUpperCase().trim(),
-      owner: proprietario.value.toUpperCase().trim(),
-      gradua: gradua.value.toUpperCase().trim(),
+      //owner: proprietario.value.toUpperCase().trim(),
+      // gradua: gradua.value.toUpperCase().trim(),
       orgao: orgao.value.toUpperCase().trim()
     }
 
     console.log(form.value)
-
-    console.log(
-        'SIGLA ORIGINAL:', 
-        orgao.value,
-        'SIGLA EXIBIÇÂO:', 
-        mapOrgaoSigla(orgao.value)
-    )
 
     try {
       //await service.salvarCarro(form.value)
@@ -279,8 +256,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
     destino,
     modelo,
     destinoOptions,
-    proprietario,
-  
+      
     
     obm,
 

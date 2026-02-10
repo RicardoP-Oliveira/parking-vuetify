@@ -1,11 +1,12 @@
-import Resposta from '../models/Resposta.mjs';
-import Pedestre from '../models/pedestre.mjs';
-import Orgao from '../models/orgao.mjs';
-import Gradua from '../models/hierarcar.mjs';
-import Doc from '../models/documentos.mjs';
-import User from '../models/user.mjs';
-import { Op } from 'sequelize';
-import database from '../../database/index.mjs';
+import Resposta from '../models/Resposta.mjs'
+import Pedestre from '../models/pedestre.mjs'
+import User from '../models/user.mjs'
+import Orgao from '../models/orgao.mjs'
+import Ubm from '../models/ubm.mjs'
+import Documentos from '../models/documentos.mjs'
+import Hierarquia from '../models/hierarcar.mjs'
+import { Op } from 'sequelize'
+import database from '../../database/index.mjs'
 
 function dateFormatter (data){
   const dd = data.getDate();
@@ -122,19 +123,16 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
-        include: [
-          {
-            model: Orgao,
-            as: '_orgao'
+        include: [{
+            model: User,
+            as: 'user',
+            include: [
+              { model: Orgao, as: 'orgaoU' },
+              { model: Ubm, as: 'ubm'},
+              { model: Documentos, as: 'docUser' },
+              { model: Hierarquia, as: 'hierarquia'},          
+            ]
           },
-          {
-            model: Gradua,
-            as: '_grad'
-          },
-          {
-            model: Doc,
-            as: '_doc'
-          }
         ],
         order: [['updatedAt', 'DESC']],
         offset: (page - 1) * perPage,
@@ -148,6 +146,7 @@ class PedestreController {
       resposta.msg = "Ocorreu um erro na busca dos dados!"
       resposta.dados = erro;
     }
+    console.log(resposta)
     return res.json([resposta, total]);
   }
 

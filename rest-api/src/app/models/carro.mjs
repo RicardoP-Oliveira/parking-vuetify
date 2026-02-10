@@ -2,8 +2,10 @@ import { Model, DataTypes, Op } from 'sequelize';
 import User from './user.mjs';
 import Orgao from './orgao.mjs';
 import Ubm from './ubm.mjs';
+import Order from './hierarcar.mjs';
+import Document from './documentos.mjs';
 
-  class carro extends Model {
+  class Carro extends Model {
    static init(sequelize){
     super.init({
       placa: DataTypes.STRING,
@@ -39,7 +41,9 @@ import Ubm from './ubm.mjs';
               as: 'user',
               include: [
                 { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' }
+                { model: Orgao, as: 'orgaoU' },
+                { model: Document, as: 'docUser'},
+                { model: Order, as: 'hierarquia' }
               ]
               },
               {
@@ -77,7 +81,9 @@ import Ubm from './ubm.mjs';
               as:'user',
               include:[
                 { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' }
+                { model: Orgao, as: 'orgaoU' },
+                { model: Document, as: 'docUser'},
+                { model: Order, as: 'hierarquia' }
               ]
               },
               {
@@ -97,4 +103,4 @@ import Ubm from './ubm.mjs';
     }
   }
 
-export default carro;
+export default Carro;

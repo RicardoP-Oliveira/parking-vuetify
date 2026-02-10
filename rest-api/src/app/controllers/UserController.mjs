@@ -32,7 +32,7 @@ class UserController {
           },
           {
             model: Doc,
-            as: 'tipoDoc',
+            as: 'docUser',
           },
           {
             model: Order,
@@ -72,7 +72,7 @@ class UserController {
           },
           {
             model: Doc,
-            as: 'tipoDoc',
+            as: 'docUser',
           },
           {
             model: Order,

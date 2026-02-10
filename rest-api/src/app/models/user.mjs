@@ -2,7 +2,7 @@
 import  { Model, DataTypes } from "sequelize";
 import bcrypt from 'bcryptjs';
 
-  class user extends Model {
+  class User extends Model {
 
     static init(sequelize){
       super.init({
@@ -59,13 +59,13 @@ import bcrypt from 'bcryptjs';
       this.belongsTo(models.ubm, { foreignKey: "ubmId", as: "ubm" });
       this.hasMany(models.carro, { foreignKey: "userId", as: "carros" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgaoU"});
-      this.belongsTo(models.documentos, { foreignKey: "docId", as: "tipoDoc"})
+      this.belongsTo(models.documentos, { foreignKey: "docId", as: "docUser"})
       this.belongsTo(models.hierarquias, { foreignKey: "graduaId", as: "hierarquia"})
     }
 
 
   }
 
-  export default user
+  export default User
 
 

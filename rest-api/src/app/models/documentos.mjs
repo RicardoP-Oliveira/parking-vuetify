@@ -1,7 +1,7 @@
 'user strict';
 import { Model, DataTypes } from 'sequelize';
 
-class documentos extends Model {
+class Documentos extends Model {
     static init(sequelize) {
         super.init(
             {
@@ -17,8 +17,8 @@ class documentos extends Model {
     }
 
     static associate(models) {
-        this.hasMany(models.pedestre, { foreignKey: "docId", as: "pedestres" });
+        this.hasMany(models.user, { foreignKey: "docId", as: "users" });
     }
 }
 
-export default documentos;
+export default Documentos;

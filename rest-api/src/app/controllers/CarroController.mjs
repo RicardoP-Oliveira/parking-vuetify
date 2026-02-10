@@ -3,6 +3,8 @@ import Resposta from '../models/Resposta.mjs';
 import Ubm from '../models/ubm.mjs';
 import User from '../models/user.mjs';
 import Orgao from '../models/orgao.mjs';
+import Doc from '../models/documentos.mjs';
+import Order from '../models/hierarcar.mjs';
 
 class CarroController {
   async index(req, res) {
@@ -25,13 +27,18 @@ class CarroController {
               model: User,
               as:'user',
               // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
-              include:
+              include: [
                 {
                   required: true,
                   model: Ubm,
                   as: 'ubm',
                   // attributes:['id', 'sigla']
+                },
+                {
+                  model: Doc,
+                  as: 'docUser'
                 }
+              ]
               },
               {
                 model: Orgao,
