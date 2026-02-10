@@ -37,18 +37,18 @@ export function usePedestreTable(pedestreService) {
     };
 
     const headerOrder = () => [
-        'docId',
-        'nDoc',
-        'name',
+        'tipoDoc',
+        'numDoc',
+        'nome',
         'destino',
         'entrada',
         'saida'
     ];
 
     const setColumns = () => [
-        'docId',
-        'nDoc',
-        'name',
+        'tipoDoc',
+        'numDoc',
+        'nome',
         'destino',
         'entrada',
         'hEntrada',
@@ -59,7 +59,7 @@ export function usePedestreTable(pedestreService) {
     const setHeaderGroups = () => ({
         entrada: {
             title: 'Entrada',
-            children: [
+            children: [ 'entrada', 
                 { key: 'entrada', title: 'Data'},
                 { key: 'hEntrada', title: 'Hora'}
             ]
