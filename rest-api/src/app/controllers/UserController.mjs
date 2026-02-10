@@ -5,6 +5,7 @@ import Ubm from '../models/ubm.mjs';
 import Orgao from '../models/orgao.mjs';
 import Doc from '../models/documentos.mjs'
 import Order from '../models/hierarcar.mjs'
+import { Sequelize } from 'sequelize'
 
 const upload = uploadConfig;
 class UserController {
@@ -61,24 +62,45 @@ class UserController {
     try {
       let user = await User.findOne({
         where: { documento: id},
-        include: [
-          {
-            model: Ubm,
-            as: 'ubm',
-          },
-          {
-            model: Orgao,
-            as: 'orgaoU',
-          },
-          {
-            model: Doc,
-            as: 'docUser',
-          },
-          {
-            model: Order,
-            as: 'hierarquia'
-          }
-        ],
+        attributes: [
+            'id',
+            [Sequelize.col('documento'), 'doc'],
+            [Sequelize.col('nGuerra'), 'nGuerra'],
+            [Sequelize.col('graduaId'), 'graduaId'],
+            [Sequelize.col('ubmId'), 'ubmId'],
+            [Sequelize.col('orgaoId'), 'orgaoId'],
+            [Sequelize.col('docId'), 'docId'],
+          ],
+          // include: [
+          //   {
+          //     model: User,
+          //     as: 'user',
+          //     attributes: [],
+              // include: [
+              //   { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              //   { model: Orgao, as: 'orgaoU', attributes: [] },
+              //   { model: Documentos, as: 'docUser', attributes: []}
+              // ]
+          //   }
+          // ],
+        // include: [
+        //   {
+        //     model: Ubm,
+        //     as: 'ubm',
+        //   },
+        //   {
+        //     model: Orgao,
+        //     as: 'orgaoU',
+        //   },
+        //   {
+        //     model: Doc,
+        //     as: 'docUser',
+        //   },
+        //   {
+        //     model: Order,
+        //     as: 'hierarquia'
+        //   }
+        // ],
       });
 
       if (!user) {
