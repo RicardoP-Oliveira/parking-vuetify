@@ -261,55 +261,6 @@ export default {
 
       this.generatedHeaders = headers
     },
-    // generateHeaders() {
-    //   const headers = [];
-
-    //   this.headerOrder.forEach((key) => 
-    //   {
-    //     if (this.headerGroups[key]) {
-    //       const group = this.headerGroups[key];
-
-    //       headers.push({
-    //         title: group.title,
-    //         align: 'center',
-    //         children: group.children.map(child => {
-    //           const col = this.columnsMap[child.key] ?? {}
-
-    //           return {
-    //             key: child.key,
-    //             title: this.columnNameMap[child.key] ?? child.title ?? child.key,
-    //             align: col?.align ?? 'center',
-    //             width: col?.width ?? 100
-    //           }
-    //         })
-    //       })
-
-    //       return
-    //     }
-
-    //     const col = this.columnsMap[key]
-
-    //     headers.push({
-    //       key,
-    //       title: this.columnNameMap[key] ?? key,
-    //       align: col?.align ?? 'center',
-    //       width: col?.width ?? 100
-    //     })
-    //   })
-
-    //   //     });
-    //   //   } else {
-    //   //     headers.push({
-    //   //       title:
-    //   //         this.columnNameMap[headerKey] || headerKey.charAt(0).toUpperCase() + headerKey.slice(1),
-    //   //       key: headerKey,
-    //   //       align: 'center',
-    //   //       width: this.getWidth(headerKey),
-    //   //     });
-    //   //   }
-    //   // });
-    //   this.generatedHeaders = headers;
-    // },
     getWidth(value) {
       if (value === 'eCondutor' || value === 'sCondutor') {
         return '200px';
@@ -424,39 +375,3 @@ tbody tr:hover {
   text-overflow: ellipsis;
 }
 </style>
-
-
-//     }
-        //     if (column === 'entrada' || column === 'saida') {
-        //     //   filteredItem[column] = dateFormatterOutput(item[column]);
-        //     // } else if (column === 'eCondutor') {
-        //     //   filteredItem.eCondutor = [
-        //     //     // item._gradC?.abrev,
-        //     //     // item.eOrgaoId != null &&
-        //     //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-        //     //     // ? item._orgaoC?.siglaCurta : '',
-        //     //     item.eCondutor
-        //     //   ].filter(Boolean).join(' ');
-        //     // } else if (column === 'sCondutor') {
-        //     //     filteredItem.sCondutor = [
-        //     //     // item.sGraduaId ? item._gradC?.abrev ?? null
-        //     //     // : null,
-        //     //     // item.sOrgaoId != null &&
-        //     //     // ORGAOS_PERMITIDOS.includes(item._orgaoC?.siglaCurta)
-        //     //     // ? item._orgaoC?.siglaCurta : '',
-        //     //     item.sCondutor
-        //     //   ].filter(Boolean).join(' ');
-        //     // } else if (column === 'docId') {
-        //     //     filteredItem.docId = item._doc?.sigla
-        //     // } else if (column === 'name') {
-        //     //     filteredItem.name = [
-        //     //       // item._grad?.abrev,
-        //     //       // ORGAOS_PERMITIDOS.includes(item._orgao?.siglaCurta) ? item._orgao?.siglaCurta : '',
-        //     //       item.name
-        //     //     ].filter(Boolean).join(' ');
-        //     } else {
-        //       filteredItem[column] = item[column];
-        //     }
-        //   });
-        //   return filteredItem;
-        // });
