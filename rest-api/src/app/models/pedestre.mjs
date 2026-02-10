@@ -11,10 +11,6 @@ class Pedestre extends Model {
       name: DataTypes.STRING,
       nDoc: DataTypes.STRING,
       destino: DataTypes.STRING,
-      orgaoId: DataTypes.INTEGER,
-      ubmId: DataTypes.INTEGER,
-      graduaId: DataTypes.INTEGER,
-      docId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
     }, {
       sequelize,
