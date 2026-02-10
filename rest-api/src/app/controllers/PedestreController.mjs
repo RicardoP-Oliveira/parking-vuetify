@@ -123,17 +123,6 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
-        // include: [{
-        //     model: User,
-        //     as: 'user',
-        //     include: [
-        //       { model: Orgao, as: 'orgaoU' },
-        //       { model: Ubm, as: 'ubm'},
-        //       { model: Documentos, as: 'docUser' },
-        //       { model: Hierarquia, as: 'hierarquia'},          
-        //     ]
-        //   },
-        // ],
         order: [['updatedAt', 'DESC']],
          attributes: [
             'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
@@ -184,9 +173,23 @@ class PedestreController {
           nDoc: doc,
           saida: null
         },
+        attributes: [
+          'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
+          [Sequelize.col('user.id'), 'userId'],
+          [Sequelize.col('user.documento'), 'doc'],
+          [Sequelize.col('user.nGuerra'), 'nGuerra'],
+          [Sequelize.col('user.graduaId'), 'graduaId'],
+          [Sequelize.col('user.ubmId'), 'ubmId'],
+          [Sequelize.col('user.orgaoId'), 'orgaoId'],
+          [Sequelize.col('user.docId'), 'idDoc'],
+        ],
         include: [
-          { model: User, as: 'user'}
-        ]
+          {
+            model: User,
+            as: 'user',
+            attributes: [],
+          }
+        ],
       })
       if (pedestre) {
         resposta.dados = pedestre;
