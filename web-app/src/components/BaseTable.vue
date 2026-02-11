@@ -86,6 +86,9 @@ export default {
         isOpen: false,
         type: null,
       },
+      ORGAOS_PERMITIDOS: [
+        'BM', 'PM', 'PC', 'EB', 'FAB', 'PRF', 'PF', 'MB', 'SEAP'
+      ], 
       token: `Bearer ${localStorage.getItem('token')}`,
       ident: '',
       pageSize: 50,
@@ -124,19 +127,28 @@ export default {
     this.loadItems();
   },
   methods: {
-    // Novo método para ser chamado pelo pai para aplicar os filtros
+
+    formatNome(parts, sigla) {
+      return [
+        parts.gradua,
+        this.ORGAOS_PERMITIDOS.includes(sigla) ? sigla : null,
+        parts.nome
+      ].filter(Boolean).join(' ')
+    },
+
+    convertToUpper() {
+      this.ident = this.ident ? this.ident.toUpperCase() : '';
+    },
+    
     applyFiltersFromParent() {
       this.pageNow = 1;
       this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
     },
 
     async loadItems({ page = this.pageNow, itemsPerPage = this.pageSize } = {}) {
-      const ORGAOS_PERMITIDOS = [
-        'BM', 'PM', 'PC', 'EB', 'FAB', 'PRF', 'PF', 'MB', 'SEAP'
-      ] 
 
       try {
-        // Passa o objeto filters diretamente da prop
+       
         const res = await this.dataService(
           page,
           itemsPerPage,
@@ -147,6 +159,8 @@ export default {
         this.serverItems = res[0].dados.map((item) => {
 
           const filteredItem = {}
+
+          console.log(item)
 
           this.displayColuns.forEach((column) => {
             switch (column) {
@@ -159,13 +173,13 @@ export default {
                 break
 
               case 'nome':
-                filteredItem.nome = [
-                  item.graduaAbrev,
-                  ORGAOS_PERMITIDOS.includes(item.orgaoSigla)
-                    ? item.orgaoSigla
-                    : null,
-                  item.nGuerra
-                ].filter(Boolean).join(' ')
+                filteredItem.nome = this.formatNome(
+                  {
+                    gradua: item.graduaAbrev,
+                    nome: item.nGuerra
+                  },
+                  item.orgaoSigla
+                ) 
                 break
 
               case 'entrada':
@@ -186,6 +200,34 @@ export default {
 
               case 'hSaida':
                 filteredItem.hSaida = item.hSaida ?? ''
+                break
+              
+              case 'eCondutor':
+                  filteredItem.eCondutor = this.formatNome(
+                  {
+                    gradua: item.e_graduaAbrev,
+                    nome: item.e_condutor
+                  },
+                  item.e_siglaCurta
+                ) 
+                break
+              
+              case 'sCondutor':
+                 filteredItem.sCondutor = this.formatNome(
+                  {
+                    gradua: item.s_graduaAbrev,
+                    nome: item.s_condutor
+                  },
+                  item.s_siglaCurta
+                ) 
+                break
+
+              case 'eRg':
+                filteredItem.eRg = item.e_documento ?? ''
+                break
+              
+              case 'sRg':
+                filteredItem.sRg = item.s_documento ?? ''
                 break
 
               default:
@@ -329,11 +371,6 @@ export default {
       this.setFocus();
     },
   },
-  computed: {
-    convertToUpper() {
-      this.ident = this.ident ? this.ident.toUpperCase() : '';
-    },
-  },
   watch: {
     tab(newTab) {
       this.$emit('update-btn')
@@ -342,12 +379,13 @@ export default {
         this.setFocus();
       }, 300);
     },
-    // Monitora a prop 'filters' para recarregar os dados quando os filtros mudarem no pai
+   
     filters: {
       handler() {
-        this.loadItems();
+        this.pageNow = 1;
+        this.loadItems({ page: 1, itemsPerPage: this.pageSize});
       },
-      deep: true, // Importante para observar mudanças dentro do objeto filters
+      deep: true, 
     },
   },
 };

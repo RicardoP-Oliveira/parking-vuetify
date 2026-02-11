@@ -16,10 +16,8 @@ import  { Model, DataTypes, Op } from "sequelize";
         sRg: DataTypes.STRING,
         sCondutor: DataTypes.STRING,
         destino: DataTypes.STRING,
-        eGraduaId: DataTypes.INTEGER,
-        eOrgaoId: DataTypes.INTEGER,
-        sGraduaId: DataTypes.INTEGER,
-        sOrgaoId: DataTypes.INTEGER,
+        e_userId: DataTypes.STRING,
+        s_userId: DataTypes.STRING,
       }, {
         sequelize,
         modelName: 'ceics',
@@ -65,8 +63,8 @@ import  { Model, DataTypes, Op } from "sequelize";
     }
 
     static associate(models) {
-      this.belongsTo(models.orgao, { foreignKey: "eOrgaoId", as: "_orgaoC" });
-      this.belongsTo(models.hierarquias, { foreignKey: "eGraduaId", as: "_gradC" });
+      this.belongsTo(models.user, { foreignKey: "e_userId", as: "entradaId" });
+      this.belongsTo(models.user, { foreignKey: "s_userId", as: "saidaId" });
     }
   }
 

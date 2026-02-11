@@ -1,10 +1,13 @@
-import Carro from '../models/carro.mjs';
-import Ceics from '../models/ceics.mjs';
-import vtrAdd from '../models/vtradd.mjs';
-import Resposta from '../models/Resposta.mjs';
-import Orgao from '../models/orgao.mjs';
-import Hierarquia from '../models/hierarcar.mjs';
-import { Op, where } from 'sequelize';
+import Carro from '../models/carro.mjs'
+import Ceics from '../models/ceics.mjs'
+import vtrAdd from '../models/vtradd.mjs'
+import Resposta from '../models/Resposta.mjs'
+import User from '../models/user.mjs'
+import Document from '../models/documentos.mjs'
+import Ubm from '../models/ubm.mjs'
+import Orgao from '../models/orgao.mjs'
+import Hierarquia from '../models/hierarcar.mjs'
+import { Op, Sequelize } from 'sequelize'
 
 class CeicsController {
   async index(req, res) {
@@ -104,14 +107,49 @@ class CeicsController {
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
         where: whereCondition,
+        attributes: [
+          'id', 'destino', 'entrada', 'hEntrada', 'saida', 'hSaida', 'placa', 'marcaModelo',
+          [Sequelize.col('entradaId.orgaoId'), 'e_orgaoId'],
+          [Sequelize.col('entradaId.ubmId'), 'e_ubmdId'],
+          [Sequelize.col('entradaId.graduaId'), 'e_graduaId'],
+          [Sequelize.col('entradaId.docId'), 'e_docId'],
+          [Sequelize.col('entradaId.nGuerra'), 'e_condutor'],
+          [Sequelize.col('entradaId->docUser.sigla'), 'e_siglaDoc'],
+          [Sequelize.col('entradaId->hierarquia.abrev'), 'e_graduaAbrev'],
+          [Sequelize.col('entradaId->orgaoU.siglaCurta'), 'e_siglaCurta'],
+          [Sequelize.col('entradaId.documento'), 'e_documento'],
+          [Sequelize.col('saidaId.orgaoId'), 's_orgaoId'],
+          [Sequelize.col('saidaId.ubmId'), 's_ubmdId'],
+          [Sequelize.col('saidaId.graduaId'), 's_graduaId'],
+          [Sequelize.col('saidaId.docId'), 's_docId'],
+          [Sequelize.col('saidaId.nGuerra'), 's_condutor'],
+          [Sequelize.col('saidaId->docUser.sigla'), 's_siglaDoc'],
+          [Sequelize.col('saidaId->hierarquia.abrev'), 's_graduaAbrev'],
+          [Sequelize.col('saidaId->orgaoU.siglaCurta'), 's_siglaCurta'],
+          [Sequelize.col('saidaId.documento'), 's_documento'],
+        ],
         include: [
           {
-            model: Orgao,
-            as: '_orgaoC',
+            model: User,
+            as: 'entradaId',
+            attributes: [],
+            include: [
+              { model: Orgao, as: 'orgaoU', attributes: [] },
+              { model: Document, as: 'docUser', attributes: [] },
+              { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              { model: Ubm, as: 'ubm', attributes: [] },
+            ]
           },
           {
-            model: Hierarquia,
-            as: '_gradC'
+            model: User,
+            as: 'saidaId',
+            attributes: [],
+            include: [
+              { model: Orgao, as: 'orgaoU', attributes: [] },
+              { model: Document, as: 'docUser', attributes: [] },
+              { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              { model: Ubm, as: 'ubm', attributes: [] },
+            ]
           }
         ],
         offset: (page - 1) * perPage,
