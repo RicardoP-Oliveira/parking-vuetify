@@ -13,9 +13,10 @@
     <v-divider></v-divider>
 
     <v-list density="compact" nav class="px-4">
-      <v-list-item>
+      <v-list-item v-if="tab === 'carro'">
         <v-text-field
           v-model="filters.placa"
+          @update:model-value="filters.placa = filters.placa?.toUpperCase()"
           label="Placa"
           variant="outlined"
           clearable
@@ -26,6 +27,7 @@
       <v-list-item>
         <v-text-field
           v-model="filters.documento"
+          @update:model-value="filters.documento = filters.documento?.toUpperCase()"
           label="Documento"
           variant="outlined"
           clearable
@@ -33,9 +35,10 @@
           @click:clear="clearFilter('documento')"
         ></v-text-field>
       </v-list-item>
-      <v-list-item>
+      <v-list-item v-if="tab === 'carro'">
         <v-text-field
           v-model="filters.modelo"
+          @update:model-value="filters.modelo = filters.modelo?.toUpperCase()"
           label="Modelo"
           variant="outlined"
           clearable
@@ -46,6 +49,7 @@
       <v-list-item>
         <v-text-field
           v-model="filters.condutor"
+          @update:model-value="filters.condutor = filters.condutor?.toUpperCase()"
           :label="tab === 'carro' ? 'Condutor' : 'Nome'"
           variant="outlined"
           clearable
@@ -339,7 +343,7 @@ export default {
         this.filters[key] = null;
       }
     },
-  }
+  },
 };
 </script>
 

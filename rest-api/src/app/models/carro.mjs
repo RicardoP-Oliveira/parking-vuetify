@@ -5,6 +5,7 @@ import Ubm from './ubm.mjs';
 import Order from './hierarcar.mjs';
 import Document from './documentos.mjs';
 
+
   class Carro extends Model {
    static init(sequelize){
     super.init({
@@ -21,9 +22,10 @@ import Document from './documentos.mjs';
     return this;
    }
 
-    static associate(models) {
-      this.belongsTo(models.user, { foreignKey: "userId", as: "user" });
+   static associate(models) {
+      this.belongsTo(models.user, { foreignKey: "userId", as: "userCar" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgao" });
+      this.hasMany(models.ceics, { foreignKey: "carroId", as: "movimentos" });
     }
 
     static async findCar(car) {
@@ -31,29 +33,29 @@ import Document from './documentos.mjs';
       let veiculo = null;
 
       const carAsNumber = parseInt(car, 10);
-
+ 
       if (!isNaN(carAsNumber) &&  carAsNumber > 0) {
         try {
           veiculo = await this.findOne({
             where: { id: carAsNumber},
             attributes: [
             'id', 'placa', 'marca', 'userId',
-            [Sequelize.col('user.ubmId'), 'ubmId'],
-            [Sequelize.col('user.documento'), 'documento'],
-            [Sequelize.col('user.nGuerra'), 'condutor'],
-            [Sequelize.col('user.orgaoId'), 'orgaoId'],
-            [Sequelize.col('user.docId'), 'docId'],
-            [Sequelize.col('user.graduaId'), 'guaduaId'],
-            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
-            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
-            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            [Sequelize.col('userCar.documento'), 'documento'],
+            [Sequelize.col('userCar.nGuerra'), 'nome'],
+            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
+            [Sequelize.col('userCar.docId'), 'docId'],
+            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
               
           ],
           include: [
             {
               model: User,
-              as:'user',
+              as:'userCar',
               attributes: [],
               include: [
                 { model: Order, as: 'hierarquia', attributes: [] },
@@ -72,8 +74,6 @@ import Document from './documentos.mjs';
       }
 
       if(!veiculo) {
-
-        console.log('!veiculo ', car)
         let conditions = [];
 
         conditions.push({placa: { [Op.iLike]: `%${car}%`}});
@@ -91,24 +91,24 @@ import Document from './documentos.mjs';
         try {
           veiculo = await this.findOne({
             where: searchCriteria,
-             attributes: [
+            attributes: [
             'id', 'placa', 'marca', 'userId',
-            [Sequelize.col('user.ubmId'), 'ubmId'],
-            [Sequelize.col('user.documento'), 'documento'],
-            [Sequelize.col('user.nGuerra'), 'condutor'],
-            [Sequelize.col('user.orgaoId'), 'orgaoId'],
-            [Sequelize.col('user.docId'), 'docId'],
-            [Sequelize.col('user.graduaId'), 'guaduaId'],
-            [Sequelize.col('user->docUser.sigla'), 'docSigla'],
-            [Sequelize.col('user->ubm.name'), 'nomeUbm'],
-            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            [Sequelize.col('userCar.documento'), 'documento'],
+            [Sequelize.col('userCar.nGuerra'), 'nome'],
+            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
+            [Sequelize.col('userCar.docId'), 'docId'],
+            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
               
           ],
           include: [
             {
               model: User,
-              as:'user',
+              as:'userCar',
               attributes: [],
               include: [
                 { model: Order, as: 'hierarquia', attributes: [] },
@@ -126,7 +126,18 @@ import Document from './documentos.mjs';
         }
       }
 
-      return (veiculo);
+      const dados = veiculo.get({ plain: true })
+
+      dados.nomeCompleto = [
+        dados.graduaAbrev,
+        dados.orgaoSigla,
+        dados.nome
+      ].filter(Boolean).join(' ')
+
+
+
+      return dados;
+      // return (veiculo)
 
     }
   }

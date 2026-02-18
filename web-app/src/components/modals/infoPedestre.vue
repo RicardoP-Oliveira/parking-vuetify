@@ -61,6 +61,7 @@
           label="Nome"
           variant="underlined"
           v-model="nome"
+          @update:model-value="nome = nome?.toUpperCase()"
           :error="!nome && formTouched"
           :error-messages="!nome && formTouched ? '* Obrigatório' : ''"
         />

@@ -2,7 +2,6 @@
   <BaseModal
     v-if="dialog"
     :isOpen="isDialog"
-    :documento="documento"
     title="Controle de acesso"
     :confirmText="isAction"
     :saveData="salvar"
@@ -30,7 +29,6 @@
           variant="underlined"
           hide-details
           width="100px"
-          @keyup="getUser(documento)"
         />
       </v-col> 
     </v-row>
@@ -41,7 +39,7 @@
       <v-col class="px-2 py-0">
         <v-text-field
         density="compact"
-        v-model="condutor"
+        v-model="condutorResolved"
         variant="underlined"
         hide-details
         :rules="[validCondutor]"
@@ -60,7 +58,6 @@
         clearable
         :maxlength="getLength()"
         @click:clear="clearPlaca"
-        @keyup="convertToUpper"
         hide-details
         width="150px"
         :variant="placa.length > 0 ? 'plain' : 'underlined'"
@@ -83,6 +80,7 @@
       <v-col class="px-2 py-0">
         <v-select
           :items="destinoOptions"
+          item-value="target"
           density="compact"
           variant="underlined"
           width="120px"
@@ -109,24 +107,19 @@ const emit = defineEmits(['closeModal'])
 const {
   placa,
   documento,
-  condutor,
+  condutorResolved,
   destino,
   modelo,
   destinoOptions,
-
-  validCondutor,
-  validatePlaca,
-
   obm,
   isDialog,
   isAction,
   isValidForm,
-
   salvar,
   close,
-  convertToUpper,
   clearPlaca,
   getLength,
-  getUser,
+  validCondutor,
+  validatePlaca
 } = useCarroForm(props, emit)
 </script>

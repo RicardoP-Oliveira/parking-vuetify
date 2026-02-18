@@ -65,7 +65,7 @@ class UserController {
         attributes: [
           'id',
           [Sequelize.col('documento'), 'doc'],
-          [Sequelize.col('nGuerra'), 'nGuerra'],
+          [Sequelize.col('nGuerra'), 'nome'],
           [Sequelize.col('graduaId'), 'graduaId'],
           [Sequelize.col('ubmId'), 'ubmId'],
           [Sequelize.col('orgaoId'), 'orgaoId'],
@@ -81,17 +81,23 @@ class UserController {
          ],
       });
 
-      if (!user) {
-        resposta.erro = true;
-        resposta.msg = 'Usuário(a) não encontrado(a).';
-      } else {
-        resposta.dados = user;
-      }
+      if (!user) return null;
+
+      const dados = user.get({ plain: true })
+
+        dados.nomeCompleto = [
+          dados.graduaAbrev,
+          dados.orgaoSigla,
+          dados.nome
+        ].filter(Boolean).join(' ').trim();
+        
+        resposta.dados = dados;
+        
+        return res.json(resposta);
     } catch (erro) {
       (resposta.erro = true), (resposta.msg = `Error: ${erro}`);
       resposta.dados = erro;
     }
-    return res.json(resposta);
   }
 
   async store(req, res) {

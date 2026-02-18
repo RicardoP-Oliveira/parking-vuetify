@@ -93,11 +93,11 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     const user = data.user ?? {}
 
     userId.value ??= data.id ?? data.userId
-    idDoc.value ??= user.docId ?? data.idDoc ?? null
+    idDoc.value ??=  data?.docId ?? data?.idDoc ?? null
     idOrgao.value ??= user.orgaoId ?? data.orgaoId ?? null
     idUbm.value ??= user.ubmId ?? data.ubmId ?? null
     idGradua.value ??= user.graduaId ?? data.graduaId ?? null
-    nome.value ||= data.nGuerra || data.name || ''
+    nome.value ||= data.nGuerra || data.nome || ''
     
     resolverDestino(data)
 
@@ -166,9 +166,9 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     if (!documento.value || !nome.value || !destino.value) return
 
     const payload = {
-      nDoc: normalizeText(documento.value),
-      name: normalizeText(nome.value),
+      documento: normalizeText(documento.value),
       destino: normalizeText(destino.value),
+      nGuerra: nome.value,
       userId: userId.value,
       idGradua: idGradua.value,
       idUbm: idUbm.value,
@@ -218,10 +218,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
       setDataForm(lastData.value)
     }
   })
-
-  watch(nome, (val) => {
-  nome.value = toUpperSafe(val)
-})
 
   /* ========================
      MOUNTED

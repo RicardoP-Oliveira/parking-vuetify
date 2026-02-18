@@ -20,7 +20,8 @@ class PedestreController {
     const resposta = new Resposta();
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
-    
+    let userWhere = {};
+
     const {
       pedestre,
       documento,
@@ -34,16 +35,20 @@ class PedestreController {
       horaSaidaFim,
     } = req.query;
 
-    let whereCondition = {};
+        let whereCondition = {};
+            let userRequired = false;
 
     const conditions = [];
 
     if (pedestre) {
-      conditions.push({ name: {[Op.iLike]: `%${pedestre}%`}});
+      userWhere.nGuerra = { [Op.iLike]: `%${pedestre}%` };
+      userRequired = true
     }
 
     if (documento) {
-      conditions.push({ nDoc: {[Op.iLike]: `%${documento}%`}});
+      // conditions.push({ documento: {[Op.iLike]: `%${documento}%`}});
+      userWhere.documento = { [Op.iLike]: `%${documento}%` };
+      userRequired = true
     }
     
     if (dataInicio || dataFim) {
@@ -142,6 +147,8 @@ class PedestreController {
               model: User,
               as: 'user',
               attributes: [],
+              where: Object.keys(userWhere).length ? userWhere : undefined,
+              required: userRequired,
               include: [
                 { model: Hierarquia, as: 'hierarquia', attributes: [] },
                 { model: Orgao, as: 'orgaoU', attributes: [] },
@@ -165,12 +172,23 @@ class PedestreController {
 
   async show(req, res) {
     const resposta = new Resposta();
-    const { doc } = req.params;    
+    const { doc } = req.params;
     try {
+      const user = await User.findOne({
+        where: { documento: doc },
+        attributes: ['id']
+      })
+
+      if (!user) {
+        resposta.erro = true
+        resposta.msg = 'Usuário não encontrado!'
+        return res.json(resposta)
+      }
+
       const pedestre = await Pedestre.findOne({
         order: [['updatedAt', 'DESC']],
         where: {
-          nDoc: doc,
+          userId: user.id,
           saida: null
         },
         attributes: [
@@ -215,12 +233,12 @@ class PedestreController {
 
     // 1️⃣ Buscar ou criar USER
     let user = await User.findOne({
-      where: { documento: body.nDoc }
+      where: { documento: body.documento }
     })
 
     if (!user) {
       user = await User.create({
-        documento: body.nDoc,
+        documento: body.documento,
         nGuerra: body.name,
         orgaoId: body.idOrgao,
         ubmId: body.idUbm,
@@ -229,11 +247,11 @@ class PedestreController {
       
       }, { transaction: t })
     }
-
+    
     //2️⃣ Verificar entrada aberta
     const entrada = await Pedestre.findOne({
       where: {
-        nDoc: body.nDoc,
+        userId: user.id,
         saida: null
       },
       order: [['updatedAt', 'DESC']],
@@ -245,6 +263,7 @@ class PedestreController {
     const {userId, ...safeBody} = body
 
     if (!entrada) {
+      console.log('entrada ', entrada)
       pedestre = await Pedestre.create({
         ...safeBody,
         userId: user.id,

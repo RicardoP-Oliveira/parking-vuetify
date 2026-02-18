@@ -1,5 +1,5 @@
 <template>
-  <v-dialog ref="baseModal"v-model="isOpenInternal" :width="width" persistent>
+  <v-dialog ref="baseModal" v-model="isOpenInternal" :width="width" persistent>
     <v-card>
       <v-card-title class="text-center">
         {{ title }}
@@ -51,21 +51,12 @@ export default {
       type: Boolean,
       default: false,
     },
-    documento: {
-      type: String,
-      default: '',
-    },
     confirmButton: {
       type: Boolean,
       default: false
     }
   },
   emits: ['confirm', 'close'],
-  data() {
-    return {
-      document: this.documento,
-    };
-  },
   methods: {
     close() {
       this.$emit('close');
@@ -97,10 +88,7 @@ export default {
   },
   mounted() {
     setTimeout(() => {
-      if (this.documento) {
-        this.document = this.documento;
         this.setFocus();
-      }
     },100)
   },
 }

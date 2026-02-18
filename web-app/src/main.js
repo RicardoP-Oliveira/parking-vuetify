@@ -20,12 +20,6 @@ import pedestreService from '@/services/PedestreService';
 import servicoService from '@/services/ServicoServices';
 import targetService from '@/services/TargetService';
 
-
-// Bancos de dados
-import DbPGT from '@/config/dbPGT.json';
-import DbTarget from '@/config/dbTarget.json';
-import DbDoc from '@/config/dbDoc.json';
-
 import '@/assets/global.css';
 
 // Composables
@@ -37,9 +31,6 @@ const app = createApp(App)
 app.component(VueBarcode.name, VueBarcode)
 
 // Configuração global
-app.config.globalProperties.$dbPgt = DbPGT;
-app.config.globalProperties.$dbTarget = DbTarget;
-app.config.globalProperties.$dbDoc = DbDoc;
 app.config.globalProperties.$sessionservice = sessionService;
 app.config.globalProperties.$ceicsservice = ceicsService;
 app.config.globalProperties.$userservice = userService;

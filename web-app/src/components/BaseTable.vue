@@ -160,8 +160,6 @@ export default {
 
           const filteredItem = {}
 
-          console.log(item)
-
           this.displayColuns.forEach((column) => {
             switch (column) {
               case 'tipoDoc':

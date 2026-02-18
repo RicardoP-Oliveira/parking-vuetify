@@ -8,8 +8,8 @@ class Pedestre extends Model {
       hEntrada: DataTypes.TIME,
       saida: DataTypes.DATEONLY,
       hSaida: DataTypes.TIME,
-      name: DataTypes.STRING,
-      nDoc: DataTypes.STRING,
+      // name: DataTypes.STRING,
+      // documento: DataTypes.STRING,
       destino: DataTypes.STRING,
       userId: DataTypes.INTEGER,
     }, {

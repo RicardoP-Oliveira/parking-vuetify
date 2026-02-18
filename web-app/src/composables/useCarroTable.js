@@ -11,6 +11,7 @@ export function useCarroTable(carroService) {
       documento: filters.documento,
       placa: filters.placa,
       condutor: filters.condutor,
+      modelo: filters.modelo,
       dataInicio: filters.dataInicio
           ? filters.dataInicio.toISOString().split('T')[0]
           : null,

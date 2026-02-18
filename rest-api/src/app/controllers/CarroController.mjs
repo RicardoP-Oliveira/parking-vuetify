@@ -26,7 +26,7 @@ class CarroController {
             // attributes: ['id', 'placa', 'marca'],
             include: [{
               model: User,
-              as:'user',
+              as:'userCar',
               // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
               include: [
                 {
@@ -59,6 +59,7 @@ class CarroController {
           resposta.msg = `Error: ${erro}`;
           resposta.dados = erro;
         }
+        console.log(JSON.stringify(resposta,null,2))
         return res.json([resposta, total]);
       }
 

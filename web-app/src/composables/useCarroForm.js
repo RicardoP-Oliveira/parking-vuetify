@@ -2,8 +2,7 @@
 
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
-import UbmService from '@/services/UbmServices'
-import { data } from 'vue-barcode'
+import { consoleError } from 'vuetify/lib/util/console.mjs'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
@@ -22,17 +21,20 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const placa = ref('')
     const documento = ref('')
     const condutor = ref('')
+    const condutorResolved = ref('')
     const destino = ref('')
     const modelo = ref('')
-    const idUbm = ref(null)
-    const idOrgao = ref(null)
+    const ubmId = ref(null)
+    const orgaoId = ref(null)
+    const carroId = ref(null)
+    const id = ref(null)
+    const condutorId = ref('')
   
     const obm = ref('')
     const orgao = ref('')
 
     const search = ref('')
-    const form = ref({})
-
+   
     const pattern = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/
     const nGuerraPattern = /^((?:\dº )?[aA-zZÀ-ÿ.()ª]+(?: [aA-zZÀ-ÿ.()ª]+)*)$/
     const ifPattern = /^#\d*$/
@@ -49,58 +51,46 @@ export function useCarroForm(props, emit, serviceMock = null) {
         COMPUTED
     ======================= */
     const isValidPlaca = computed(() => pattern.test(placa.value))
-    const isCondutor = computed(() => nGuerraPattern.test(condutor.value))
-    const isValidForm =computed(() => isValidPlaca.value && isCondutor.value)
-    const orgaoMap = computed(() =>
-        Object.fromEntries(
-            orgaos.value.map(o => [o.sigla, o.id])
-        )
-    )
-
-    const tratoOptions = computed(() =>
-      hierarquia.value.map(t => ({ id: t.id, abrev: t.abrev }))
-    )
+    const isCondutor = computed(() => true)//nGuerraPattern.test(condutor.value))
+    const isValidForm = computed(() => isValidPlaca.value && isCondutor.value)
 
     /* ========================
      HELPERS
   ======================== */
-  const convertToUpper = () => {
-    placa.value = placa.value?.toUpperCase() || ''
-  }
-
   const clearPlaca = () => {
     placa.value = ''
   }
 
   const getLength = () => (pattern.test(placa.value) ? 7 : undefined)
 
-  const getOwner = value => {
-    if (value?.userId) {
-      const orgao = value.user?.orgaoU?.sigla || ''
-      const gradua = value.user?.gradua || ''
-      const name = value.user?.nGuerra || ''
-      proprietario.value = `${gradua} ${orgao} ${name}`.trim()
-    } else if (value?.orgaoId) {
-      proprietario.value = value.orgao?.orgao || 'Desconhecido'
-    } else {
-      proprietario.value = 'NFPA'
-    }
-  }
+  // const getOwner = value => {
+  //   if (value?.userId) {
+  //     const orgao = value.user?.orgaoU?.sigla || ''
+  //     const gradua = value.user?.gradua || ''
+  //     const name = value.user?.nGuerra || ''
+  //     proprietario.value = `${gradua} ${orgao} ${name}`.trim()
+  //   } else if (value?.orgaoId) {
+  //     proprietario.value = value.orgao?.orgao || 'Desconhecido'
+  //   } else {
+  //     proprietario.value = 'NFPA'
+  //   }
+  // }
 
   const resolveNome = (data) => [
-    data.graduaAbrev, data.orgaoSigla, data?.condutor || data?.nGuerra
+    data.graduaAbrev, data.orgaoSigla, data?.nome
   ].filter(Boolean).join(' ')
+
 
    const resolverDestino = (data = null) => {
     if (!data.ubmId) return;
 
-    const nomeUbm = unidades.value
+    const nomesUbm = unidades.value
       .find(u => u.obm.id === data?.ubmId)
       ?.obm?.name
       ?.toUpperCase();
 
-    if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
-      destino.value = nomeUbm;
+    if (nomesUbm && destinoOptions.value.includes(nomesUbm)) {
+      destino.value = nomesUbm;
     } else {
       destino.value = data.destino ?? ''
     }
@@ -111,71 +101,83 @@ export function useCarroForm(props, emit, serviceMock = null) {
   /* ========================
      CORE LOGIC
   ======================== */
-  const getSearchPlaca = infoRes => {
-    if (isNaN(search.value) || infoRes.erro) return search.value
-    return infoRes.visitor ? search.value : infoRes.dados?.placa || ''
-  }
-
-  const processInfo = res => {
-    console.log('[processInfo] ', res)
-    placa.value ||= res.placa
-    modelo.value ||= `${res.marca} ${res.modelo}`
-    documento.value = res.user?.documento || ''
-    // getOwner(res)
-    if (documento.value) getUser(documento.value)
-    //gradua.value = res.user.gradua
-  }
-
-  const setDataForm = (data = null) => {
-    if (!data) return
-
-    placa.value = data.placa ?? placa.value
-    modelo.value = data.marca ?? modelo.value
-    documento.value = data.documento ?? documento.value
-    condutor.value = resolveNome(data) ?? condutor.value
-    obm.value = data.nomeUbm ?? obm.value
-    resolverDestino(data)
-  }
-
-
-  const setParkingData = (dados, info) => {
-    placa.value = dados.placa
-    condutor.value = dados.eCondutor
-    documento.value = dados.eRg
-    modelo.value = dados.marcaModelo
-    if (!info.visitor) getOwner(info.dados)
-    getUser(documento.value)
-  }
+  let currentRequest = 0
 
   const processResults = (infoRes, parkingRes) => {
+    // ==================
+    // CASO 1 - VEÍCULO JÁ DENTRO (SAÍDA)
+    // ==================
     if (!parkingRes.erro && parkingRes.dados) {
-      isAction.value = 'Saída'
-      setParkingData(parkingRes.dados, infoRes)
-    } else if (!infoRes.erro && infoRes.dados) {
-      isAction.value = 'Entrada'
-      // processInfo(infoRes.dados)
-      setDataForm(infoRes.dados)
-    } else if (infoRes.visitor) {
-      isAction.value = 'Entrada'
+      isAction.value = ACTIONS.SAIDA
+
+      const dados = parkingRes.dados
+
+      obm.value = dados.e_obm
+      documento.value = dados.e_documento
+      // condutorResolved.value = dados.e_nomeCompleto
+      // condutor.value = dados.e_condutor
+      placa.value = dados.carroPlaca
+      modelo.value = dados.carroMarca
+      destino.value = dados.destino
+      condutorId.value = dados.e_condutorId
+      carroId.value = dados.carroId
+      id.value = dados.id
+
+      return
+    }
+
+    // ==================
+    // CASO 2 - ENTRADA COM DADOS
+    // ==================
+    if (!infoRes.erro && infoRes.dados) {
+      isAction.value = ACTIONS.ENTRADA
+
+      const dados = infoRes.dados
+
+      obm.value = dados.nomeUbm
+      documento.value = dados.documento
+      // condutorResolved.value = dados.nomeCompleto
+      // condutor.value = dados.nome
+      placa.value = dados.placa
+      modelo.value = dados.marca
+      carroId.value = dados.id
+      resolverDestino(dados)
+
+      return
+    }
+
+    // ==================
+    // CASO 3 - VISITANTE / NÃO ENCONTRADO
+    // ==================
+    if (infoRes.visitor) {
+      isAction.value = ACTIONS.ENTRADA
       placa.value = search.value
-      getOwner(null)
-    } else {
-      isAction.value = 'Entrada'
-      modelo.value = search.value
-      getOwner(null)
+      return
     }
   }
 
+
   const getDados = async () => {
+    const requestId = ++currentRequest
     try {
       search.value = ifPattern.test(search.value)
         ? search.value.substring(1)
         : search.value
 
       const infoRes = await service.getInfo(search.value)
-      const searchPlaca = getSearchPlaca(infoRes)
-      const parkingRes = await service.getParking(searchPlaca)
+
+      const buscaPlaca = !isNaN(search.value) || infoRes.erro
+      ? search.value
+      : infoRes.visitor
+        ? search.value
+        : infoRes.dados?.placa || ''
+
+      const parkingRes = await service.getParking(buscaPlaca)
+
+      if (requestId !== currentRequest) return
+      
       processResults(infoRes, parkingRes)
+
     } catch (e) {
       console.error('[useCarroForm] Erro ao buscar dados', e)
     }
@@ -188,37 +190,29 @@ export function useCarroForm(props, emit, serviceMock = null) {
 
         const user = res.dados
 
-        condutor.value = resolveNome(res.dados)
-       resolverDestino(res.dados)
+        condutorResolved.value = user.nomeCompleto
         obm.value = user.nomeUbm
+        condutorId.value = user.id
+        resolverDestino(user)
 
-      } else {
-        condutor.value = ''
       }
     } catch (e) {
       console.error('[useCarroForm] Erro ao buscar usuário', e)
-      condutor.value = ''
     }
   }
 
   const salvar = async () => {
     if (!placa.value) return
 
-    form.value = {
-      placa: placa.value.toUpperCase().trim(),
-      documento: documento.value.trim(),
-      marcaModelo: modelo.value?.toUpperCase().trim(),
-      condutor: condutor.value.trim(),
-      destino: destino.value.toUpperCase().trim(),
-      //owner: proprietario.value.toUpperCase().trim(),
-      // gradua: gradua.value.toUpperCase().trim(),
-      orgao: orgao.value.toUpperCase().trim()
+    const payload = {
+      destino: destino.value,
+      userId: condutorId.value,
+      carroId: carroId.value,
+      id: id.value,
     }
 
-    console.log(form.value)
-
     try {
-      //await service.salvarCarro(form.value)
+      await service.salvarCarro(payload)
       close()
     } catch (e) {
       console.error('[useCarroForm] Erro ao salvar', e)
@@ -226,7 +220,6 @@ export function useCarroForm(props, emit, serviceMock = null) {
   }
 
   const close = () => {
-    isDialog.value = false
     emit('closeModal', { from: 'infoModal' })
   }
 
@@ -249,7 +242,13 @@ export function useCarroForm(props, emit, serviceMock = null) {
       }
     },
     { immediate: true }
-  )
+  ),
+  
+  watch(documento, (newVal, oldVal) =>{
+    if (newVal && newVal.trim().length >= 4) {
+      getUser(newVal.trim())
+    }
+  })
 
   /* ========================
      MOUNTED
@@ -281,15 +280,17 @@ export function useCarroForm(props, emit, serviceMock = null) {
     placa,
     documento,
     condutor,
+    condutorResolved,
     destino,
     modelo,
+    ubmId,
+    orgaoId,
     destinoOptions,
       
     
     obm,
 
     isValidForm,
-    convertToUpper,
     clearPlaca,
     getLength,
 
@@ -301,33 +302,3 @@ export function useCarroForm(props, emit, serviceMock = null) {
     close
   }
 }   
-
-// const getUser = async value => {
-//     try {
-//       const res = await service.getUsuarioByDoc(value.trim())
-//       if (!res.erro && res.dados) {
-
-//         const user = res.dados
-
-//         console.log(user)
-//         // const sigla = res.dados.orgaoU.sigla
-//         // const siglaFix =
-//         //   sigla === 'CBMERJ' ? 'BM' : sigla === 'PMERJ' ? 'PM' : ''
-
-//         // condutor.value = siglaFix
-//         //   ? `${res.dados.gradua} ${siglaFix} ${res.dados.nGuerra}`
-//         //   : `${res.dados.gradua} ${res.dados.nGuerra}`
-
-//         // destino.value = destinoOptions.value.includes(res.dados.ubm.name)
-//         //   ? res.dados.ubm.name
-//           // : 'CEICS'
-
-//         obm.value = user.nomeObm
-//       } else {
-//         condutor.value = ''
-//       }
-//     } catch (e) {
-//       console.error('[useCarroForm] Erro ao buscar usuário', e)
-//       condutor.value = ''
-//     }
-//   }
