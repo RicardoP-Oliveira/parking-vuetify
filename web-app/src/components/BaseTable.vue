@@ -86,6 +86,9 @@ export default {
         isOpen: false,
         type: null,
       },
+      ORGAOS_PERMITIDOS: [
+        'BM', 'PM', 'PC', 'EB', 'FAB', 'PRF', 'PF', 'MB', 'SEAP'
+      ], 
       token: `Bearer ${localStorage.getItem('token')}`,
       ident: '',
       pageSize: 50,
@@ -104,6 +107,16 @@ export default {
       displayColuns: [],
       columnNameMap: {},
       headerGroups: {},
+      columnsMap: {
+      nome: { width: 450, align: 'center' },
+      tipoDoc: { width: 130, align: 'center' },
+      numDoc: { width: 160, align: 'center' },
+      entrada: { width: 110 },
+      hEntrada: { width: 90 },
+      saida: { width: 110 },
+      hSaida: { width: 90 },
+      destino: {width: 110, align: 'center'}
+    },
     };
   },
   created() {
@@ -114,29 +127,119 @@ export default {
     this.loadItems();
   },
   methods: {
-    // Novo método para ser chamado pelo pai para aplicar os filtros
+
+    formatNome(parts, sigla) {
+      return [
+        parts.gradua,
+        this.ORGAOS_PERMITIDOS.includes(sigla) ? sigla : null,
+        parts.nome
+      ].filter(Boolean).join(' ')
+    },
+
+    convertToUpper() {
+      this.ident = this.ident ? this.ident.toUpperCase() : '';
+    },
+    
     applyFiltersFromParent() {
       this.pageNow = 1;
       this.loadItems({ page: this.pageNow, itemsPerPage: this.pageSize });
     },
 
     async loadItems({ page = this.pageNow, itemsPerPage = this.pageSize } = {}) {
+
       try {
-        // Passa o objeto filters diretamente da prop
-        const res = await this.dataService(page, itemsPerPage, this.token, this.tab, this.filters);
+       
+        const res = await this.dataService(
+          page,
+          itemsPerPage,
+          this.token,
+          this.tab,
+          this.filters
+        )
         this.serverItems = res[0].dados.map((item) => {
-          let filteredItem = {};
+
+          const filteredItem = {}
+
           this.displayColuns.forEach((column) => {
-            if (column === 'entrada' || column === 'saida') {
-              filteredItem[column] = dateFormatterOutput(item[column]);
-            } else {
-              filteredItem[column] = item[column];
+            switch (column) {
+              case 'tipoDoc':
+                filteredItem.tipoDoc = item.docSigla ?? ''
+                break
+              
+              case 'numDoc':
+                filteredItem.numDoc = item.doc ?? ''
+                break
+
+              case 'nome':
+                filteredItem.nome = this.formatNome(
+                  {
+                    gradua: item.graduaAbrev,
+                    nome: item.nGuerra
+                  },
+                  item.orgaoSigla
+                ) 
+                break
+
+              case 'entrada':
+                filteredItem.entrada = item.entrada
+                ? dateFormatterOutput(item.entrada)
+                : ''
+                break
+
+              case 'hEntrada':
+                filteredItem.hEntrada = item.hEntrada ?? ''
+                break
+              
+              case 'saida':
+                filteredItem.saida = item.saida
+                ? dateFormatterOutput(item.saida)
+                : ''
+                break
+
+              case 'hSaida':
+                filteredItem.hSaida = item.hSaida ?? ''
+                break
+              
+              case 'eCondutor':
+                  filteredItem.eCondutor = this.formatNome(
+                  {
+                    gradua: item.e_graduaAbrev,
+                    nome: item.e_condutor
+                  },
+                  item.e_siglaCurta
+                ) 
+                break
+              
+              case 'sCondutor':
+                 filteredItem.sCondutor = this.formatNome(
+                  {
+                    gradua: item.s_graduaAbrev,
+                    nome: item.s_condutor
+                  },
+                  item.s_siglaCurta
+                ) 
+                break
+
+              case 'eRg':
+                filteredItem.eRg = item.e_documento ?? ''
+                break
+              
+              case 'sRg':
+                filteredItem.sRg = item.s_documento ?? ''
+                break
+
+              default:
+                filteredItem[column] = item[column] ?? ''
+
             }
-          });
-          return filteredItem;
-        });
+          })
+
+          return filteredItem
+        })
+        
         this.totalItems = res[1];
         this.generateHeaders();
+
       } catch (error) {
         console.error('Erro ao carregar itens do servidor:', error);
       }
@@ -152,36 +255,51 @@ export default {
         saida: 'Data',
         hEntrada: 'Hora',
         hSaida: 'Hora',
-        name: 'Pedestre',
-        tDoc: 'Tipo Documento',
-        nDoc: 'Documento',
+        nome: 'Pedestre',
+        tipoDoc: 'Tipo Documento',
+        numDoc: 'Documento',
       };
     },
+
     generateHeaders() {
-      const headers = [];
-      this.headerOrder.forEach((headerKey) => {
-        if (this.headerGroups[headerKey]) {
-          const group = this.headerGroups[headerKey];
+      const headers = []
+
+      this.headerOrder.forEach((key) => {
+
+        // 🔹 HEADER AGRUPADO
+        if (this.headerGroups[key]) {
+          const group = this.headerGroups[key]
+
           headers.push({
             title: group.title,
             align: 'center',
-            children: group.children.map((child) => ({
-              title: this.columnNameMap[child.key] || child.key.charAt(0).toUpperCase() + child.key.slice(1),
-              key: child.key,
-              align: 'center',
-            })),
-          });
-        } else {
-          headers.push({
-            title:
-              this.columnNameMap[headerKey] || headerKey.charAt(0).toUpperCase() + headerKey.slice(1),
-            key: headerKey,
-            align: 'center',
-            width: this.getWidth(headerKey),
-          });
+            children: group.children.map((child) => {
+              const col = this.columnsMap?.[child.key] ?? {}
+
+              return {
+                key: child.key,
+                title: this.columnNameMap[child.key] ?? child.title ?? child.key,
+                align: col.align ?? 'center',
+                width: col.width ?? 100
+              }
+            })
+          })
+
+          return
         }
-      });
-      this.generatedHeaders = headers;
+
+        // 🔹 HEADER SIMPLES
+        const col = this.columnsMap?.[key] ?? {}
+
+        headers.push({
+          key,
+          title: this.columnNameMap[key] ?? key,
+          align: col.align ?? 'center',
+          width: col.width ?? 100
+        })
+      })
+
+      this.generatedHeaders = headers
     },
     getWidth(value) {
       if (value === 'eCondutor' || value === 'sCondutor') {
@@ -251,11 +369,6 @@ export default {
       this.setFocus();
     },
   },
-  computed: {
-    convertToUpper() {
-      this.ident = this.ident ? this.ident.toUpperCase() : '';
-    },
-  },
   watch: {
     tab(newTab) {
       this.$emit('update-btn')
@@ -264,12 +377,13 @@ export default {
         this.setFocus();
       }, 300);
     },
-    // Monitora a prop 'filters' para recarregar os dados quando os filtros mudarem no pai
+   
     filters: {
       handler() {
-        this.loadItems();
+        this.pageNow = 1;
+        this.loadItems({ page: 1, itemsPerPage: this.pageSize});
       },
-      deep: true, // Importante para observar mudanças dentro do objeto filters
+      deep: true, 
     },
   },
 };
@@ -285,5 +399,15 @@ tbody tr:hover {
 }
 .flex-table {
   height: 88vh;
+}
+
+.v-data-tabe table {
+  table-layout: fixed;
+}
+
+.v-data-table tc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

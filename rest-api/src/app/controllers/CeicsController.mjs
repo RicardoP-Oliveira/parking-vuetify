@@ -1,8 +1,20 @@
-import Carro from '../models/carro.mjs';
-import Ceics from '../models/ceics.mjs';
-import vtrAdd from '../models/vtradd.mjs';
-import Resposta from '../models/Resposta.mjs';
-import { Op, where } from 'sequelize';
+import Carro from '../models/carro.mjs'
+import Ceics from '../models/ceics.mjs'
+import vtrAdd from '../models/vtradd.mjs'
+import Resposta from '../models/Resposta.mjs'
+import User from '../models/user.mjs'
+import Document from '../models/documentos.mjs'
+import Ubm from '../models/ubm.mjs'
+import Orgao from '../models/orgao.mjs'
+import Hierarquia from '../models/hierarcar.mjs'
+import { Op, Sequelize } from 'sequelize'
+
+function dateFormatter (data){
+  const dd = data.getDate();
+  const mm = data.getMonth() + 1;
+  const aaaa = data.getFullYear();
+  return `${aaaa}-${mm}-${dd}`;
+}
 
 class CeicsController {
   async index(req, res) {
@@ -25,6 +37,8 @@ class CeicsController {
       horaSaidaFim
     } = req.query;
 
+    console.log(req.query)
+    
     let whereCondition = {};
 
     const conditions = [];
@@ -35,9 +49,9 @@ class CeicsController {
     
     if (documento) {
       conditions.push({
-        [Op.or]: [
-          { eRg: { [Op.iLike]: `%${documento}%`}},
-          { sRg: { [Op.iLike]: `%${documento}%`}}
+        [Op.or]: [ 
+          { '$entradaId.documento$': { [Op.iLike]: `%${documento}%`}},
+          { '$saidaId.documento$': { [Op.iLike]: `%${documento}%`}}
         ]
       });
     }
@@ -49,8 +63,8 @@ class CeicsController {
     if (condutor) {
       conditions.push({
         [Op.or]: [
-          { eCondutor: { [Op.iLike]: `%${condutor}%`}},
-          { sCondutor: { [Op.iLike]: `%${condutor}%`}}  
+          { '$entradaId.nGuerra$': { [Op.iLike]: `%${condutor}%`}},
+          { '$saidaId.nGuerra$': { [Op.iLike]: `%${condutor}%`}}  
         ]
       });
     }
@@ -102,10 +116,69 @@ class CeicsController {
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
         where: whereCondition,
+        attributes: [
+          'id', 'destino', 'entrada', 'hEntrada', 'saida', 'hSaida',
+          [Sequelize.col('carro.placa'), 'placa'],
+          [Sequelize.col('carro.marca'), 'marcaModelo'],
+          [Sequelize.col('entradaId.orgaoId'), 'e_orgaoId'],
+          [Sequelize.col('entradaId.ubmId'), 'e_ubmdId'],
+          [Sequelize.col('entradaId.graduaId'), 'e_graduaId'],
+          [Sequelize.col('entradaId.docId'), 'e_docId'],
+          [Sequelize.col('entradaId.nGuerra'), 'e_condutor'],
+          [Sequelize.col('entradaId->docUser.sigla'), 'e_siglaDoc'],
+          [Sequelize.col('entradaId->hierarquia.abrev'), 'e_graduaAbrev'],
+          [Sequelize.col('entradaId->orgaoU.siglaCurta'), 'e_siglaCurta'],
+          [Sequelize.col('entradaId.documento'), 'e_documento'],
+          [Sequelize.col('saidaId.orgaoId'), 's_orgaoId'],
+          [Sequelize.col('saidaId.ubmId'), 's_ubmdId'],
+          [Sequelize.col('saidaId.graduaId'), 's_graduaId'],
+          [Sequelize.col('saidaId.docId'), 's_docId'],
+          [Sequelize.col('saidaId.nGuerra'), 's_condutor'],
+          [Sequelize.col('saidaId->docUser.sigla'), 's_siglaDoc'],
+          [Sequelize.col('saidaId->hierarquia.abrev'), 's_graduaAbrev'],
+          [Sequelize.col('saidaId->orgaoU.siglaCurta'), 's_siglaCurta'],
+          [Sequelize.col('saidaId.documento'), 's_documento'],
+        ],
+        include: [
+          { model: Carro,
+            as: 'carro',
+            attributes: [],
+            include: [
+              {
+                model: User,
+                as: 'userCar',
+                attributes: [],
+              }
+            ]
+          },
+          {
+            model: User,
+            as: 'entradaId',
+            attributes: [],
+            required: false,
+            include: [
+              { model: Orgao, as: 'orgaoU', attributes: [] },
+              { model: Document, as: 'docUser', attributes: [] },
+              { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              { model: Ubm, as: 'ubm', attributes: [] },
+            ]
+          },
+          {
+            model: User,
+            as: 'saidaId',
+            attributes: [],
+            required: false,
+            include: [
+              { model: Orgao, as: 'orgaoU', attributes: [] },
+              { model: Document, as: 'docUser', attributes: [] },
+              { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              { model: Ubm, as: 'ubm', attributes: [] },
+            ]
+          }
+        ], 
         offset: (page - 1) * perPage,
         limit: perPage,
       });
-
       resposta.dados = rows;
       var total = count;  
       
@@ -173,76 +246,126 @@ class CeicsController {
   }
 
   async store (req, res) {
-   const { placa, condutor, destino, documento, marcaModelo, owner } = req.body;
+  
+  try {
+    const body = req.body
 
-  const dataParking = {
-    placa: placa,
-    marcaModelo: marcaModelo,
-    eCondutor: condutor,
-    eRg: documento,
-    destino,
-    entrada: new Date(),
-    hEntrada: new Date().toLocaleTimeString(),
-  }
+    const user = await User.findOne({
+      where:{ id: body.userId } 
+    })
 
-  const vaga = await Ceics.findOne({
-    where: [
-      {
-        placa: placa
-      },
-      {
+    // Verificar entrada aberta
+    const entrada = await Ceics.findOne({
+      where: {
+        id: body.id,
         saida: null
-      }
-    ],
-    order: [['updatedAt', 'DESC']],
-  });
+      },
+      order: [['updatedAt', 'DESC']]
+    })
 
-  if(!vaga){
-    try {
-      var saida = await Ceics.create(dataParking);
-    } catch (error) {
-      console.warn(`[erro] Ocorreu o erro: ${error}`);
-    }
-    
-    const vtrPattern = /^([A-Z][A-Z0-9]{1,5}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/;
+    let movimentacao
 
-    if (vtrPattern.test(marcaModelo) || vtrPattern.test(placa)) {
-      const addVtr = {
-        placa,
-        prefix: marcaModelo,
-        owner,
-        documento
-      }
-      try {
-        const exist = await vtrAdd.findOne({
-          where: {
-           [Op.or]: [
-            {placa: { [Op.iLike]: `%${placa}%`}},
-            {prefix: { [Op.iLike]: `%${marcaModelo}%`}}
-           ]
-           
-          }});
-        if (!exist) {
-          await vtrAdd.create(addVtr);
-        } else {
-          await vtrAdd.update(addVtr, {where: { id: exist.id}});
-        }
-        
-      } catch (error) {
-        console.warn(`[erro] Ocorreu o erro: ${error}`);
-      } 
+    if(!entrada) {
+      movimentacao = await Ceics.create({
+        e_userId: body.userId,
+        carroId: body.carroId,
+        entrada: dateFormatter(new Date()),
+        hEntrada: new Date().toLocaleTimeString()
+      })
+
+    } else {
+      movimentacao = await entrada.update({
+        s_userId: body.userId,
+        saida: dateFormatter(new Date()),
+        hSaida: new Date().toLocaleTimeString() 
+      })
     }
-  } else {
-    var dados = {
-      sCondutor: condutor,
-      sRg: documento,
-      saida: new Date(),
-      hSaida: new Date().toLocaleTimeString(),
-    }
-    var saida = await vaga.update(dados);
+
+    return res.json({ user, movimentacao })
+
+  } catch (e) {
+    console.error('ERRO: ',e)
+    return res.status(500).json({
+      erro: true,
+      msg: e.message,
+      errors: e.erros
+    })
   }
+   
 
-   return res.json(saida);
+
+  // const dataParking = {
+  //   placa: placa,
+  //   marcaModelo: marcaModelo,
+  //   eCondutor: condutor,
+  //   eRg: documento,
+  //   destino,
+  //   eGradua: gradua,
+  //   eOrgao: orgao,
+  //   entrada: new Date(),
+  //   hEntrada: new Date().toLocaleTimeString(),
+  // }
+
+  // const vaga = await Ceics.findOne({
+  //   where: [
+  //     {
+  //       placa: placa
+  //     },
+  //     {
+  //       saida: null
+  //     }
+  //   ],
+  //   order: [['updatedAt', 'DESC']],
+  // });
+
+  // if(!vaga){
+  //   try {
+  //     // var saida = await Ceics.create(dataParking);
+  //   } catch (error) {
+  //     console.warn(`[erro] Ocorreu o erro: ${error}`);
+  //   }
+    
+  //   const vtrPattern = /^([A-Z][A-Z0-9]{1,5}-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$)/;
+
+  //   if (vtrPattern.test(marcaModelo) || vtrPattern.test(placa)) {
+  //     const addVtr = {
+  //       placa,
+  //       prefix: marcaModelo,
+  //       owner,
+  //       documento
+  //     }
+  //     try {
+  //       const exist = await vtrAdd.findOne({
+  //         where: {
+  //          [Op.or]: [
+  //           {placa: { [Op.iLike]: `%${placa}%`}},
+  //           {prefix: { [Op.iLike]: `%${marcaModelo}%`}}
+  //          ]
+           
+  //         }});
+  //       if (!exist) {
+  //         await vtrAdd.create(addVtr);
+  //       } else {
+  //         await vtrAdd.update(addVtr, {where: { id: exist.id}});
+  //       }
+        
+  //     } catch (error) {
+  //       console.warn(`[erro] Ocorreu o erro: ${error}`);
+  //     } 
+  //   }
+  // } else {
+  //   var dados = {
+  //     sCondutor: condutor,
+  //     sRg: documento,
+  //     sGradua: gradua,
+  //     sOrgao: orgao,
+  //     saida: new Date(),
+  //     hSaida: new Date().toLocaleTimeString(),
+  //   }
+  //   // var saida = await vaga.update(dados);
+  // }
+
+  //  return res.json(saida);
   }
 }
 

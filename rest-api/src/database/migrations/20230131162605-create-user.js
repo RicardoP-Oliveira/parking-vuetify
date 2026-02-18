@@ -42,15 +42,22 @@ module.exports = {
           model: "ubms",
           key: "id"
         },
-        onDelete: "CASCADE",
       },
-      email: {
-	      allowNull: true,
-	      type: Sequelize.STRING
+      idTipoDoc: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references:{
+          model: "documentos",
+          key: "id"
+        },
       },
-      cnh: {
-	      allowNull: true,
-	      type: Sequelize.STRING
+      idGrad: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references:{
+          model: "hierarquias",
+          key: "id"
+        },
       },
       createdAt: {
         allowNull: false,

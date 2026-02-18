@@ -1,9 +1,10 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
+import { normalizeText, toUpperSafe } from '@/js/maxMin'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
-  SAIDA: 'Saída'
+  SAIDA: 'Saída',
 }
 
 export function usePedestreForm(props, emit, serviceMock = null) {
@@ -13,23 +14,28 @@ export function usePedestreForm(props, emit, serviceMock = null) {
      STATE
   ======================== */
   const documento = ref('')
-  const tipoDoc = ref('')
-  const idOrgao = ref('')
-  const trato = ref('')
   const nome = ref('')
-  const idUbm = ref('')
   const destino = ref('')
-  const orgaoSigla = ref('')
+
+
+  const userId = ref(null)
+  const idOrgao = ref(null)
+  const idDoc = ref(null)
+  const idUbm = ref(null)
+  const idGradua = ref(null)
+ 
   const isAction = ref(ACTIONS.ENTRADA)
   const formTouched = ref(false)
+  const lastData = ref(null)
 
+   /* ========================
+     LISTAS
+  ======================== */
   const unidades = ref([])
   const orgaos = ref([])
   const destinoOptions = ref([])
   const docRef = ref([])
   const hierarquia = ref([])
-
-  const lastData = ref(null)
 
   /* ========================
      COMPUTED
@@ -50,11 +56,11 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   })
 
   const docOptions = computed(() =>
-    docRef.value.map(d => ({ sigla: d.sigla, name: d.nome }))
+    docRef.value.map(d => ({ id: d.id, sigla: d.sigla, name: d.nome }))
   )
 
   const tratoOptions = computed(() =>
-    hierarquia.value.map(t => ({ abrev: t.abrev }))
+    hierarquia.value.map(t => ({ id: t.id, abrev: t.abrev }))
   )
 
   const orgaosOptions = computed(() =>
@@ -68,93 +74,47 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   /* ========================
      HELPERS
   ======================== */
-  const convertToUpper = () => {
-    nome.value = nome.value?.toUpperCase() || ''
-  }
 
   const limparForm = () => {
-    tipoDoc.value = ''
-    idOrgao.value = ''
-    trato.value = ''
     nome.value = ''
-    idUbm.value = ''
     destino.value = ''
-    orgaoSigla.value = ''
+    userId.value = null
+    idOrgao.value = null
+    idDoc.value = null
+    idUbm.value = null
+    idGradua.value = null
     isAction.value = ACTIONS.ENTRADA
   }
 
-  const mountRegex = (text = '') => {
-    const termos = ['CBMERJ', 'PMERJ', 'EB', 'MB', 'FAB']
-    const split = text.trim().split(/\s+/)
-
-    if (!split.length) return {}
-
-    if (termos.some(t => split.includes(t))) {
-      return {
-        trato: split[0],
-        orgao:
-          split[1] === 'CBMERJ'
-            ? 'BM'
-            : split[1] === 'PMERJ'
-            ? 'PM'
-            : split[1],
-        name: split.slice(2).join(' ')
-      }
-    }
-
-    return {
-      trato: split[0],
-      name: split.slice(1).join(' '),
-      ubm: 'VISITANTE'
-    }
-  }
-
-  const setDataForm = (data, regex = {}) => {
+  const setDataForm = (data = null) => {
     lastData.value = data
+    if (!data) return
 
-    if (!tipoDoc.value && (data.tDoc || data.tipo_doc)) {
-      tipoDoc.value = data.tDoc || data.tipo_doc
-    }
+    const user = data.user ?? {}
 
-    if (!idOrgao.value && data.orgaoId) {
-      idOrgao.value = data.orgaoId
-    }
+    userId.value ??= data.id ?? data.userId
+    idDoc.value ??=  data?.docId ?? data?.idDoc ?? null
+    idOrgao.value ??= user.orgaoId ?? data.orgaoId ?? null
+    idUbm.value ??= user.ubmId ?? data.ubmId ?? null
+    idGradua.value ??= user.graduaId ?? data.graduaId ?? null
+    nome.value ||= data.nGuerra || data.nome || ''
+    
+    resolverDestino(data)
 
-    if (!trato.value) {
-      trato.value = regex.trato || data.gradua || ''
-    }
+  } 
 
-    if (!nome.value) {
-      nome.value = regex.name || data.nGuerra || ''
-    }
+  const resolverDestino = (data = null) => {
+    if (!data.ubmId) return;
 
-    if (!idUbm.value) {
-      idUbm.value = regex.ubm || data.ubmId || ''
-    }
+    const nomeUbm = unidades.value
+      .find(u => u.obm.id === data?.ubmId)
+      ?.obm?.name
+      ?.toUpperCase();
 
-    if (!unidades.value.length || !destinoOptions.value.length) return
-
-    if (!destino.value) {
-      const nomeUbm = (
-        unidades.value.find(u => u.obm.id === idUbm.value)?.obm.name || ''
-      ).toUpperCase()
-
-      const destinosNormalizados = destinoOptions.value.map(d =>
-        d.toUpperCase()
-      )
-
-      destino.value = destinosNormalizados.includes(nomeUbm)
-        ? nomeUbm
-        : data.destino || 'CEICS'
-    }
-
-    if (!orgaoSigla.value) {
-      orgaoSigla.value =
-        data.orgaoU?.sigla === 'CBMERJ'
-          ? 'BM'
-          : data.orgaoU?.sigla === 'PMERJ'
-          ? 'PM'
-          : data.orgaoU?.sigla || ''
+    if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
+      destino.value = nomeUbm;
+    } else {
+      destino.value = data.destino ?? ''
     }
   }
 
@@ -169,8 +129,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     const currentRequest = ++requestId
 
     try {
-      isAction.value = ACTIONS.ENTRADA
-
       const [userRes, pedestreRes] = await Promise.all([
         pedestre.getUsuarioByDoc(documento.value),
         pedestre.getPedestreByDoc(documento.value)
@@ -178,33 +136,45 @@ export function usePedestreForm(props, emit, serviceMock = null) {
 
       if (currentRequest !== requestId) return
 
-      if (!userRes?.erro && userRes?.dados) {
-        setDataForm(userRes.dados)
+      limparForm()
+
+      if (pedestreRes?.dados) {
+        isAction.value = ACTIONS.SAIDA
+        setDataForm(pedestreRes.dados)
+        return
       }
 
-      if (!pedestreRes?.erro && pedestreRes?.dados) {
-        isAction.value = ACTIONS.SAIDA
-        const regex = mountRegex(pedestreRes.dados.name)
-        setDataForm(pedestreRes.dados, regex)
+      if (userRes?.dados) {
+        isAction.value = ACTIONS.ENTRADA
+        setDataForm(userRes.dados)
+        return
       }
+
+      isAction.value = ACTIONS.ENTRADA
+
     } catch (e) {
       console.error('[usePedestreForm] Erro ao buscar dados', e)
     }
   }
 
+  /* ========================
+     SALVAR
+  ======================== */
   const salvar = async () => {
     formTouched.value = true
-    if (!nome.value || !destino.value) return
+    
+    if (!documento.value || !nome.value || !destino.value) return
 
     const payload = {
-      nDoc: documento.value.trim(),
-      tDoc: tipoDoc.value,
-      name: [trato.value, orgaoSigla.value, nome.value]
-        .filter(Boolean)
-        .join(' '),
-      destino: destino.value.toUpperCase()
+      documento: normalizeText(documento.value),
+      destino: normalizeText(destino.value),
+      nGuerra: nome.value,
+      userId: userId.value,
+      idGradua: idGradua.value,
+      idUbm: idUbm.value,
+      idOrgao: idOrgao.value,
+      idDoc: idDoc.value,
     }
-
     try {
       await pedestre.salvarPedestre(payload)
       close()
@@ -279,11 +249,12 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   ======================== */
   return {
     documento,
-    tipoDoc,
-    idOrgao,
-    trato,
     nome,
+    userId,
+    idOrgao,
     idUbm,
+    idDoc,
+    idGradua,
     destino,
     isAction,
     formTouched,
@@ -297,7 +268,6 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     showError,
     errorMessage,
 
-    convertToUpper,
     salvar,
     close
   }

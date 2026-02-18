@@ -2,8 +2,10 @@ import User from '../models/user.mjs';
 import Resposta from '../models/Resposta.mjs';
 import uploadConfig from '../../config/upload.mjs';
 import Ubm from '../models/ubm.mjs';
-import Carro from '../models/carro.mjs';
 import Orgao from '../models/orgao.mjs';
+import Doc from '../models/documentos.mjs'
+import Order from '../models/hierarcar.mjs'
+import { Sequelize } from 'sequelize'
 
 const upload = uploadConfig;
 class UserController {
@@ -29,6 +31,14 @@ class UserController {
             model: Orgao,
             as: 'orgaoU',
           },
+          {
+            model: Doc,
+            as: 'docUser',
+          },
+          {
+            model: Order,
+            as: 'hierarquia'
+          }
         ],
       });
 
@@ -52,37 +62,52 @@ class UserController {
     try {
       let user = await User.findOne({
         where: { documento: id},
-        include: [
-          {
-            model: Ubm,
-            as: 'ubm',
-          },
-          {
-            model: Orgao,
-            as: 'orgaoU',
-          },
-        ],
+        attributes: [
+          'id',
+          [Sequelize.col('documento'), 'doc'],
+          [Sequelize.col('nGuerra'), 'nome'],
+          [Sequelize.col('graduaId'), 'graduaId'],
+          [Sequelize.col('ubmId'), 'ubmId'],
+          [Sequelize.col('orgaoId'), 'orgaoId'],
+          [Sequelize.col('docId'), 'docId'],
+          [Sequelize.col('hierarquia.abrev'), 'graduaAbrev'],
+          [Sequelize.col('orgaoU.siglaCurta'), 'orgaoSigla'],
+          [Sequelize.col('ubm.name'), 'nomeUbm'],
+         ],
+         include: [
+          { model: Order, as: 'hierarquia', attributes: [] },
+          { model: Orgao, as: 'orgaoU', attributes: [] },
+          { model: Ubm, as: 'ubm', attributes: [] },
+         ],
       });
 
-      if (!user) {
-        resposta.erro = true;
-        resposta.msg = 'Usuário(a) não encontrado(a).';
-      } else {
-        resposta.dados = user;
-      }
+      if (!user) return null;
+
+      const dados = user.get({ plain: true })
+
+        dados.nomeCompleto = [
+          dados.graduaAbrev,
+          dados.orgaoSigla,
+          dados.nome
+        ].filter(Boolean).join(' ').trim();
+        
+        resposta.dados = dados;
+        
+        return res.json(resposta);
     } catch (erro) {
       (resposta.erro = true), (resposta.msg = `Error: ${erro}`);
       resposta.dados = erro;
     }
-    return res.json(resposta);
   }
 
   async store(req, res) {
     const resposta = new Resposta();
     const foto = req.file;
+    const { documento } = req.body
+
     try {
       const userExists = await User.findOne({
-        where: { documento: req.body.documento },
+        where: { documento: documento },
       });
       if (userExists) {
         if (req.file) {

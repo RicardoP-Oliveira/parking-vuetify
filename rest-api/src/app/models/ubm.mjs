@@ -2,7 +2,7 @@
 
 import { Model, DataTypes } from 'sequelize';
 
-class ubm extends Model {
+class Ubm extends Model {
   static init(sequelize) {
     super.init(
       {
@@ -21,5 +21,5 @@ class ubm extends Model {
   }
 }
 
-export default ubm;
+export default Ubm;
 

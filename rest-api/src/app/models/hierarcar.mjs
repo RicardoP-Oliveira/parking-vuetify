@@ -1,7 +1,7 @@
 'user strict';
 import { Model, DataTypes } from 'sequelize';
 
-class hierarquia extends Model {
+class Hierarquia extends Model {
     static init(sequelize) {
         super.init(
             {
@@ -15,6 +15,12 @@ class hierarquia extends Model {
         )
         return this;
     }
+
+    // static associate(models) {
+    //   this.hasMany(models.pedestre, { foreignKey: "graduaId", as: "_pedestres" });
+    //   this.hasMany(models.ceics, { foreignKey: "eGraduaId", as: "_grad" });
+    //   this.hasMany(models.user, { foreignKey: "graduaId", as: "_user" })
+    // }
 }
 
-export default hierarquia;
+export default Hierarquia;

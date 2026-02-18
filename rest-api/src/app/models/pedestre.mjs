@@ -1,6 +1,6 @@
 'use strict';
 import { Model, DataTypes } from 'sequelize';
-class pedestre extends Model {
+class Pedestre extends Model {
 
   static init(sequelize){
     super.init({
@@ -8,16 +8,20 @@ class pedestre extends Model {
       hEntrada: DataTypes.TIME,
       saida: DataTypes.DATEONLY,
       hSaida: DataTypes.TIME,
-      name: DataTypes.STRING,
-      tDoc: DataTypes.STRING,
-      nDoc: DataTypes.STRING,
+      // name: DataTypes.STRING,
+      // documento: DataTypes.STRING,
       destino: DataTypes.STRING,
+      userId: DataTypes.INTEGER,
     }, {
       sequelize,
       modelName: 'pedestre',
     });
     return this;
   }
+
+  static associate(models) {
+    this.belongsTo(models.user, { foreignKey: "userId", as: "user" });
+  }
 }
 
-export default pedestre;
+export default Pedestre;

@@ -1,6 +1,12 @@
-import Resposta from '../models/Resposta.mjs';
-import Pedestre from '../models/pedestre.mjs';
-import { Op } from 'sequelize';
+import Resposta from '../models/Resposta.mjs'
+import Pedestre from '../models/pedestre.mjs'
+import User from '../models/user.mjs'
+import Orgao from '../models/orgao.mjs'
+import Ubm from '../models/ubm.mjs'
+import Documentos from '../models/documentos.mjs'
+import Hierarquia from '../models/hierarcar.mjs'
+import { Op, Sequelize } from 'sequelize'
+import database from '../../database/index.mjs'
 
 function dateFormatter (data){
   const dd = data.getDate();
@@ -14,7 +20,8 @@ class PedestreController {
     const resposta = new Resposta();
     const page = req.query.page || 1;
     let perPage = req.query.perPage || 0;
-    
+    let userWhere = {};
+
     const {
       pedestre,
       documento,
@@ -28,16 +35,20 @@ class PedestreController {
       horaSaidaFim,
     } = req.query;
 
-    let whereCondition = {};
+        let whereCondition = {};
+            let userRequired = false;
 
     const conditions = [];
 
     if (pedestre) {
-      conditions.push({ name: {[Op.iLike]: `%${pedestre}%`}});
+      userWhere.nGuerra = { [Op.iLike]: `%${pedestre}%` };
+      userRequired = true
     }
 
     if (documento) {
-      conditions.push({ nDoc: {[Op.iLike]: `%${documento}%`}});
+      // conditions.push({ documento: {[Op.iLike]: `%${documento}%`}});
+      userWhere.documento = { [Op.iLike]: `%${documento}%` };
+      userRequired = true
     }
     
     if (dataInicio || dataFim) {
@@ -118,6 +129,33 @@ class PedestreController {
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
         order: [['updatedAt', 'DESC']],
+         attributes: [
+            'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
+            [Sequelize.col('user.id'), 'userId'],
+            [Sequelize.col('user.documento'), 'doc'],
+            [Sequelize.col('user.nGuerra'), 'nGuerra'],
+            [Sequelize.col('user.graduaId'), 'graduaId'],
+            [Sequelize.col('user.ubmId'), 'ubmId'],
+            [Sequelize.col('user.orgaoId'), 'orgaoId'],
+            [Sequelize.col('user.docId'), 'idDoc'],
+            [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('user->docUser.sigla'), 'docSigla']
+          ],
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: [],
+              where: Object.keys(userWhere).length ? userWhere : undefined,
+              required: userRequired,
+              include: [
+                { model: Hierarquia, as: 'hierarquia', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] },
+                { model: Documentos, as: 'docUser', attributes: []}
+              ]
+            }
+          ],
         offset: (page - 1) * perPage,
         limit: perPage,
       });
@@ -134,14 +172,42 @@ class PedestreController {
 
   async show(req, res) {
     const resposta = new Resposta();
-    const { doc } = req.params;    
+    const { doc } = req.params;
     try {
+      const user = await User.findOne({
+        where: { documento: doc },
+        attributes: ['id']
+      })
+
+      if (!user) {
+        resposta.erro = true
+        resposta.msg = 'Usuário não encontrado!'
+        return res.json(resposta)
+      }
+
       const pedestre = await Pedestre.findOne({
         order: [['updatedAt', 'DESC']],
         where: {
-          nDoc: doc,
+          userId: user.id,
           saida: null
-        }
+        },
+        attributes: [
+          'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
+          [Sequelize.col('user.id'), 'userId'],
+          [Sequelize.col('user.documento'), 'doc'],
+          [Sequelize.col('user.nGuerra'), 'nGuerra'],
+          [Sequelize.col('user.graduaId'), 'graduaId'],
+          [Sequelize.col('user.ubmId'), 'ubmId'],
+          [Sequelize.col('user.orgaoId'), 'orgaoId'],
+          [Sequelize.col('user.docId'), 'idDoc'],
+        ],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: [],
+          }
+        ],
       })
       if (pedestre) {
         resposta.dados = pedestre;
@@ -160,35 +226,71 @@ class PedestreController {
   }
 
   async store(req, res) {
-    const body = req.body;
-    var pedestre;
-    
-    const data = {
-      ...body,
-      'entrada': dateFormatter(new Date()),
-      'hEntrada': new Date().toLocaleTimeString(),
-    }
+  const t = await database.connection.transaction()
 
-    const entrada = await Pedestre.findOne({
-      where: {
-        nDoc: body.nDoc,
-        saida: null
-      },
-      order: [['updatedAt', 'DESC']]
+  try {
+    const body = req.body
+
+    // 1️⃣ Buscar ou criar USER
+    let user = await User.findOne({
+      where: { documento: body.documento }
     })
 
+    if (!user) {
+      user = await User.create({
+        documento: body.documento,
+        nGuerra: body.name,
+        orgaoId: body.idOrgao,
+        ubmId: body.idUbm,
+        docId: body.idDoc,
+        graduaId: body.idGradua
+      
+      }, { transaction: t })
+    }
+    
+    //2️⃣ Verificar entrada aberta
+    const entrada = await Pedestre.findOne({
+      where: {
+        userId: user.id,
+        saida: null
+      },
+      order: [['updatedAt', 'DESC']],
+      transaction: t
+    })
+
+    let pedestre
+
+    const {userId, ...safeBody} = body
+
     if (!entrada) {
-      pedestre = await Pedestre.create(data);
+      console.log('entrada ', entrada)
+      pedestre = await Pedestre.create({
+        ...safeBody,
+        userId: user.id,
+        entrada: dateFormatter(new Date()),
+        hEntrada: new Date().toLocaleTimeString()
+      }, { transaction: t })
     } else {
-      const updatePedestre = {
-        'saida': dateFormatter(new Date()),
-        'hSaida': new Date().toLocaleTimeString(),
-      }
-      pedestre = await entrada.update(updatePedestre)
+      pedestre = await entrada.update({
+        saida: dateFormatter(new Date()),
+        hSaida: new Date().toLocaleTimeString()
+      }, { transaction: t })
     }
 
-    return res.json(pedestre)
+    await t.commit()
+    return res.json({ user, pedestre })
+
+  } catch (e) {
+    await t.rollback()
+    console.error('🔥 ERRO:', e)
+    return res.status(500).json({
+      erro: true,
+      msg: e.message,
+      errors: e.errors
+    })
   }
+}
+
 }
 
 export default new PedestreController();

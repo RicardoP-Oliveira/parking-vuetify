@@ -5,6 +5,7 @@ import OrgaoService from '@/services/OrgaoServices'
 import TargetService from '@/services/TargetService' 
 import DocumentService from '@/services/DocumentService'
 import HierarquiaService from '@/services/HierarquiaService.mjs'
+import CeicsService from '@/services/CeicsServices'
 
 export function useServices(mock = null) {
   // 🔹 Permite injetar mock (testes)
@@ -28,6 +29,22 @@ export function useServices(mock = null) {
     getUsuarioByDoc: (documento) =>
       UserService.getId(documento, token),
 
+    storeUser: (documento) => 
+      UserService.adicionar(documento, token),
+
+    /* ========================
+       CEICS
+    ======================== */
+    getInfo: (value) =>
+      CeicsService.getInfo(value, token),
+
+    getParking: (value) =>
+      CeicsService.getParking(value, token),
+
+    salvarCarro: (value) =>
+      CeicsService.adicionar(value, token),
+    
+    
     /* ========================
        LOOKUPS
     ======================== */

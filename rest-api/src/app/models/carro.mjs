@@ -1,9 +1,12 @@
-import { Model, DataTypes, Op } from 'sequelize';
+import { Model, DataTypes, Op, Sequelize } from 'sequelize';
 import User from './user.mjs';
 import Orgao from './orgao.mjs';
 import Ubm from './ubm.mjs';
+import Order from './hierarcar.mjs';
+import Document from './documentos.mjs';
 
-  class carro extends Model {
+
+  class Carro extends Model {
    static init(sequelize){
     super.init({
       placa: DataTypes.STRING,
@@ -19,9 +22,10 @@ import Ubm from './ubm.mjs';
     return this;
    }
 
-    static associate(models) {
-      this.belongsTo(models.user, { foreignKey: "userId", as: "user" });
+   static associate(models) {
+      this.belongsTo(models.user, { foreignKey: "userId", as: "userCar" });
       this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgao" });
+      this.hasMany(models.ceics, { foreignKey: "carroId", as: "movimentos" });
     }
 
     static async findCar(car) {
@@ -29,24 +33,39 @@ import Ubm from './ubm.mjs';
       let veiculo = null;
 
       const carAsNumber = parseInt(car, 10);
-
+ 
       if (!isNaN(carAsNumber) &&  carAsNumber > 0) {
         try {
           veiculo = await this.findOne({
             where: { id: carAsNumber},
-            include: [{
+            attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            [Sequelize.col('userCar.documento'), 'documento'],
+            [Sequelize.col('userCar.nGuerra'), 'nome'],
+            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
+            [Sequelize.col('userCar.docId'), 'docId'],
+            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
+              
+          ],
+          include: [
+            {
               model: User,
-              as: 'user',
+              as:'userCar',
+              attributes: [],
               include: [
-                { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' }
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Document, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
               ]
-              },
-              {
-                model: Orgao,
-                as: 'orgao'
-              }
-            ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
+          ]
           });
         } catch (error) {
           console.error('Erro ao buscar veículo por ID: ', error);
@@ -72,19 +91,34 @@ import Ubm from './ubm.mjs';
         try {
           veiculo = await this.findOne({
             where: searchCriteria,
-            include: [{
+            attributes: [
+            'id', 'placa', 'marca', 'userId',
+            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            [Sequelize.col('userCar.documento'), 'documento'],
+            [Sequelize.col('userCar.nGuerra'), 'nome'],
+            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
+            [Sequelize.col('userCar.docId'), 'docId'],
+            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
+            [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
+            [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
+            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
+              
+          ],
+          include: [
+            {
               model: User,
-              as:'user',
-              include:[
-                { model: Ubm, as: 'ubm' },
-                { model: Orgao, as: 'orgaoU' }
+              as:'userCar',
+              attributes: [],
+              include: [
+                { model: Order, as: 'hierarquia', attributes: [] },
+                { model: Document, as: 'docUser', attributes: [] },
+                { model: Ubm, as: 'ubm', attributes: [] },
+                { model: Orgao, as: 'orgaoU', attributes: [] }
               ]
-              },
-              {
-                model: Orgao,
-                as: 'orgao'
-              }
-            ]
+            },
+            { model: Orgao, as: 'orgao', attributes: [] }
+          ]
           });
         } catch (error) {
           console.error('Ocorreu um erro: ', error);
@@ -92,9 +126,20 @@ import Ubm from './ubm.mjs';
         }
       }
 
-      return (veiculo);
+      const dados = veiculo.get({ plain: true })
+
+      dados.nomeCompleto = [
+        dados.graduaAbrev,
+        dados.orgaoSigla,
+        dados.nome
+      ].filter(Boolean).join(' ')
+
+
+
+      return dados;
+      // return (veiculo)
 
     }
   }
 
-export default carro;
+export default Carro;
