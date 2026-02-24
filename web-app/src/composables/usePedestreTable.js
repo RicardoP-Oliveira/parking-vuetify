@@ -9,7 +9,7 @@ export function usePedestreTable(pedestreService) {
     ) => {
         const apiFilters = {
             documento: filters.documento,
-            pedestre: filters.condutor,
+            condutor: filters.condutor,
             dataInicio: filters.dataInicio
                 ? filters.dataInicio.toISOString().split('T')[0]
                 : null,
@@ -59,7 +59,7 @@ export function usePedestreTable(pedestreService) {
     const setHeaderGroups = () => ({
         entrada: {
             title: 'Entrada',
-            children: [ 'entrada', 
+            children: [ 
                 { key: 'entrada', title: 'Data'},
                 { key: 'hEntrada', title: 'Hora'}
             ]

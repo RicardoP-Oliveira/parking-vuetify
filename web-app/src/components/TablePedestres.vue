@@ -1,14 +1,14 @@
 <template>
   <BaseTable
+    ref="baseTableRef"
+    :tab="tab"
+    :filters="filters"
     :data-service="loadPedestreData"
     :get-header-order="headerOrder"
     :get-columns="setColumns"
-    :get-header-groups="setHeaderGroups"
-    :filters="filters"
-    :tab="tab"
+    :get-header-groups="setHeaderGroups"  
     @update-btn="$emit('update-btn', $event)"
     @changeTable="$emit('changeTable', $event)"
-    ref="baseTableRef"
   />
 </template>
 
@@ -34,7 +34,7 @@ export default {
       headerOrder,
       setColumns,
       setHeaderGroups,
-    } = usePedestreTable(proxy.$pedestreService);
+    } = usePedestreTable(proxy.$ceicsservice);
 
     return {
       loadPedestreData,

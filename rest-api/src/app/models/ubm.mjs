@@ -10,14 +10,17 @@ class Ubm extends Model {
       },
       {
         sequelize,
-        modelName: 'ubm',
+        modelName: 'Ubm',
+        tableName: 'ubms',
+        underscored: false,
+        timestamps: true
   });
 
       return this;
   }
 
   static associate(models) {
-    this.hasMany(models.user, { foreignKey: "ubmId", as: "users"});
+    this.hasMany(models.User, { foreignKey: "ubmId", as: "users"});
   }
 }
 

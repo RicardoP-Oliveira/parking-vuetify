@@ -28,7 +28,8 @@ import bcrypt from 'bcryptjs';
         // }
       }, {
         sequelize,
-        modelName: 'user',
+        modelName: 'User',
+        tableName: 'users',
       },
       {
         toJSON:{
@@ -56,9 +57,9 @@ import bcrypt from 'bcryptjs';
       return cmtGuarda; 
     }
      static associate(models) {
-      this.belongsTo(models.ubm, { foreignKey: "ubmId", as: "ubm" });
-      this.hasMany(models.carro, { foreignKey: "userId", as: "carros" });
-      this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgaoU"});
+      this.belongsTo(models.Ubm, { foreignKey: "ubmId", as: "ubm" });
+      this.hasMany(models.Carro, { foreignKey: "userId", as: "carros" });
+      this.belongsTo(models.Orgao, { foreignKey: "orgaoId", as: "orgaoU"});
       this.belongsTo(models.documentos, { foreignKey: "docId", as: "docUser"})
       this.belongsTo(models.hierarquias, { foreignKey: "graduaId", as: "hierarquia"})
     }

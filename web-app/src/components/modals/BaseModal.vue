@@ -29,6 +29,8 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
+
 export default {
   props: {
     title: {
@@ -58,6 +60,15 @@ export default {
   },
   emits: ['confirm', 'close'],
   methods: {
+
+    async saveCarro(payload) {
+      console.log('[saveCarro] ', payload)
+    },
+
+    async savePedestre(payload) {
+      console.log('[savePedestre] ', payload)
+    },
+
     close() {
       this.$emit('close');
     },
@@ -65,15 +76,23 @@ export default {
       this.$emit('confirm');
     },
     setFocus() {
-      const button = this.$refs.myButton.$el;
+      // const button = this.$refs.myButton.$el;
+      // this.$nextTick(() => {
+      //   // const identField = this.$refs.ident;
+      //   if (button) {
+      //     setTimeout(() => {
+      //       button.focus(); // Foca novamente
+      //     }, 200); // Pequeno atraso para garantir que o foco seja redefinido
+      //   }
+      // });
       this.$nextTick(() => {
-        // const identField = this.$refs.ident;
-        if (button) {
-          setTimeout(() => {
-            button.focus(); // Foca novamente
-          }, 200); // Pequeno atraso para garantir que o foco seja redefinido
-        }
-      });
+        const button = this.$refs.myButton?.$el;
+
+        if (!button) return
+        setTimeout(() => {
+          button.focus()
+        },200)
+      })
     }
   },
   computed: {
@@ -88,7 +107,7 @@ export default {
   },
   mounted() {
     setTimeout(() => {
-        this.setFocus();
+     this.setFocus()
     },100)
   },
 }

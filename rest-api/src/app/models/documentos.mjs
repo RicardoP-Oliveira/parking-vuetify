@@ -17,7 +17,7 @@ class Documentos extends Model {
     }
 
     static associate(models) {
-        this.hasMany(models.user, { foreignKey: "docId", as: "users" });
+        this.hasMany(models.User, { foreignKey: "docId", as: "users" });
     }
 }
 

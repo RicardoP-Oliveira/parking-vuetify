@@ -115,11 +115,11 @@ const protectedRoutes = setupLayouts(routes).map(route => ({
       ...route.meta,
       requiresAuth: route.path === '/',
     },
-    children: route.children?.map(child => ({
-      ...child,
-      name:  (child.path === '/') ? 'Estacionamento' 
-        : capitalize(translate(child.name.substring(child.name.indexOf('/') + 1)))
-    })) 
+    // children: route.children?.map(child => ({
+    //   ...child,
+    //   name:  (child.path === '/') ? 'Estacionamento' 
+    //     : capitalize(translate(child.name.substring(child.name.indexOf('/') + 1)))
+    // })) 
 }));
 
 // Configuração do router

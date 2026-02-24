@@ -159,7 +159,20 @@ class PedestreController {
         offset: (page - 1) * perPage,
         limit: perPage,
       });
-      resposta.dados = rows;
+
+      const dados = rows.map(row => {
+        const plain = row.get({ plain: true })
+
+        plain.nomeCompleto = [
+          plain.graduaAbrev,
+          plain.orgaoSigla,
+          plain.nGuerra
+        ].filter(Boolean).join(' ')
+
+        return plain
+      })
+
+      resposta.dados = dados;
       var total = count; 
 
     } catch (erro) {

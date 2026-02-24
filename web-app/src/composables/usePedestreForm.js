@@ -92,11 +92,11 @@ export function usePedestreForm(props, emit, serviceMock = null) {
 
     const user = data.user ?? {}
 
-    userId.value ??= data.id ?? data.userId
-    idDoc.value ??=  data?.docId ?? data?.idDoc ?? null
-    idOrgao.value ??= user.orgaoId ?? data.orgaoId ?? null
-    idUbm.value ??= user.ubmId ?? data.ubmId ?? null
-    idGradua.value ??= user.graduaId ?? data.graduaId ?? null
+    userId.value ||= data.id ?? data.userId
+    idDoc.value ||=  data?.docId ?? data?.idDoc ?? null
+    idOrgao.value ||= user.orgaoId ?? data.orgaoId ?? null
+    idUbm.value ||= user.ubmId ?? data.ubmId ?? null
+    idGradua.value ||= user.graduaId ?? data.graduaId ?? null
     nome.value ||= data.nGuerra || data.nome || ''
     
     resolverDestino(data)
@@ -131,7 +131,7 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     try {
       const [userRes, pedestreRes] = await Promise.all([
         pedestre.getUsuarioByDoc(documento.value),
-        pedestre.getPedestreByDoc(documento.value)
+        pedestre.getInfo({ident: documento.value, tab: props.tipo})
       ])
 
       if (currentRequest !== requestId) return

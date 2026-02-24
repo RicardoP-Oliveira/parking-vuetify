@@ -3,17 +3,40 @@ import Ceics from '../models/ceics.mjs'
 import vtrAdd from '../models/vtradd.mjs'
 import Resposta from '../models/Resposta.mjs'
 import User from '../models/user.mjs'
-import Document from '../models/documentos.mjs'
+import Documento from '../models/documentos.mjs'
 import Ubm from '../models/ubm.mjs'
 import Orgao from '../models/orgao.mjs'
 import Hierarquia from '../models/hierarcar.mjs'
 import { Op, Sequelize } from 'sequelize'
+import util from 'util'
 
-function dateFormatter (data){
-  const dd = data.getDate();
-  const mm = data.getMonth() + 1;
-  const aaaa = data.getFullYear();
-  return `${aaaa}-${mm}-${dd}`;
+const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
+  const conditions = []
+
+  const columnWtihTz = Sequelize.literal(`("${columnName}" AT TIME ZONE 'America/Sao_Paulo')`)
+
+  if (start) {
+    conditions.push(
+      Sequelize.where(
+        Sequelize.cast(columnWtihTz, castType),
+        Op.gte,
+        start
+      )
+    )
+  
+  }
+
+  if(end) {
+    conditions.push(
+      Sequelize.where(
+        Sequelize.cast(columnWtihTz, castType),
+        Op.lte,
+        end
+      )
+    )
+  }
+
+  return conditions.length > 0 ? { [Op.and]: conditions } : null
 }
 
 class CeicsController {
@@ -34,17 +57,23 @@ class CeicsController {
       horaInicio,
       horaFim,
       horaSaidaInicio,
-      horaSaidaFim
+      horaSaidaFim,
+      query,
     } = req.query;
 
-    console.log(req.query)
+    const tab = query
     
     let whereCondition = {};
 
     const conditions = [];
 
+    if(query) {
+      conditions.push({ tipo: query })
+    }
+    
+
     if(placa) {
-      conditions.push({ placa: {[Op.iLike]: `%${placa}%`}});
+      conditions.push({ '$carro.placa$': {[Op.iLike]: `%${placa}%`}});
     }
     
     if (documento) {
@@ -57,7 +86,7 @@ class CeicsController {
     }
     
     if (modelo) {
-      conditions.push({ marcaModelo: { [Op.iLike]: `%${modelo}%`}});
+      conditions.push({'$carro.marca$': { [Op.iLike]: `%${modelo}%`}});
     }
 
     if (condutor) {
@@ -68,44 +97,81 @@ class CeicsController {
         ]
       });
     }
-
+     
     if (dataInicio || dataFim) {
-      const entradaDataCondition = {};
-      if (dataInicio) {
-        const formattedDate = dataInicio;
-        if (formattedDate) { // Garante que dateFormatter retornou algo válido
-          entradaDataCondition[Op.gte] = formattedDate;
-        }
-      }
-      if (dataFim) {
-        const formattedDate = dataFim;
-        if (formattedDate) { // Garante que dateFormatter retornou algo válido
-          entradaDataCondition[Op.lte] = formattedDate;
-        }
-      }
+      const filtroData = buildDateTimeFilter('entrada', dataInicio, dataFim, 'DATE')
 
-      if (Reflect.ownKeys(entradaDataCondition).length > 0){
-        conditions.push({ entrada: entradaDataCondition });
-      }
+      if(filtroData) conditions.push(filtroData)
     }
 
     if (horaInicio || horaFim) {
-      const entradaTimeCondition = {};
-      if (horaInicio) {
-        entradaTimeCondition[Op.gte] = horaInicio;
-      }
-      if (horaFim) {
-        entradaTimeCondition[Op.lte] = horaFim;
-      }
-      if (Reflect.ownKeys(entradaTimeCondition).length > 0) {
-        conditions.push({ hEntrada: entradaTimeCondition});
-      }
+      const filtroHora = buildDateTimeFilter('entrada', horaInicio, horaFim, 'TIME')
+    
+      if (filtroHora) conditions.push(filtroHora)
     }
 
     if (conditions.length > 0) {
       whereCondition = {[Op.and]: conditions};
     } else {
       whereCondition = {};
+    }
+
+    const attributes = [
+      'id', 'destino', 'tipo',
+      // Campos data/hora
+      [Sequelize.literal(`(entrada AT TIME ZONE 'America/Sao_Paulo')`), 'entrada'],
+      [Sequelize.literal(`TO_CHAR(entrada AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI:SS')`), 'hEntrada'],
+      [Sequelize.literal(`(saida AT TIME ZONE 'America/Sao_Paulo')`), 'saida'],
+      [Sequelize.literal(`TO_CHAR(saida AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI:SS')`), 'hSaida'],
+      // Campos do condutor/pedestre de entrada
+      [Sequelize.col('entradaId.nGuerra'), 'e_condutor'],
+      [Sequelize.col('entradaId.documento'), 'e_documento'],
+      [Sequelize.col('entradaId->docUser.sigla'), 'e_tipoDoc'],
+      [Sequelize.col('entradaId->hierarquia.abrev'), 'e_graduaAbrev'], 
+      [Sequelize.col('entradaId->orgaoU.siglaCurta'), 'e_siglaCurta'],
+      // Campos do condutor/pedestre de saída
+      [Sequelize.col('saidaId.nGuerra'), 's_condutor'],
+      [Sequelize.col('saidaId.documento'), 's_documento'],
+      [Sequelize.col('saidaId->hierarquia.abrev'), 's_graduaAbrev'],
+      [Sequelize.col('saidaId->orgaoU.siglaCurta'), 's_siglaCurta'],
+    ]
+
+    const include = [
+      {
+        model: User,
+        as: 'entradaId',
+        attributes: [],
+        required: false,
+        include: [
+          { model: Orgao, as: 'orgaoU', attributes: [] },
+          { model: Hierarquia, as: 'hierarquia', attributes: [] },
+          { model: Documento, as: 'docUser', attributes: [] },
+        ]
+      },      {
+        model: User,
+        as: 'saidaId',
+        attributes: [],
+        required: false,
+        include: [
+          { model: Orgao, as: 'orgaoU', attributes: [] },
+          { model: Hierarquia, as: 'hierarquia', attributes: [] },
+        ]
+      },
+    ]
+
+    if (tab === 'carro') {
+      attributes.push(
+        [Sequelize.col('carro.placa'), 'placa'],
+        [Sequelize.col('carro.marca'), 'marcaModelo'],
+      )
+
+      include.push(
+        { 
+          model: Carro,
+          as: 'carro',
+          attributes: [],
+        }
+      )
     }
 
     try {
@@ -116,70 +182,32 @@ class CeicsController {
       const { count, rows } = await Ceics.findAndCountAll({
         order: [['updatedAt', 'DESC']],
         where: whereCondition,
-        attributes: [
-          'id', 'destino', 'entrada', 'hEntrada', 'saida', 'hSaida',
-          [Sequelize.col('carro.placa'), 'placa'],
-          [Sequelize.col('carro.marca'), 'marcaModelo'],
-          [Sequelize.col('entradaId.orgaoId'), 'e_orgaoId'],
-          [Sequelize.col('entradaId.ubmId'), 'e_ubmdId'],
-          [Sequelize.col('entradaId.graduaId'), 'e_graduaId'],
-          [Sequelize.col('entradaId.docId'), 'e_docId'],
-          [Sequelize.col('entradaId.nGuerra'), 'e_condutor'],
-          [Sequelize.col('entradaId->docUser.sigla'), 'e_siglaDoc'],
-          [Sequelize.col('entradaId->hierarquia.abrev'), 'e_graduaAbrev'],
-          [Sequelize.col('entradaId->orgaoU.siglaCurta'), 'e_siglaCurta'],
-          [Sequelize.col('entradaId.documento'), 'e_documento'],
-          [Sequelize.col('saidaId.orgaoId'), 's_orgaoId'],
-          [Sequelize.col('saidaId.ubmId'), 's_ubmdId'],
-          [Sequelize.col('saidaId.graduaId'), 's_graduaId'],
-          [Sequelize.col('saidaId.docId'), 's_docId'],
-          [Sequelize.col('saidaId.nGuerra'), 's_condutor'],
-          [Sequelize.col('saidaId->docUser.sigla'), 's_siglaDoc'],
-          [Sequelize.col('saidaId->hierarquia.abrev'), 's_graduaAbrev'],
-          [Sequelize.col('saidaId->orgaoU.siglaCurta'), 's_siglaCurta'],
-          [Sequelize.col('saidaId.documento'), 's_documento'],
-        ],
-        include: [
-          { model: Carro,
-            as: 'carro',
-            attributes: [],
-            include: [
-              {
-                model: User,
-                as: 'userCar',
-                attributes: [],
-              }
-            ]
-          },
-          {
-            model: User,
-            as: 'entradaId',
-            attributes: [],
-            required: false,
-            include: [
-              { model: Orgao, as: 'orgaoU', attributes: [] },
-              { model: Document, as: 'docUser', attributes: [] },
-              { model: Hierarquia, as: 'hierarquia', attributes: [] },
-              { model: Ubm, as: 'ubm', attributes: [] },
-            ]
-          },
-          {
-            model: User,
-            as: 'saidaId',
-            attributes: [],
-            required: false,
-            include: [
-              { model: Orgao, as: 'orgaoU', attributes: [] },
-              { model: Document, as: 'docUser', attributes: [] },
-              { model: Hierarquia, as: 'hierarquia', attributes: [] },
-              { model: Ubm, as: 'ubm', attributes: [] },
-            ]
-          }
-        ], 
+        attributes: attributes,
+        include: include, 
         offset: (page - 1) * perPage,
         limit: perPage,
+        subQuery: false
       });
-      resposta.dados = rows;
+
+      const dados = rows.map(row => {
+        const plain = row.get({ plain: true })
+
+        plain.e_nomeCompleto = [
+        plain.e_graduaAbrev,
+        plain.e_siglaCurta,
+        plain.e_condutor
+        ].filter(Boolean).join(' ')
+
+        plain.s_nomeCompleto = [
+        plain.s_graduaAbrev,
+        plain.s_siglaCurta,
+        plain.s_condutor
+        ].filter(Boolean).join(' ')
+
+        return plain
+      })
+
+      resposta.dados = dados;
       var total = count;  
       
     } catch(erro) {
@@ -193,36 +221,130 @@ class CeicsController {
 
   async show(req, res) {
     const resposta = new Resposta();
-    const { placa } = req.params;
+    const { identificador } = req.params;
+    const { 'tab': tab } = req.headers;
     const defaultRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/;
 
-    try {
-      const veiculo = await Carro.findCar(placa);
-      
-      if (veiculo) {
-        // Se o veículo for encontrado
-        resposta.dados = veiculo;
-        resposta.msg = 'Veículo encontrado com sucesso!';
-      } else {
-        // Caso o veículo não encontrado
-        resposta.erro = true;
-        if (defaultRegex.test(placa)) {
-          resposta.msg = 'Visitante';
-          resposta.visitor = true
-        } else {
-          resposta.msg = 'Viatura não cadastrada!\nContate o Administrator do sistema.'
-        }    
-      }
+    const busca = identificador ? identificador.trim() : '';
 
-    } catch (error) {
-      resposta.erro = true;
-      resposta.msg = `Error: ${error}`;
-      resposta.dados = error;
+    const criteria = {
+        [Op.or]: [
+            
+            { '$userCar.documento$': { [Op.iLike]: `%${busca}%` } },
+        ]
+    };
+
+    try { 
+      const teste = await Ceics.findOne({
+        order: [['updatedAt', 'DESC']],
+        where: {
+          tipo: tab,
+          '$entradaId.documento$': { [Op.iLike]: `%${identificador}%` },
+          saida: null
+        },
+        attributes: [
+          'id', 'tipo', 'destino',
+          [Sequelize.col('entradaId.documento'), 'documento'],
+          [Sequelize.col('entradaId.ubmId'), 'ubmId'],
+          [Sequelize.col('entradaId.orgaoId'), 'orgaoId'],
+          [Sequelize.col('entradaId.docId'), 'docId'],
+          [Sequelize.col('entradaId.graduaId'), 'graduaId'],
+          [Sequelize.col('entradaId.nGuerra'), 'nome']
+        ],
+        include: [
+          {
+            model: User,
+            as: 'entradaId',
+            attributes: [],
+            include: [
+              { model: Hierarquia, as: 'hierarquia', attributes: [] },
+              { model: Documento, as: 'docUser', attributes: [] },
+              { model: Ubm, as: 'ubm', attributes: [] },
+              { model: Orgao, as: 'orgaoU', attributes: [] }
+            ]
+          }
+        ]
+      })
+
+      if (teste) {
+        resposta.dados = teste
+      } else {
+        resposta.erro = true
+        resposta.msg = 'Nenhum registro encontrado'
+      }
+      
+
+      return res.json(resposta)
+    } catch (e) {
+      resposta.erro = true
+      resposta.msg = 'Surgiu um erro'
     }
 
-    return res.json(resposta);
-   
-  }
+    // try {
+    //     const veiculo = await Carro.findOne({
+    //         where: criteria,
+    //         subQuery: false, // ESSENCIAL para funcionar filtros em associações
+    //         attributes: [
+    //             'id', 'placa', 'marca',
+    //             [Sequelize.col('userCar.ubmId'), 'ubmId'],
+    //             [Sequelize.col('userCar.documento'), 'documento'],
+    //             [Sequelize.col('userCar.nGuerra'), 'nome'],
+    //             [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
+    //             [Sequelize.col('userCar.docId'), 'docId'],
+    //             [Sequelize.col('userCar.graduaId'), 'graduaId'],
+    //             [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
+    //             [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
+    //             [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
+    //             [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
+    //         ],
+    //         include: [
+    //             {
+    //                 model: User,
+    //                 as: 'userCar',
+    //                 required: false, // Permite encontrar o carro mesmo que o documento buscado não seja dele
+    //                 attributes: [],
+    //                 include: [
+    //                     { model: Hierarquia, as: 'hierarquia', attributes: [] },
+    //                     { model: Documento, as: 'docUser', attributes: [] },
+    //                     { model: Ubm, as: 'ubm', attributes: [] },
+    //                     { model: Orgao, as: 'orgaoU', attributes: [] }
+    //                 ]
+    //             },
+    //             { model: Orgao, as: 'orgao', attributes: [] }
+    //         ]
+    //     });
+
+    //     if (veiculo) {
+    //         const dados = veiculo.get({ plain: true });
+
+    //         // Monta o nome completo para o frontend
+    //         dados.nomeCompleto = [
+    //             dados.graduaAbrev, 
+    //             dados.orgaoSigla, 
+    //             dados.nome
+    //         ].filter(Boolean).join(' ');
+            
+    //         resposta.dados = dados;
+    //         resposta.msg = 'Veículo encontrado com sucesso!';
+    //     } else {
+    //         resposta.erro = true;
+    //         // Verifica se o que foi digitado segue o padrão de placa
+    //         if (defaultRegex.test(busca.toUpperCase())) {
+    //             resposta.msg = 'Visitante';
+    //             resposta.visitor = true;
+    //         } else {
+    //             resposta.msg = 'Viatura não cadastrada!\nContate o Administrador.';
+    //         }
+    //     }
+
+    // } catch (error) {
+    //     console.error('ERRO NO SHOW:', error);
+    //     resposta.erro = true;
+    //     resposta.msg = `Erro na busca: ${error.message}`;
+    // }
+
+    // return res.json(resposta);
+}
 
   async parking(req, res) {
     const resposta = new Resposta();
@@ -250,6 +372,8 @@ class CeicsController {
   try {
     const body = req.body
 
+    console.log(body)
+
     const user = await User.findOne({
       where:{ id: body.userId } 
     })
@@ -269,15 +393,15 @@ class CeicsController {
       movimentacao = await Ceics.create({
         e_userId: body.userId,
         carroId: body.carroId,
-        entrada: dateFormatter(new Date()),
-        hEntrada: new Date().toLocaleTimeString()
+        tipo: body.tipo,
+        destino: body.destino,
+        entrada: new Date().toISOString()
       })
 
     } else {
       movimentacao = await entrada.update({
         s_userId: body.userId,
-        saida: dateFormatter(new Date()),
-        hSaida: new Date().toLocaleTimeString() 
+        saida: new Date().toISOString()
       })
     }
 

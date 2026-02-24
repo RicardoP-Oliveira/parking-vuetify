@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('orgaos', {
+    await queryInterface.createTable('unidades', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,15 +10,13 @@ module.exports = {
       },
       sigla: {
         allowNull: false,
+        unique: true,
         type: Sequelize.STRING
       },
-      sigla_curta: {
-        allowNull: true,
-        type: Sequelize.STRING
-      },
-      orgao: {
+      unidade: {
         allowNull: false,
-        type: Sequelize.STRING,
+        unique: true,
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -32,9 +30,7 @@ module.exports = {
       }
     });
   },
-
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('orgaos');
+    await queryInterface.dropTable('unidades');
   }
-}
-
+};

@@ -19,7 +19,7 @@ class Hierarquia extends Model {
     // static associate(models) {
     //   this.hasMany(models.pedestre, { foreignKey: "graduaId", as: "_pedestres" });
     //   this.hasMany(models.ceics, { foreignKey: "eGraduaId", as: "_grad" });
-    //   this.hasMany(models.user, { foreignKey: "graduaId", as: "_user" })
+    //   this.hasMany(models.User, { foreignKey: "graduaId", as: "_user" })
     // }
 }
 

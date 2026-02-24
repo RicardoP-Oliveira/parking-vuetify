@@ -1,14 +1,14 @@
 <template>
   <BaseTable
+    ref="baseTableRef"
+    :tab="tab"
+    :filters="filters"
     :data-service="loadCarData"
     :get-header-order="headerOrder"
     :get-columns="setColumns"
     :get-header-groups="setHeaderGroups"
-    :filters="filters"
-    :tab="tab"
     @update-btn="$emit('update-btn', $event)"
     @changeTable="$emit('changeTable', $event)"
-    ref="baseTableRef"
   />
 </template>
 
@@ -26,23 +26,22 @@ export default {
     tab: String,
     filters: Object,
   },
-  emits: ['update-btn', 'changeTable'],
-  setup() {
-    const { proxy } = getCurrentInstance();
+  setup(_, { emit }){
+    const { proxy } = getCurrentInstance()
 
     const {
       loadCarData,
       headerOrder,
       setColumns,
       setHeaderGroups,
-    } = useCarroTable(proxy.$ceicsservice);
+    } = useCarroTable(proxy.$ceicsservice)
 
     return {
       loadCarData,
       headerOrder,
       setColumns,
       setHeaderGroups,
-    };
-  },
-};
+    }
+  }
+}
 </script>

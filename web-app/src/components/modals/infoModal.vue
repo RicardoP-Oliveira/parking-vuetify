@@ -34,7 +34,7 @@
     </v-row>
     <v-row>
       <v-col class="px-0 pt-2 font-weight-bold" align="end">
-          Condutor:
+          Condutor: 
       </v-col>
       <v-col class="px-2 py-0">
         <v-text-field
@@ -100,8 +100,9 @@
 
 <script setup>
 import { useCarroForm } from '@/composables/useCarroForm'
+import { useBaseTable } from '@/composables/useBaseTable';
 
-const props = defineProps({ dialog: Object })
+const props = defineProps({ dialog: Object, tipo: String })
 const emit = defineEmits(['closeModal'])
 
 const {

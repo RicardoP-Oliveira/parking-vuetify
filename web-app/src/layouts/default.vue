@@ -208,38 +208,25 @@
         <v-card-text>
           <v-tabs-window v-model="tab">
             <v-tabs-window-item value="carro">
-              <!-- Router-view que renderiza TableCarros.vue -->
-              <router-view
-                v-slot="{ Component }"
-                @show-snackbar="handleShowSnackbar"
-              >
-              <component
-                :is="Component"
-                @update-btn="updateBtn"
-                @changeTable="changeTable"
-                :tab="tab"
-                :filters="filters"
-                ref="tableCarrosWrapper"
-              />
-              </router-view>
             </v-tabs-window-item>
-            <v-tabs-window-item value="pedestre" class="mx-auto my-auto">
-              <!-- Router-view que renderiza TablePedestres.vue -->
-              <router-view
-                v-slot="{ Component }"
-                @show-snackbar="handleShowSnackbar"
-              >
-                <component
-                  :is="Component" 
-                  @update-btn="updateBtn"
-                  @changeTable="changeTable"
-                  :tab="tab"
-                  :filters="filters"
-                  ref="tablePedestresWrapper"
-                />
-               </router-view>
-            </v-tabs-window-item>
+            <v-tabs-window-item value="pedestre"
+             class="mx-auto my-auto">
+            </v-tabs-window-item>  
           </v-tabs-window>
+          <router-view
+            v-slot="{ Component }"
+            @show-snackbar="handleShowSnackbar"
+          >
+          <component
+            :is="Component"
+            :key="tab"
+            @update-btn="updateBtn"
+            @changeTable="changeTable"
+            :tab="tab"
+            :filters="filters"
+            ref="tableCarrosWrapper"
+          />
+        </router-view>
         </v-card-text>
       </v-card>
     </v-main>
@@ -247,7 +234,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { VTimePicker } from 'vuetify/labs/VTimePicker';
 
 export default {
@@ -257,7 +244,7 @@ export default {
   provide() {
     return {
       dataTable: this.dataTable,
-      tab: this.tab,
+      tab: computed(() => this.tab),
       setFalseDataTable: this.setFalseDataTable,
     };
   },
@@ -344,6 +331,14 @@ export default {
       }
     },
   },
+  watch: {
+    tab(newTab) {
+      if (newTab === 'pedestre') {
+        this.filters.placa = null
+        this.filters.modelo = null
+      }
+    } 
+  }
 };
 </script>
 

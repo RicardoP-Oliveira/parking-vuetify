@@ -68,7 +68,7 @@
       </v-col>
     </v-row>
 
-    <v-row>
+    <v-row> 
       <v-col cols="4" class="px-2 py-1">
         <v-select
           :items="unidadesOptions"
@@ -99,7 +99,8 @@ import BaseModal from '@/components/modals/BaseModal.vue'
 import { usePedestreForm } from '@/composables/usePedestreForm'
 
 const props = defineProps({
-  dialog: { type: Object, required: true }
+  dialog: { type: Object, required: true },
+  tipo: { type: String }
 })
 
 const emit = defineEmits(['closeModal'])

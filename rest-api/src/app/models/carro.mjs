@@ -17,14 +17,17 @@ import Document from './documentos.mjs';
       renavam: DataTypes.STRING
     }, {
       sequelize,
-      modelName: 'carro',
+      modelName: 'Carro',
+      tableName: 'carros',
+      underscored: false,
+      timestamps: true
     });
     return this;
    }
 
    static associate(models) {
-      this.belongsTo(models.user, { foreignKey: "userId", as: "userCar" });
-      this.belongsTo(models.orgao, { foreignKey: "orgaoId", as: "orgao" });
+      this.belongsTo(models.User, { foreignKey: "userId", as: "userCar" });
+      this.belongsTo(models.Orgao, { foreignKey: "orgaoId", as: "orgao" });
       this.hasMany(models.ceics, { foreignKey: "carroId", as: "movimentos" });
     }
 
@@ -35,6 +38,7 @@ import Document from './documentos.mjs';
       const carAsNumber = parseInt(car, 10);
  
       if (!isNaN(carAsNumber) &&  carAsNumber > 0) {
+        console.log('[TESTE] ==> ', carAsNumber)
         try {
           veiculo = await this.findOne({
             where: { id: carAsNumber},

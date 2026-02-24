@@ -2,7 +2,6 @@
 
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
-import { consoleError } from 'vuetify/lib/util/console.mjs'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
@@ -31,7 +30,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const condutorId = ref('')
   
     const obm = ref('')
-    const orgao = ref('')
+    const tab = ref('')
 
     const search = ref('')
    
@@ -76,13 +75,11 @@ export function useCarroForm(props, emit, serviceMock = null) {
   //   }
   // }
 
-  const resolveNome = (data) => [
-    data.graduaAbrev, data.orgaoSigla, data?.nome
-  ].filter(Boolean).join(' ')
-
 
    const resolverDestino = (data = null) => {
     if (!data.ubmId) return;
+
+  
 
     const nomesUbm = unidades.value
       .find(u => u.obm.id === data?.ubmId)
@@ -92,7 +89,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
     if (nomesUbm && destinoOptions.value.includes(nomesUbm)) {
       destino.value = nomesUbm;
     } else {
-      destino.value = data.destino ?? ''
+      destino.value = data.destino
     }
   }
 
@@ -142,6 +139,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
       modelo.value = dados.marca
       carroId.value = dados.id
       resolverDestino(dados)
+      tab.value = 'carro'
 
       return
     }
@@ -164,7 +162,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
         ? search.value.substring(1)
         : search.value
 
-      const infoRes = await service.getInfo(search.value)
+      const infoRes = await service.getInfo({ ident: search.value, tab: props.tipo} )
 
       const buscaPlaca = !isNaN(search.value) || infoRes.erro
       ? search.value
@@ -187,7 +185,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
     try {
       const res = await service.getUsuarioByDoc(value.trim())
       if (!res.erro && res.dados) {
-
+ 
         const user = res.dados
 
         condutorResolved.value = user.nomeCompleto
@@ -209,8 +207,9 @@ export function useCarroForm(props, emit, serviceMock = null) {
       userId: condutorId.value,
       carroId: carroId.value,
       id: id.value,
+      tipo: 'carro',
     }
-
+    
     try {
       await service.salvarCarro(payload)
       close()

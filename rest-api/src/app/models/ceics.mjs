@@ -11,14 +11,13 @@ import Carro from './carro.mjs';
 
     static init(sequelize){
       super.init({
-        entrada: DataTypes.DATEONLY,
-        hEntrada: DataTypes.TIME,
-        saida: DataTypes.DATEONLY,
-        hSaida: DataTypes.TIME,
+        entrada: DataTypes.DATE,
+        saida: DataTypes.DATE,
         destino: DataTypes.STRING,
         e_userId: DataTypes.INTEGER,
         s_userId: DataTypes.INTEGER,
         carroId: DataTypes.INTEGER,
+        tipo: DataTypes.ENUM('carro','pedestre'),
       }, {
         sequelize,
         modelName: 'ceics',
@@ -27,9 +26,9 @@ import Carro from './carro.mjs';
     }
 
     static associate(models) {
-      this.belongsTo(models.user, { foreignKey: "e_userId", as: "entradaId" });
-      this.belongsTo(models.user, { foreignKey: "s_userId", as: "saidaId" });
-      this.belongsTo(models.carro, { foreignKey: "carroId", as: "carro"});
+      this.belongsTo(models.User, { foreignKey: "e_userId", as: "entradaId" });
+      this.belongsTo(models.User, { foreignKey: "s_userId", as: "saidaId" });
+      this.belongsTo(models.Carro, { foreignKey: "carroId", as: "carro"});
     }
 
     static async findCar(car) {

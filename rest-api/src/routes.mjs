@@ -65,7 +65,7 @@ routes.delete('/carro/:id', CarroController.destroy);
 
 routes.post('/ceics',  auth, CeicsController.store);
 routes.get('/ceics', CeicsController.index);
-routes.get('/ceics/:placa', CeicsController.show);
+routes.get('/ceics/:identificador', CeicsController.show);
 routes.get('/parking/:placa', CeicsController.parking);
 
 routes.get('/pedestre', PedestreController.index);

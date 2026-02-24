@@ -30,10 +30,11 @@ export default class CeicsService {
     }).then((res) => res.json());
   }
 
-  static getInfo(placa, token) {
-    return fetch(`${caminho}/${placa}`, {
+  static getInfo({ident, tab}, token) {
+    return fetch(`${caminho}/${ident}`, {
       headers: {
         Authorization: token,
+        'tab': tab
       }
     }).then((res) => res.json());
   }

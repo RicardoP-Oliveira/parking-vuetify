@@ -1,17 +1,28 @@
-'use strict';
 import { Model, DataTypes } from 'sequelize';
 
 class Orgao extends Model {
   static init(sequelize) {
     super.init(
       {
-        orgao: DataTypes.STRING,
-        sigla: DataTypes.STRING,
-        siglaCurta: DataTypes.STRING,
+        orgao: {
+          type: DataTypes.STRING,
+          defaultValue: false
+        },
+        sigla: {
+          type: DataTypes.STRING,
+          defaultValue: false
+        },
+        siglaCurta: {
+          type: DataTypes.STRING,
+          defaultValue: true
+        } 
       },
       {
         sequelize,
-        modelName: 'orgao',
+        modelName: 'Orgao',
+        tableName: 'orgaos',
+        underscored: false,
+        timestamps: true
       },
     );
 
@@ -19,10 +30,10 @@ class Orgao extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.user, { foreignKey: "orgaoId", as: "users" });
-    this.hasMany(models.carro, { foreignKey: "orgaoId", as: "carros" });
+    this.hasMany(models.User, { foreignKey: "orgaoId", as: "users" });
+    this.hasMany(models.Carro, { foreignKey: "orgaoId", as: "carros" });
   }
-}
+} 
 
 export default Orgao;
 
