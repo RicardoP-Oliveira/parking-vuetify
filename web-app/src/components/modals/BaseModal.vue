@@ -1,5 +1,9 @@
 <template>
-  <v-dialog ref="baseModal" v-model="isOpenInternal" :width="width" persistent>
+  <v-dialog
+    v-model="isOpenInternal"
+    :width="width"
+    :retain-focus="false"
+    persistent>
     <v-card>
       <v-card-title class="text-center">
         {{ title }}
@@ -70,22 +74,13 @@ export default {
     },
 
     close() {
-      this.$emit('close');
+      this.$emit('close', 'cancel');
     },
     confirm() {
       this.$emit('confirm');
     },
     setFocus() {
-      // const button = this.$refs.myButton.$el;
-      // this.$nextTick(() => {
-      //   // const identField = this.$refs.ident;
-      //   if (button) {
-      //     setTimeout(() => {
-      //       button.focus(); // Foca novamente
-      //     }, 200); // Pequeno atraso para garantir que o foco seja redefinido
-      //   }
-      // });
-      this.$nextTick(() => {
+      nextTick(() => {
         const button = this.$refs.myButton?.$el;
 
         if (!button) return

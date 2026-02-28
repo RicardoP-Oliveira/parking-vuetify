@@ -7,11 +7,11 @@ import bcrypt from 'bcryptjs';
     static init(sequelize){
       super.init({
         documento: DataTypes.STRING,
-        nGuerra: DataTypes.STRING,
-        ubmId: DataTypes.INTEGER,
-        orgaoId: DataTypes.INTEGER,
-        docId: DataTypes.INTEGER,
-        graduaId: DataTypes.INTEGER,
+        n_guerra: DataTypes.STRING,
+        ubm_id: DataTypes.INTEGER,
+        orgao_id: DataTypes.INTEGER,
+        doc_id: DataTypes.INTEGER,
+        gradua_id: DataTypes.INTEGER,
         // role: DataTypes.INTEGER,
 	      // cnh: DataTypes.STRING,
         // foto: DataTypes.STRING,
@@ -30,6 +30,8 @@ import bcrypt from 'bcryptjs';
         sequelize,
         modelName: 'User',
         tableName: 'users',
+        underscored: true,
+        timestamps: true
       },
       {
         toJSON:{
@@ -57,11 +59,11 @@ import bcrypt from 'bcryptjs';
       return cmtGuarda; 
     }
      static associate(models) {
-      this.belongsTo(models.Ubm, { foreignKey: "ubmId", as: "ubm" });
-      this.hasMany(models.Carro, { foreignKey: "userId", as: "carros" });
-      this.belongsTo(models.Orgao, { foreignKey: "orgaoId", as: "orgaoU"});
-      this.belongsTo(models.documentos, { foreignKey: "docId", as: "docUser"})
-      this.belongsTo(models.hierarquias, { foreignKey: "graduaId", as: "hierarquia"})
+      this.belongsTo(models.Ubm, { foreignKey: "ubm_id", as: "ubm" });
+      this.hasMany(models.Carro, { foreignKey: "user_id", as: "carros" });
+      this.belongsTo(models.Orgao, { foreignKey: "orgao_id", as: "orgaoU"});
+      this.belongsTo(models.documentos, { foreignKey: "doc_id", as: "docUser"})
+      this.belongsTo(models.hierarquias, { foreignKey: "gradua_id", as: "hierarquia"})
     }
 
 

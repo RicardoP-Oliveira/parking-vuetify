@@ -37,7 +37,7 @@ class UbmController {
         include: {
           model: User,
           as:"users",
-          // attributes:['id', 'rg', 'nGuerra', 'foto', 'fotoUri'],
+          // attributes:['id', 'rg', 'n_guerra', 'foto', 'fotoUri'],
           include: [
             {
               model: Carro,

@@ -21,7 +21,7 @@ class Orgao extends Model {
         sequelize,
         modelName: 'Orgao',
         tableName: 'orgaos',
-        underscored: false,
+        underscored: true,
         timestamps: true
       },
     );
@@ -30,8 +30,8 @@ class Orgao extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.User, { foreignKey: "orgaoId", as: "users" });
-    this.hasMany(models.Carro, { foreignKey: "orgaoId", as: "carros" });
+    this.hasMany(models.User, { foreignKey: "orgao_id", as: "users" });
+    this.hasMany(models.Carro, { foreignKey: "orgao_id", as: "carros" });
   }
 } 
 

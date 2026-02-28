@@ -23,11 +23,11 @@ export function useCarroForm(props, emit, serviceMock = null) {
     const condutorResolved = ref('')
     const destino = ref('')
     const modelo = ref('')
-    const ubmId = ref(null)
-    const orgaoId = ref(null)
-    const carroId = ref(null)
+    const ubm_id = ref(null)
+    const orgao_id = ref(null)
+    const carro_id = ref(null)
     const id = ref(null)
-    const condutorId = ref('')
+    const condutor_id = ref('')
   
     const obm = ref('')
     const tab = ref('')
@@ -63,12 +63,12 @@ export function useCarroForm(props, emit, serviceMock = null) {
   const getLength = () => (pattern.test(placa.value) ? 7 : undefined)
 
   // const getOwner = value => {
-  //   if (value?.userId) {
+  //   if (value?.user_id) {
   //     const orgao = value.user?.orgaoU?.sigla || ''
   //     const gradua = value.user?.gradua || ''
   //     const name = value.user?.nGuerra || ''
   //     proprietario.value = `${gradua} ${orgao} ${name}`.trim()
-  //   } else if (value?.orgaoId) {
+  //   } else if (value?.orgao_id) {
   //     proprietario.value = value.orgao?.orgao || 'Desconhecido'
   //   } else {
   //     proprietario.value = 'NFPA'
@@ -77,12 +77,12 @@ export function useCarroForm(props, emit, serviceMock = null) {
 
 
    const resolverDestino = (data = null) => {
-    if (!data.ubmId) return;
+    if (!data.ubm_id) return;
 
   
 
     const nomesUbm = unidades.value
-      .find(u => u.obm.id === data?.ubmId)
+      .find(u => u.obm.id === data?.ubm_id)
       ?.obm?.name
       ?.toUpperCase();
 
@@ -100,7 +100,8 @@ export function useCarroForm(props, emit, serviceMock = null) {
   ======================== */
   let currentRequest = 0
 
-  const processResults = (infoRes, parkingRes) => {
+  const processResults = (carroRes, parkingRes) => {
+
     // ==================
     // CASO 1 - VEÍCULO JÁ DENTRO (SAÍDA)
     // ==================
@@ -110,14 +111,14 @@ export function useCarroForm(props, emit, serviceMock = null) {
       const dados = parkingRes.dados
 
       obm.value = dados.e_obm
-      documento.value = dados.e_documento
+      documento.value = dados.documento
       // condutorResolved.value = dados.e_nomeCompleto
       // condutor.value = dados.e_condutor
-      placa.value = dados.carroPlaca
-      modelo.value = dados.carroMarca
-      destino.value = dados.destino
-      condutorId.value = dados.e_condutorId
-      carroId.value = dados.carroId
+      placa.value = dados.placa
+      modelo.value = dados.modelo
+      destino.value = resolverDestino(dados)
+      condutor_id.value = dados.e_condutor_id
+      carro_id.value = dados.carro_id
       id.value = dados.id
 
       return
@@ -126,10 +127,10 @@ export function useCarroForm(props, emit, serviceMock = null) {
     // ==================
     // CASO 2 - ENTRADA COM DADOS
     // ==================
-    if (!infoRes.erro && infoRes.dados) {
+    if (!carroRes.erro && carroRes.dados) {
       isAction.value = ACTIONS.ENTRADA
 
-      const dados = infoRes.dados
+      const dados = carroRes.dados
 
       obm.value = dados.nomeUbm
       documento.value = dados.documento
@@ -137,17 +138,17 @@ export function useCarroForm(props, emit, serviceMock = null) {
       // condutor.value = dados.nome
       placa.value = dados.placa
       modelo.value = dados.marca
-      carroId.value = dados.id
+      carro_id.value = dados.id
       resolverDestino(dados)
       tab.value = 'carro'
 
       return
     }
-
+    
     // ==================
     // CASO 3 - VISITANTE / NÃO ENCONTRADO
     // ==================
-    if (infoRes.visitor) {
+    if (carroRes.visitor) {
       isAction.value = ACTIONS.ENTRADA
       placa.value = search.value
       return
@@ -156,25 +157,35 @@ export function useCarroForm(props, emit, serviceMock = null) {
 
 
   const getDados = async () => {
-    const requestId = ++currentRequest
+    const request_id = ++currentRequest
+
     try {
-      search.value = ifPattern.test(search.value)
-        ? search.value.substring(1)
-        : search.value
+      const [carroRes, parkingRes] = await Promise.all([
+        service.getCarroPlaca(search.value),
+        service.getInfo({ ident: search.value, tab: props.tipo })
+      ])
 
-      const infoRes = await service.getInfo({ ident: search.value, tab: props.tipo} )
+      // search.value = ifPattern.test(search.value)
+      //   ? search.value.substring(1)
+      //   : search.value 
 
-      const buscaPlaca = !isNaN(search.value) || infoRes.erro
-      ? search.value
-      : infoRes.visitor
-        ? search.value
-        : infoRes.dados?.placa || ''
-
-      const parkingRes = await service.getParking(buscaPlaca)
-
-      if (requestId !== currentRequest) return
+      // const carroRes = await service.getCarroPlaca(search.value)
       
-      processResults(infoRes, parkingRes)
+      // const buscaPlaca  = search.value
+
+      // const buscaPlaca = !isNaN(search.value) || carroRes.erro
+      // ? search.value
+      // : carroRes.visitor
+      //   ? search.value
+      //   : carroRes.dados?.placa || ''
+
+      //   console.log('Busncando por:',buscaPlaca)
+
+      // const parkingRes = await service.getInfo({ ident: buscaPlaca, tab: props.tipo })
+
+      if (request_id !== currentRequest) return
+
+      processResults(carroRes, parkingRes)
 
     } catch (e) {
       console.error('[useCarroForm] Erro ao buscar dados', e)
@@ -190,7 +201,7 @@ export function useCarroForm(props, emit, serviceMock = null) {
 
         condutorResolved.value = user.nomeCompleto
         obm.value = user.nomeUbm
-        condutorId.value = user.id
+        condutor_id.value = user.id
         resolverDestino(user)
 
       }
@@ -204,14 +215,14 @@ export function useCarroForm(props, emit, serviceMock = null) {
 
     const payload = {
       destino: destino.value,
-      userId: condutorId.value,
-      carroId: carroId.value,
+      user_id: condutor_id.value,
+      carro_id: carro_id.value,
       id: id.value,
       tipo: 'carro',
     }
     
     try {
-      await service.salvarCarro(payload)
+      await service.salvarDados(payload)
       close()
     } catch (e) {
       console.error('[useCarroForm] Erro ao salvar', e)
@@ -282,8 +293,8 @@ export function useCarroForm(props, emit, serviceMock = null) {
     condutorResolved,
     destino,
     modelo,
-    ubmId,
-    orgaoId,
+    ubm_id,
+    orgao_id,
     destinoOptions,
       
     

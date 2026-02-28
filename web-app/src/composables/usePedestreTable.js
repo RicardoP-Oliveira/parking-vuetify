@@ -1,82 +1,35 @@
-// scr/composables/usePedestreTable.js
+// src/composables/usePedestreTable.js
 export function usePedestreTable(pedestreService) {
-    const loadPedestreData = async (
-        page,
-        itemsPerPage,
-        token,
-        tab,
-        filters
-    ) => {
-        const apiFilters = {
-            documento: filters.documento,
-            condutor: filters.condutor,
-            dataInicio: filters.dataInicio
-                ? filters.dataInicio.toISOString().split('T')[0]
-                : null,
-            dataFim: filters.dataFim
-                ? filters.dataFim.toISOString().split('T')[0]
-                : null,
-            horaInicio: filters.horaInicio,
-            horaFim: filters.horaFim,
-        };
 
-        // remove filtros vazios
-        Object.keys(apiFilters).forEach((key) => {
-            if (apiFilters[key] === null || apiFilters[key] === '') {
-                delete apiFilters[key];
-            }
-        });
+	const loadPedestreData = async (page, itemsPerPage, token, tab, filters) => {
 
-        return pedestreService.getTodos(
-            page,
-            itemsPerPage,
-            token,
-            tab,
-            apiFilters
-        )
-    };
+		const apiFilters = {
+			documento: filters.documento,
+			condutor: filters.condutor,
+			dataInicio: filters.dataInicio instanceof Date
+				? filters.dataInicio.toISOString().split('T')[0]
+				: null,
+			dataFim: filters.dataFim instanceof Date
+				? filters.dataFim.toISOString().split('T')[0]
+				: null,
+			horaInicio: filters.horaInicio,
+			horaFim: filters.horaFim,
+		};
 
-    const headerOrder = () => [
-        'tipoDoc',
-        'numDoc',
-        'nome',
-        'destino',
-        'entrada',
-        'saida'
-    ];
+		const cleanFilters = Object.fromEntries(
+			Object.entries(apiFilters).filter(([_, v]) => v != null && v !== '')
+		);
 
-    const setColumns = () => [
-        'tipoDoc',
-        'numDoc',
-        'nome',
-        'destino',
-        'entrada',
-        'hEntrada',
-        'saida',
-        'hSaida'
-    ]
+		return pedestreService.getTodos(
+			page,
+			itemsPerPage,
+			token,
+			tab,
+			cleanFilters
+		);
+	};
 
-    const setHeaderGroups = () => ({
-        entrada: {
-            title: 'Entrada',
-            children: [ 
-                { key: 'entrada', title: 'Data'},
-                { key: 'hEntrada', title: 'Hora'}
-            ]
-        },
-        saida : {
-            title: 'Saida',
-            children: [
-                { key: 'saida', title: 'Data'},
-                { key: 'hSaida', title: 'Hora'}
-            ]
-        }
-    });
-
-    return {
-        loadPedestreData,
-        headerOrder,
-        setColumns,
-        setHeaderGroups
-    };
+	return {
+		loadPedestreData
+	};
 }

@@ -34,7 +34,7 @@ class SessionController {
                     horaInicio: formatedTime,
             }
             // let servico = null;
-            // const isOpenServico = await Servico.findOne({ where: { dataTermino: null}, order: [['createdAt', 'DESC']]});
+            // const isOpenServico = await Servico.findOne({ where: { dataTermino: null}, order: [['created_at', 'DESC']]});
   
             // if (isOpenServico) {
             //     const bodyUpdate = {

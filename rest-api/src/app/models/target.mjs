@@ -1,8 +1,6 @@
-'use strict';
-
 import { Model, DataTypes } from 'sequelize';
 
-class target extends Model {
+class Target extends Model {
   static init(sequelize) {
     super.init(
       {
@@ -10,7 +8,10 @@ class target extends Model {
       },
       {
         sequelize,
-        modelName: 'target',
+        modelName: 'Target',
+        tableName: 'targets',
+        underscored: true,
+        timestamps: true,
   });
 
       return this;
@@ -18,4 +19,4 @@ class target extends Model {
 
 }
 
-export default target;
+export default Target;

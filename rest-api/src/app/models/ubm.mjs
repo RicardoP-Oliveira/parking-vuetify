@@ -12,7 +12,7 @@ class Ubm extends Model {
         sequelize,
         modelName: 'Ubm',
         tableName: 'ubms',
-        underscored: false,
+        underscored: true,
         timestamps: true
   });
 
@@ -20,7 +20,7 @@ class Ubm extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.User, { foreignKey: "ubmId", as: "users"});
+    this.hasMany(models.User, { foreignKey: "ubm_id", as: "users"});
   }
 }
 

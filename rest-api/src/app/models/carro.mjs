@@ -1,3 +1,4 @@
+// src/models/carro.mjs
 import { Model, DataTypes, Op, Sequelize } from 'sequelize';
 import User from './user.mjs';
 import Orgao from './orgao.mjs';
@@ -12,23 +13,23 @@ import Document from './documentos.mjs';
       placa: DataTypes.STRING,
       marca: DataTypes.STRING,
       modelo: DataTypes.STRING,
-      userId: DataTypes.INTEGER,
-      orgaoId: DataTypes.INTEGER,
+      user_id: DataTypes.INTEGER,
+      orgao_id: DataTypes.INTEGER,
       renavam: DataTypes.STRING
     }, {
       sequelize,
       modelName: 'Carro',
       tableName: 'carros',
-      underscored: false,
+      underscored: true,
       timestamps: true
     });
     return this;
    }
 
    static associate(models) {
-      this.belongsTo(models.User, { foreignKey: "userId", as: "userCar" });
-      this.belongsTo(models.Orgao, { foreignKey: "orgaoId", as: "orgao" });
-      this.hasMany(models.ceics, { foreignKey: "carroId", as: "movimentos" });
+      this.belongsTo(models.User, { foreignKey: "user_id", as: "userCar" });
+      this.belongsTo(models.Orgao, { foreignKey: "orgao_id", as: "orgao" });
+      this.hasMany(models.ceics, { foreignKey: "carro_id", as: "movimentos" });
     }
 
     static async findCar(car) {
@@ -41,19 +42,19 @@ import Document from './documentos.mjs';
         console.log('[TESTE] ==> ', carAsNumber)
         try {
           veiculo = await this.findOne({
-            where: { id: carAsNumber},
+            where: { _id: carAsNumber},
             attributes: [
-            'id', 'placa', 'marca', 'userId',
-            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            '_id', 'placa', 'marca', 'user_id', 'orgao_id',
+            [Sequelize.col('userCar.ubm_id'), 'ubm_id'],
             [Sequelize.col('userCar.documento'), 'documento'],
-            [Sequelize.col('userCar.nGuerra'), 'nome'],
-            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
-            [Sequelize.col('userCar.docId'), 'docId'],
-            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar.n_guerra'), 'nome'],
+            [Sequelize.col('userCar.orgao_id'), 'orgao_id'],
+            [Sequelize.col('userCar.doc_id'), 'doc_id'],
+            [Sequelize.col('userCar.gradua_id'), 'guadua_id'],
             [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
             [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
             [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('userCar->orgaoU.sigla_curta'), 'orgaoSigla'],
               
           ],
           include: [
@@ -72,7 +73,7 @@ import Document from './documentos.mjs';
           ]
           });
         } catch (error) {
-          console.error('Erro ao buscar veículo por ID: ', error);
+          console.error('Erro ao buscar veículo por Id: ', error);
           throw error;
         }
       }
@@ -96,17 +97,17 @@ import Document from './documentos.mjs';
           veiculo = await this.findOne({
             where: searchCriteria,
             attributes: [
-            'id', 'placa', 'marca', 'userId',
-            [Sequelize.col('userCar.ubmId'), 'ubmId'],
+            '_id', 'placa', 'marca', 'user_id',
+            [Sequelize.col('userCar.ubm_id'), 'ubm_id'],
             [Sequelize.col('userCar.documento'), 'documento'],
-            [Sequelize.col('userCar.nGuerra'), 'nome'],
-            [Sequelize.col('userCar.orgaoId'), 'orgaoId'],
-            [Sequelize.col('userCar.docId'), 'docId'],
-            [Sequelize.col('userCar.graduaId'), 'guaduaId'],
+            [Sequelize.col('userCar.n_guerra'), 'nome'],
+            [Sequelize.col('userCar.orgao_id'), 'orgao_id'],
+            [Sequelize.col('userCar.doc_id'), 'doc_id'],
+            [Sequelize.col('userCar.gradua_id'), 'guadua_id'],
             [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
             [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
             [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('userCar->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('userCar->orgaoU.sigla_curta'), 'orgaoSigla'],
               
           ],
           include: [

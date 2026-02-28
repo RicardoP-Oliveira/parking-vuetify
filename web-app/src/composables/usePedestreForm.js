@@ -1,6 +1,5 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useServices } from './useService'
-import { normalizeText, toUpperSafe } from '@/js/maxMin'
 
 const ACTIONS = {
   ENTRADA: 'Entrada',
@@ -15,14 +14,13 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   ======================== */
   const documento = ref('')
   const nome = ref('')
-  const destino = ref('')
 
-
-  const userId = ref(null)
+  const user_id = ref(null)
   const idOrgao = ref(null)
   const idDoc = ref(null)
   const idUbm = ref(null)
   const idGradua = ref(null)
+  const idDestino = ref(null)
  
   const isAction = ref(ACTIONS.ENTRADA)
   const formTouched = ref(false)
@@ -31,11 +29,13 @@ export function usePedestreForm(props, emit, serviceMock = null) {
    /* ========================
      LISTAS
   ======================== */
-  const unidades = ref([])
-  const orgaos = ref([])
-  const destinoOptions = ref([])
-  const docRef = ref([])
-  const hierarquia = ref([])
+  const listas = ref ({
+    unidades: [],
+    orgaos: [],
+    destinos: [],
+    documentos: [],
+    tratamento: []
+  })
 
   /* ========================
      COMPUTED
@@ -55,21 +55,36 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     return ''
   })
 
-  const docOptions = computed(() =>
-    docRef.value.map(d => ({ id: d.id, sigla: d.sigla, name: d.nome }))
-  )
+  const LISTAS_CONFIG = {
+    documentos: { key: 'docOptions', id: 'id', text: 'sigla' },
+    tratamento: { key: 'tratoOptions', id: 'id', text: 'abrev' },
+    orgaos: { key: 'orgaosOptions', id: 'id', text: 'sigla', nested: 'orgao' },
+    unidades: { key: 'unidadesOptions', id: 'id', text: 'name', nested: 'obm' },
+    destinos: { key: 'destinosOptions', id: 'id', text: 'target' }
+  }
 
-  const tratoOptions = computed(() =>
-    hierarquia.value.map(t => ({ id: t.id, abrev: t.abrev }))
-  )
+  const options = computed(() => {
+    const result = {}
 
-  const orgaosOptions = computed(() =>
-    orgaos.value.map(o => ({ id: o.orgao.id, orgao: o.orgao.sigla }))
-  )
+    Object.keys(LISTAS_CONFIG).forEach(listkey => {
+      const config = LISTAS_CONFIG[listkey];
+      const rawData = listas.value[listkey] || []
+    
+      if (Array.isArray(rawData)) {
+        result[config.key] = rawData.map(item => {
+          const source = config.nested ? item[config.nested] : item
 
-  const unidadesOptions = computed(() =>
-    unidades.value.map(u => ({ id: u.obm.id, name: u.obm.name }))
-  )
+          return {
+            id: source?.[config.id],
+            title: source?.[config.text]
+          }
+        })
+      } else {
+        result[config.key] = []
+      }
+    })
+    return result
+  })
 
   /* ========================
      HELPERS
@@ -77,56 +92,68 @@ export function usePedestreForm(props, emit, serviceMock = null) {
 
   const limparForm = () => {
     nome.value = ''
-    destino.value = ''
-    userId.value = null
+    user_id.value = null
     idOrgao.value = null
     idDoc.value = null
     idUbm.value = null
     idGradua.value = null
+    idDestino.value = null
     isAction.value = ACTIONS.ENTRADA
   }
 
   const setDataForm = (data = null) => {
     lastData.value = data
     if (!data) return
-
     const user = data.user ?? {}
 
-    userId.value ||= data.id ?? data.userId
-    idDoc.value ||=  data?.docId ?? data?.idDoc ?? null
-    idOrgao.value ||= user.orgaoId ?? data.orgaoId ?? null
-    idUbm.value ||= user.ubmId ?? data.ubmId ?? null
-    idGradua.value ||= user.graduaId ?? data.graduaId ?? null
+    user_id.value ||= data.e_user_id ?? data.user_id
+    idDoc.value ||=  data?.doc_id ?? data?.idDoc ?? null
+    idOrgao.value ||= user.orgao_id ?? data.orgao_id ?? null
+    idUbm.value ||= user.ubm_id ?? data.ubm_id ?? null
+    idGradua.value ||= user.gradua_id ?? data.gradua_id ?? null
     nome.value ||= data.nGuerra || data.nome || ''
     
     resolverDestino(data)
 
   } 
 
-  const resolverDestino = (data = null) => {
-    if (!data.ubmId) return;
+    const resolverDestino = (data = null) => {
+      const ubmIdBusca = data.ubm_id || data.user?.ubm_id
+      let destinoEncontrado = null
+      if (ubmIdBusca) {
+        const nomeUbm = listas.value.unidades.find(u => u.obm.id === ubmIdBusca)?.obm?.name.toUpperCase()
+        if (nomeUbm) {
+          destinoEncontrado = listas.value.destinos.find(d => d.target?.toUpperCase() === nomeUbm)
+        }
+      }
+      if (destinoEncontrado) {
+        idDestino.value = destinoEncontrado.id
+      } else {
+        idDestino.value = data.destino_id || data.idDestino || null
+      }
 
-    const nomeUbm = unidades.value
-      .find(u => u.obm.id === data?.ubmId)
-      ?.obm?.name
-      ?.toUpperCase();
-
-    if (nomeUbm && destinoOptions.value.includes(nomeUbm)) {
-      destino.value = nomeUbm;
-    } else {
-      destino.value = data.destino ?? ''
+  //   if (data.ubm_id) {
+  //     const destinoPorUbm = listas.value.destinos.find(d => 
+  //       d.target?.toUpperCase() === listas.value.unidades.find(u => 
+  //         u.obm.id === data.ubm_id)?.obm?.name?.toUpperCase()
+  //       )
+  //     if (destinoPorUbm) {
+  //       idDestino.value = destinoPorUbm.id
+  //       return
+  //     }  
+  //   }
+  //   idDestino.value = null
     }
-  }
 
   /* ========================
      CORE LOGIC
   ======================== */
-  let requestId = 0
+  let request_id = 0
 
   const buscarDados = async () => {
     if (!documento.value || documento.value.length < 4) return
 
-    const currentRequest = ++requestId
+    const currentRequest = ++request_id
 
     try {
       const [userRes, pedestreRes] = await Promise.all([
@@ -134,7 +161,7 @@ export function usePedestreForm(props, emit, serviceMock = null) {
         pedestre.getInfo({ident: documento.value, tab: props.tipo})
       ])
 
-      if (currentRequest !== requestId) return
+      if (currentRequest !== request_id) return
 
       limparForm()
 
@@ -163,20 +190,19 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   const salvar = async () => {
     formTouched.value = true
     
-    if (!documento.value || !nome.value || !destino.value) return
+    if (!documento.value || !nome.value || !idDestino.value) return
 
     const payload = {
-      documento: normalizeText(documento.value),
-      destino: normalizeText(destino.value),
-      nGuerra: nome.value,
-      userId: userId.value,
+      user_id: user_id.value,
       idGradua: idGradua.value,
       idUbm: idUbm.value,
       idOrgao: idOrgao.value,
       idDoc: idDoc.value,
+      idDestino: idDestino.value
     }
     try {
-      await pedestre.salvarPedestre(payload)
+      console.log(payload)
+      await pedestre.salvarDados({dados: payload, tab: props.tipo})
       close()
     } catch (e) {
       console.error('[usePedestreForm] Erro ao salvar', e)
@@ -213,10 +239,12 @@ export function usePedestreForm(props, emit, serviceMock = null) {
     { immediate: true }
   )
 
-  watch([unidades, destinoOptions], () => {
-    if (lastData.value && !destino.value) {
-      setDataForm(lastData.value)
-    }
+  watch(
+    [() => listas.value.unidades, () => options.value.destinosOptions],
+    () => {
+      if (lastData.value && !idDestino.value) {
+        setDataForm(lastData.value)
+      }
   })
 
   /* ========================
@@ -237,11 +265,13 @@ export function usePedestreForm(props, emit, serviceMock = null) {
       pedestre.getTratos()
     ])
 
-    unidades.value = unidadesRes?.dados || []
-    orgaos.value = orgaosRes?.dados || []
-    destinoOptions.value = (destinosRes || []).map(d => d.target)
-    docRef.value = documentRes || []
-    hierarquia.value = hierarquiaRes || []
+    listas.value ={
+      documentos: documentRes?.dados || documentRes || [],
+      tratamento: hierarquiaRes?.dados || hierarquiaRes || [],
+      orgaos: orgaosRes?.dados || [],
+      destinos: destinosRes?.dados || destinosRes || [],
+      unidades: unidadesRes?.dados || []
+    }
   })
 
   /* ========================
@@ -250,20 +280,20 @@ export function usePedestreForm(props, emit, serviceMock = null) {
   return {
     documento,
     nome,
-    userId,
+    user_id,
     idOrgao,
     idUbm,
     idDoc,
     idGradua,
-    destino,
+    idDestino,
     isAction,
     formTouched,
 
-    docOptions,
-    tratoOptions,
-    orgaosOptions,
-    unidadesOptions,
-    destinoOptions,
+    docOptions: computed(() => options.value.docOptions),
+    tratoOptions: computed(() => options.value.tratoOptions),
+    orgaosOptions: computed(() => options.value.orgaosOptions),
+    unidadesOptions: computed(()=> options.value.unidadesOptions),
+    destinosOptions: computed(() => options.value.destinosOptions),
 
     showError,
     errorMessage,

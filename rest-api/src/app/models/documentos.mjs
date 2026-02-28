@@ -1,4 +1,4 @@
-'user strict';
+// src/models/documentos.mjs
 import { Model, DataTypes } from 'sequelize';
 
 class Documentos extends Model {
@@ -10,14 +10,15 @@ class Documentos extends Model {
             },
             {
                 sequelize,
-                modelName: 'documentos'
+                modelName: 'documentos',
+                underscored: true,
             }
         )
         return this;
     }
 
     static associate(models) {
-        this.hasMany(models.User, { foreignKey: "docId", as: "users" });
+        this.hasMany(models.User, { foreignKey: "doc_id", as: "users" });
     }
 }
 

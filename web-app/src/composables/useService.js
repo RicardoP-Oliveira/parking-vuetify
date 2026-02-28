@@ -6,6 +6,7 @@ import TargetService from '@/services/TargetService'
 import DocumentService from '@/services/DocumentService'
 import HierarquiaService from '@/services/HierarquiaService.mjs'
 import CeicsService from '@/services/CeicsServices'
+import CarroSevice from '@/services/CarroService'
 
 export function useServices(mock = null) {
   // 🔹 Permite injetar mock (testes)
@@ -33,6 +34,12 @@ export function useServices(mock = null) {
       UserService.adicionar(documento, token),
 
     /* ========================
+        CARRO
+    =========================*/
+    getCarroPlaca: (placa) => 
+      CarroSevice.getPlaca(placa, token),
+
+    /* ========================
        CEICS
     ======================== */
     getInfo: (value) =>
@@ -41,7 +48,7 @@ export function useServices(mock = null) {
     getParking: (value) =>
       CeicsService.getParking(value, token),
 
-    salvarCarro: (value) =>
+    salvarDados: (value) =>
       CeicsService.adicionar(value, token),
     
     

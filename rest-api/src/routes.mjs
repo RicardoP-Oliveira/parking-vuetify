@@ -51,9 +51,9 @@ routes.delete('/user/:id', UserController.destroy);
 
 routes.get('/carro', CarroController.index);
 
-routes.get('/carro/:id', CarroController.show);
+routes.get('/carro/:placa', CarroController.show);
 
-routes.get('/carro/placa/:placa', CarroController.showPlaca);
+// routes.get('/carro/placa/:placa', CarroController.showPlaca);
 
 routes.post('/carro', CarroController.store);
 

@@ -128,7 +128,7 @@ class PedestreController {
       }
       const { count, rows } = await Pedestre.findAndCountAll({
         where: whereCondition,
-        order: [['updatedAt', 'DESC']],
+        order: [['updated_at', 'DESC']],
          attributes: [
             'id', 'entrada', 'hEntrada', 'saida', 'hSaida', 'destino',
             [Sequelize.col('user.id'), 'userId'],
@@ -139,7 +139,7 @@ class PedestreController {
             [Sequelize.col('user.orgaoId'), 'orgaoId'],
             [Sequelize.col('user.docId'), 'idDoc'],
             [Sequelize.col('user->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('user->orgaoU.siglaCurta'), 'orgaoSigla'],
+            [Sequelize.col('user->orgaoU.sigla_curta'), 'orgaoSigla'],
             [Sequelize.col('user->docUser.sigla'), 'docSigla']
           ],
           include: [
@@ -199,7 +199,7 @@ class PedestreController {
       }
 
       const pedestre = await Pedestre.findOne({
-        order: [['updatedAt', 'DESC']],
+        order: [['updated_at', 'DESC']],
         where: {
           userId: user.id,
           saida: null
@@ -267,7 +267,7 @@ class PedestreController {
         userId: user.id,
         saida: null
       },
-      order: [['updatedAt', 'DESC']],
+      order: [['updated_at', 'DESC']],
       transaction: t
     })
 

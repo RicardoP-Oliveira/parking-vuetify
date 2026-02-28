@@ -1,7 +1,9 @@
-import { ref, reactive, nextTick, computed, watch } from 'vue'
+import { ref, reactive, nextTick, computed, watch, onUnmounted } from 'vue'
+import { getTableConfig } from '@/config/headersConfig'
+
 
 export function useBaseTable(props, emit) {
-  // Estado inicial exatamente como no seu data()
+  // Estado inicial
   const ident = ref('')
   const identRef = ref(null)
   const pageSize = ref(50)
@@ -10,148 +12,147 @@ export function useBaseTable(props, emit) {
   const totalItems = ref(0)
   const loading = ref(false)
   const generatedHeaders = ref([])
-  
-  const modal = reactive({
-    isOpen: false,
-    type: null,
-  })
+
+  const modal = reactive({ isOpen: false, type: null })
 
   const token = `Bearer ${localStorage.getItem('token')}`
 
-  // Configurações estáticas (não precisam ser reativas)
-  const columnsMap = {
-    nome: { width: 450, align: 'center' },
-    tipoDoc: { width: 130, align: 'center' },
-    numDoc: { width: 160, align: 'center' },
-    entrada: { width: 110 },
-    hEntrada: { width: 90 },
-    saida: { width: 110 },
-    hSaida: { width: 90 },
-    destino: { width: 110, align: 'center' }
-  }
-
-  const columnNameMap = {
-    marcaModelo: 'Modelo',
-    eRg: 'Documento',
-    eCondutor: 'Condutor',
-    sRg: 'Documento',
-    sCondutor: 'Condutor',
-    entrada: 'Data',
-    saida: 'Data',
-    hEntrada: 'Hora',
-    hSaida: 'Hora',
-    nome: 'Pedestre',
-    tipoDoc: 'Tipo Documento',
-    numDoc: 'Documento',
-  }
-
-  // Métodos de apoio
+  // Foco
+  let focusTimer = null
   const setFocus = () => {
     nextTick(() => {
-      setTimeout(() => {
-        if (identRef.value) identRef.value.focus()
-      }, 170)
-    })
+      if (focusTimer) clearTimeout(focusTimer);
+
+      focusTimer = setTimeout(() => {
+        // Busca o elemento real da classe v-field__input dentro do seu componente
+        const el = identRef.value?.$el?.querySelector('.v-field__input');
+
+        if (el) {
+          console.log('✅ Aplicando foco forçado para vencer o bloqueio de autofocus');
+          el.focus();
+          el.select();
+        }
+      }, 150); // Pequeno atraso adicional dentro do ciclo de renderização
+    });
   }
 
+  // VALIDAÇÃO DE ENTRADA DE DADOS
+  const validarIdentidade = (valor) =>{
+    const sequenciaRepetida = /0{4,}/
+    const antiga = /^[A-Z]{3}\d{4}$/i
+    const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/i
+    const prefixo = /^[A-Z0-9]{1,4}-\d{3}$/i
+    const documento = /^\d+$/
+    const eValido =  antiga.test(valor) || mercosul.test(valor) || prefixo.test(valor) || documento.test(valor)
+    if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
+    if (valor.length <4) return { valido: false, msg: 'O campo deve ter pelo menos 4 caracteres!' }
+    if (sequenciaRepetida.test(valor)) return { valido: false, msg: 'Sequências repetidas nao permitida.' }
+    if (!eValido) {
+      return {  valido: false, msg: 'Placa ou Prefixo inválido.' }
+    } else {
+      return { valido: true, msg: '' }
+    }
+  }
+
+  // Geração de headers
   const generateHeaders = () => {
-    const order = props.getHeaderOrder()
-    const groups = props.getHeaderGroups()
+    const { style, structure } = getTableConfig(props.tab)
     const headers = []
 
-    order.forEach((key) => {
-      if (groups[key]) {
-        const group = groups[key]
+    structure.order.forEach((key) => {
+      // Colunas agrupadas
+      if (structure.groups && structure.groups[key]) {
+        const group = structure.groups[key]
         headers.push({
           title: group.title,
           align: 'center',
           children: group.children.map((child) => {
-            const col = columnsMap[child.key] ?? {}
+            const col = style[child.key] || {}
             return {
               key: child.key,
-              title: columnNameMap[child.key] ?? child.title ?? child.key,
-              align: col.align ?? 'center',
-              width: col.width ?? 100
+              title: col.title || child.key,
+              align: col.align || 'center',
+              width: col.width || 100
             }
           })
         })
-        return
+      } else {
+        // Coluna simples
+        const col = style[key] || {}
+        headers.push({
+          key,
+          title: col.title || key,
+          align: col.align || 'center',
+          width: col.width || 100
+        })
       }
-
-      const col = columnsMap[key] ?? {}
-      headers.push({
-        key,
-        title: columnNameMap[key] ?? key,
-        align: col.align ?? 'center',
-        width: col.width ?? 100
-      })
     })
     generatedHeaders.value = headers
   }
- let isFetching = false
-  // A função principal (Mantendo o seu loop exato)
-  const loadItems = async ({ page = pageNow.value, itemsPerPage = pageSize.value } = {}) => {
-    if (isFetching) return;
+
+  // Controle de fetch
+  const loadItems = async (options = {}) => {
+    if (loading.value) return
+    loading.value = true
+    const { structure } = getTableConfig(props.tab)
+    const allActiveKeys = structure.order.flatMap(key => 
+    structure.groups[key] ? structure.groups[key].children.map(c => c.key) : key)
+
     try {
-      isFetching = true
-      loading.value = true
       const res = await props.dataService(
-        page,
-        itemsPerPage,
+        options.page || pageNow.value,
+        options.itemsPerPage || pageSize.value,
         token,
         props.tab,
-        props.filters
-      )
+        props.filters)
+      const responseData = (res && res[0]) ? res[0] : {}
+      const totalCount = (res && res[1]) ? res[1] : {}
+      const listaCrua = Array.isArray(responseData.dados) ? responseData.dados : []
 
-      const displayColumns = props.getColumns()
+      generateHeaders()
 
-      serverItems.value = res[0].dados.map((item) => {
+      serverItems.value = listaCrua.map(item => {
         const filteredItem = {}
-        displayColumns.forEach((column) => {
-          switch (column) {
-            case 'tipoDoc': filteredItem.tipoDoc = item.e_tipoDoc ?? ''; break
-            case 'numDoc': filteredItem.numDoc = item.e_documento ?? ''; break
+        allActiveKeys.forEach(column => {
+          switch(column) {
             case 'nome': filteredItem.nome = item.e_nomeCompleto; break
-            case 'entrada':
-              filteredItem.entrada = item.entrada ? new Date(item.entrada).toLocaleDateString() : ''; break
+            case 'entrada': filteredItem.entrada = item.entrada ? new Date(item.entrada).toLocaleDateString() : ''; break
             case 'hEntrada': filteredItem.hEntrada = item.hEntrada ?? ''; break
-            case 'saida':
-              filteredItem.saida = item.saida ? new Date(item.saida).toLocaleDateString() : ' ___/___/___'; break
+            case 'saida': filteredItem.saida = item.saida ? new Date(item.saida).toLocaleDateString() : ' ___/___/___'; break
             case 'hSaida': filteredItem.hSaida = item.hSaida ?? '--:--:--'; break
-            case 'eCondutor': filteredItem.eCondutor = item.e_nomeCompleto; break
-            case 'sCondutor': filteredItem.sCondutor = item.s_nomeCompleto; break
-            case 'eRg': filteredItem.eRg = item.e_documento ?? ''; break
-            case 'sRg': filteredItem.sRg = item.s_documento ?? ''; break
+            case 's_condutor': filteredItem.s_condutor = item.s_condutor; break
             default: filteredItem[column] = item[column] ?? ''
           }
         })
         return filteredItem
       })
 
-      totalItems.value = res[1]
-      generateHeaders()
+      totalItems.value = Number(totalCount) || 0
+      
     } catch (error) {
       console.error('Erro ao carregar itens:', error)
     } finally {
       loading.value = false
-      isFetching = false
+      setFocus()
     }
   }
 
-  // Eventos de interface
+  // Atualização da tabela
   const onUpdateOptions = (options) => {
+    if (pageNow.value === options.page && pageSize.value === options.itemsPerPage && serverItems.value.length > 0) return
     pageNow.value = options.page
     pageSize.value = options.itemsPerPage
-    loadItems({
-      page: options.page,
-      itemsPerPage: options.itemsPerPage
-    })
-    setFocus()
+    loadItems({ page: options.page, itemsPerPage: options.itemsPerPage })
   }
 
+  // Modal
   const selectModal = () => {
-    if (!ident.value) {
-      emit('show-snackbar', { message: 'Campo obrigatório.', color: 'error', timeout: 3000 })
+    const check = validarIdentidade(ident.value)
+    if (!check.valido) {
+      emit('show-snackbar', { 
+        message: check.msg, 
+        color: 'warning',
+        timeout: 3000 })
       return
     }
     const ifPattern = /^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$/
@@ -161,32 +162,31 @@ export function useBaseTable(props, emit) {
 
   const closeModal = (from) => {
     modal.isOpen = false
-    nextTick(() => {
-      ident.value = ''
+    ident.value = ''
+    setTimeout(() => {
+      if (from && from !== props.tab) {
+        emit('changeTable', from)
+        return
+      } else {
+      loadItems({ page: 1 })
       setFocus()
-      // applyFiltersFromParent logic:
-      if (pageNow.value === 1) loadItems({ page: 1 })
-      else pageNow.value = 1
-    })
-    if (from) emit('changeTable', from)
+      }
+    }, 400)
   }
+    
 
-  // Watchers (Cuidado aqui: é onde a lentidão costuma nascer)
-  watch(() => props.tab, () => {
-    serverItems.value = []
-    emit('update-btn')
-    loadItems({ page: pageNow.value, itemsPerPage: pageSize.value })
-    setTimeout(() => { setFocus() }, 300)
+  watch(() => props.tab, (newValue, oldValue) => {
+    if (newValue !== oldValue) serverItems.value = []
+    console.log('O Watcher')
   })
 
   watch(ident, (v) => { if (v) ident.value = v.toUpperCase() })
 
-  watch(() => props.filters, () => {
-    console.log('watch')
-    pageNow.value = 1
-  }, { deep: true })
-
-  // Computed para o maxlength (getLength no seu código original)
+  watch(() => props.filters, () => {    
+    pageNow.value = 1;
+    loadItems();
+  }, { deep: true });
+  // Computed para maxlength
   const getLength = computed(() => {
     const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/
     const vtrRegex = /^[A-Z]{1,4}\d?-\d{3}$/
@@ -199,10 +199,15 @@ export function useBaseTable(props, emit) {
 
   return {
     ident, identRef, loading, pageNow, pageSize, serverItems, totalItems,
-    generatedHeaders, modal, getLength, selectModal, closeModal, onUpdateOptions, 
-    loadItems, setFocus, validateIdent: (v) => {
+    generatedHeaders, modal, getLength, selectModal, closeModal,
+    onUpdateOptions, loadItems, setFocus,
+    validateIdent: (v) => {
       const p = /^(?!0+\d?)([0-9]{1,11}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$)/
       return v.length === 0 || p.test(v) || 'Identificador inválido'
     }
   }
+
+  onUnmounted(() => {
+    if (focusTimer) clearTimeout(focusTimer)
+  })
 }

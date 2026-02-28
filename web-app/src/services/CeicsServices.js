@@ -47,11 +47,12 @@ export default class CeicsService {
     }).then((res) => res.json());
   }
 
-  static adicionar(dados, token) {
+  static adicionar({dados, tab}, token) {
     return fetch(caminho, {
       headers: {
         'Content-type': 'application/json;charset=UTF-8',
         Authorization: token,
+        'tab': tab,
       },
       body: JSON.stringify(dados),
       method: 'POST',

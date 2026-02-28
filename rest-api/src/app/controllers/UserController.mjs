@@ -59,19 +59,20 @@ class UserController {
   async show(req, res) {
     const resposta = new Resposta();
     const { id } = req.params;
+
     try {
       let user = await User.findOne({
         where: { documento: id},
         attributes: [
-          'id',
-          [Sequelize.col('documento'), 'doc'],
-          [Sequelize.col('nGuerra'), 'nome'],
-          [Sequelize.col('graduaId'), 'graduaId'],
-          [Sequelize.col('ubmId'), 'ubmId'],
-          [Sequelize.col('orgaoId'), 'orgaoId'],
-          [Sequelize.col('docId'), 'docId'],
+          ['id', 'user_id'],
+          ['documento', 'doc'],
+          ['n_guerra', 'nome'],
+          'gradua_id',
+          'ubm_id',
+          'orgao_id',
+          'doc_id',
           [Sequelize.col('hierarquia.abrev'), 'graduaAbrev'],
-          [Sequelize.col('orgaoU.siglaCurta'), 'orgaoSigla'],
+          [Sequelize.col('orgaoU.sigla_curta'), 'orgaoSigla'],
           [Sequelize.col('ubm.name'), 'nomeUbm'],
          ],
          include: [
@@ -107,7 +108,7 @@ class UserController {
 
     try {
       const userExists = await User.findOne({
-        where: { documento: documento },
+        where: { documento: documento }
       });
       if (userExists) {
         if (req.file) {
@@ -151,8 +152,8 @@ class UserController {
         ...(req.body.gradua && { gradua: req.body.gradua }),
         ...(req.body.tipo_doc && { tipo_doc: req.body.tipo_doc }),
         ...(req.body.nGuerra && { nGuerra: req.body.nGuerra }),
-        ...(req.body.ubmId && { ubmId: req.body.ubmId }),
-        ...(req.body.orgaoId && { orgaoId: req.body.orgaoId }),
+        ...(req.body.ubm_id && { ubm_id: req.body.ubm_id }),
+        ...(req.body.orgao_id && { orgao_id: req.body.orgao_id }),
         ...(req.body.email && { email: req.body.email }),
         ...(req.body.cnh && { cnh: req.body.cnh }),
         ...(req.body.password && { password: req.body.password }),

@@ -19,7 +19,7 @@ import  { Model, DataTypes } from "sequelize";
     }
 
     static async getData() {
-      return await this.findAll({order: [['createdAt', 'DESC']], limit: 5});
+      return await this.findAll({order: [['created_at', 'DESC']], limit: 5});
     }
   }
 

@@ -7,7 +7,7 @@ export default  {
   define: {
     timestamps: true,
     timestampstz: true,
-    underscored: false,
-    underscoredAll: false,
+    underscored: true,
+    underscoredAll: true,
   }
 };
