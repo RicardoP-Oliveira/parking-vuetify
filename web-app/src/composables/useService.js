@@ -45,10 +45,10 @@ export function useServices(mock = null) {
     getInfo: (value) =>
       CeicsService.getInfo(value, token),
 
-    getParking: (value) =>
-      CeicsService.getParking(value, token),
+    saida: (value) =>
+      CeicsService.cadastrarSaida(value, token),
 
-    salvarDados: (value) =>
+    entrada: (value) =>
       CeicsService.adicionar(value, token),
     
     

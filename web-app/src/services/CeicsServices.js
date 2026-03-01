@@ -1,7 +1,6 @@
 import ConfigClass from '../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/ceics`;
-const parking = `${ConfigClass.getUrlApi().toString()}/parking`;
 
 export default class CeicsService {
   static getTodos(page, perPage, token, key='', filters = {}) {
@@ -39,11 +38,14 @@ export default class CeicsService {
     }).then((res) => res.json());
   }
 
-  static getParking(placa, token) {
-    return fetch(`${parking}/${placa}`, {
+  static cadastrarSaida(dados, token) {
+    return fetch(caminho, {
       headers: {
+        'Content-type': 'application/json;charset=UTF-8',
         Authorization: token,
-      }
+      },
+      body: JSON.stringify(dados),
+      method: 'PUT',
     }).then((res) => res.json());
   }
 

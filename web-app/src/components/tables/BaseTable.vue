@@ -76,7 +76,7 @@ const changeTable = (tabDestino) => {
 const emit = defineEmits(['update-btn', 'changeTable', 'show-snackbar'])
 
 const {
-  ident, loading, pageNow, pageSize, serverItems,
+  ident, identRef, loading, pageNow, pageSize, serverItems,
   totalItems, generatedHeaders, modal, validateIdent, getLength, 
   clearIdent, selectModal, closeModal, loadItems, onUpdateOptions
 } = useBaseTable(props, emit)

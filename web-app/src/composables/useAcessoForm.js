@@ -129,7 +129,7 @@ export function useAcessoForm(props, emit) {
 
   // **** LÓGICA (BUSCA) ****
   let requestId = 0
-  const buscarDados = async () => {
+  const buscarDados = async (id) => {
     const valBusca = props.tipoForm === 'carro' ? placa.value : documento.value
     if (!valBusca || valBusca.length < 4) return
     if (lastData.value === valBusca) return
@@ -176,11 +176,11 @@ export function useAcessoForm(props, emit) {
         if (dados) {
           isAction.value = pedestreRes?.dados ? ACTIONS.SAIDA : ACTIONS.ENTRADA
           doc_id.value = dados.doc_id 
-          ubm_id.value = dados.ubm_id
+          ubm_id.value = dados.ubm_id || ''
           orgao_id.value = dados.orgao_id
           gradua_id.value = dados.gradua_id
           user_id.value = dados.user_id
-          registro_id.value =  dados.id
+          registro_id.value =  dados.id || ''
           resolverDestino(dados)
         }
       }
@@ -190,9 +190,23 @@ export function useAcessoForm(props, emit) {
   // ***** REGISTRAR *****
   const salvar = async () => {
     formTouched.value = true
-    let payload = { user_id: user_id.value, destino_id: destino_id.value, registro_id: registro_id.value } 
-    if (props.tipo === 'carro') payload.carro_id = carro_id.value
-    await service.salvarDados({ dados: payload, tab: props.tipo })
+    const payload = { 
+      user_id: user_id.value,
+      destino_id: destino_id.value,
+      ...(props.tipo === 'carro' && { carro_id: carro_id.value })
+    }
+    try {
+      if (isAction.value === ACTIONS.SAIDA && registro_id.value) {
+        payload.registro_id = registro_id.value
+        await service.saida( payload )
+      } else {
+        await service.entrada({ dados: payload, tab: props.tipo})
+      }
+    } catch (error) {
+      console.error("Erro ao processar operações:", error)
+    } finally {
+      loading.value = false
+    }
     close(props.tipo)   
   }
 
@@ -239,9 +253,12 @@ export function useAcessoForm(props, emit) {
     await buscarDados()
   })
 
+  const isReadOnly = computed(() => isAction.value === ACTIONS.SAIDA && props.tipoForm === 'pedestre')
+
   return {
     documento, nome, placa, modelo, isAction, formTouched, loading, ubm,
     doc_id, ubm_id, orgao_id, gradua_id, destino_id,
+    isReadOnly,
     docOptions: computed(() => options.value.docOptions),
     tratoOptions: computed(() => options.value.tratoOptions),
     orgaosOptions: computed(() => options.value.orgaosOptions),

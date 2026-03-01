@@ -288,63 +288,47 @@ class CeicsController {
     }
   }
 
-  async parking(req, res) {
-    const resposta = new Resposta();
-    const { placa } = req.params;
-    try {
-      const veiculo = await Ceics.findCar(placa);
+  async cadastarSaida(req, res) {
+    const { registro_id, user_id, carro_id } = req.body
 
-      if (veiculo) {
-        resposta.dados = veiculo;
-      } else {
-        resposta.msg = 'Não registro de saída em aberto para este veículo!';
-      }
-
-    } catch (error) {
-      resposta.erro = true;
-      resposta.msg = `Error: ${error}`;
+    if (!registro_id) {
+      return res.status(400).json({ erro: true, msg: 'ID do registro não informado!'})
     }
+    const payload = { saida: new Date().toISOString() }
+    if (carro_id) {
+      payload.s_user_id = req.body.user_id
+    }
+    try {
+      const [rowsUpdate] = await Ceics.update(payload, {
+        where: { id: registro_id }
+        })
+      if (rowsUpdate > 0) {
+        return res.json({ sucesso: true, msg: 'Saída registrada' })
+      } else { 
+        return res.status(400).json({ erro: true, msg: 'Registro não encontrado' })
+      }
+      
+    } catch (e) {
+      console.error({ erro: true, msg: e.msg})
+    }
+    
 
-    return res.json(resposta);
   }
 
-  async store(req, res) {
+  async cadastrarEntrada(req, res) {
     const { 'tab': tab } = req.headers
     const body = req.body
 
     try {
-      const user = await User.findOne({
-        where: { id: body.user_id }
+      const movimentacao = await Ceics.create({
+        e_user_id: body.user_id,
+        carro_id: body.carro_id || null,
+        tipo: tab,
+        destino_id: body.destino_id,
+        entrada: new Date().toISOString()
       })
 
-      // Verificar entrada aberta
-      const entrada = await Ceics.findOne({
-        where: {
-          id: body.registro_id,
-          saida: null
-        },
-        order: [['updated_at', 'DESC']]
-      })
-
-      let movimentacao
-
-      if (!entrada) {
-        movimentacao = await Ceics.create({
-          e_user_id: body.user_id,
-          carro_id: body.carro_id || null,
-          tipo: tab,
-          destino_id: body.destino_id,
-          entrada: new Date().toISOString()
-        })
-
-      } else {
-        movimentacao = await entrada.update({
-          s_user_id: body.carro_id ? user.id : null,
-          saida: new Date().toISOString()
-        })
-      }
-
-      return res.json({ user, movimentacao })
+      return res.json(movimentacao)
 
     } catch (e) {
       console.error('ERRO: ', e)

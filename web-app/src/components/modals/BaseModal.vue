@@ -2,7 +2,6 @@
   <v-dialog
     v-model="isOpenInternal"
     :width="width"
-    :retain-focus="false"
     persistent>
     <v-card>
       <v-card-title class="text-center">
@@ -14,16 +13,16 @@
       </v-card-text>
       <template v-slot:actions>
         <v-spacer />
-        <v-btn @click="close()" variant="tonal">
+        <v-btn @click="$emit('close')" variant="tonal">
           Cancelar
         </v-btn>
         <v-btn
-          ref="myButton"
-          @click="confirm()"
+          ref="confirmButtonRef"
+          @click="$emit('confirm')"
           :color="confirmColor"
+          :disabled="confirmButton"
           variant="flat"
           min-width="120"
-          :disabled="confirmButton"
         >
           {{ confirmText }}
         </v-btn>
@@ -32,78 +31,22 @@
   </v-dialog>
 </template>
 
-<script>
-import { nextTick } from 'vue';
+<script setup>
+import { computed } from 'vue'
 
-export default {
-  props: {
-    title: {
-      type: String,
-      default: '',
-    },
-    width: {
-      type: [String, Number],
-      default: 600,
-    },
-    confirmText: {
-      type: String,
-      default: 'Salvar',
-    },
-    confirmColor: {
-      type: String,
-      default: 'blue-darken-4',
-    },
-    isOpen: {
-      type: Boolean,
-      default: false,
-    },
-    confirmButton: {
-      type: Boolean,
-      default: false
-    }
-  },
-  emits: ['confirm', 'close'],
-  methods: {
+const props = defineProps({
+  title: String,
+  isOpen: Boolean,
+  confirmButton: Boolean,
+  width: { type: [String, Number], default: 600 },
+  confirmText: { type: String, default: 'Salvar' },
+  confirmColor: { type: String, default: 'blue-darken-4' },
+})
 
-    async saveCarro(payload) {
-      console.log('[saveCarro] ', payload)
-    },
+const emit = defineEmits(['confirm', 'close', 'update:isOpen'])
 
-    async savePedestre(payload) {
-      console.log('[savePedestre] ', payload)
-    },
-
-    close() {
-      this.$emit('close', 'cancel');
-    },
-    confirm() {
-      this.$emit('confirm');
-    },
-    setFocus() {
-      nextTick(() => {
-        const button = this.$refs.myButton?.$el;
-
-        if (!button) return
-        setTimeout(() => {
-          button.focus()
-        },200)
-      })
-    }
-  },
-  computed: {
-    isOpenInternal: {
-      get() {
-        return this.isOpen;
-      },
-      set(value) {
-        this.$emit('update:isOpen', value);
-      },
-    },
-  },
-  mounted() {
-    setTimeout(() => {
-     this.setFocus()
-    },100)
-  },
-}
+const isOpenInternal = computed({
+  get: () => props.isOpen,
+  set: (val) => emit('update:isOpen', val) 
+})
 </script>

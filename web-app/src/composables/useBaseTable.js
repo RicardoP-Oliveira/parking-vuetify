@@ -1,6 +1,12 @@
 import { ref, reactive, nextTick, computed, watch, onUnmounted } from 'vue'
 import { getTableConfig } from '@/config/headersConfig'
 
+const PATTERNS = {
+    PLACA_ANTIGA: /^[A-Z]{3}\d{4}$/,
+    PLACA_MERCOSUL: /^[A-Z]{3}\d[A-Z]\d{2}$/,
+    PREFIXO: /^[A-Z]{1,4}-\d{3}$/,
+    DOCUMENTO: /^\d{4,11}$/
+  }
 
 export function useBaseTable(props, emit) {
   // Estado inicial
@@ -19,39 +25,59 @@ export function useBaseTable(props, emit) {
 
   // Foco
   let focusTimer = null
-  const setFocus = () => {
+  const setFocus = (force = false) => {
     nextTick(() => {
-      if (focusTimer) clearTimeout(focusTimer);
+      if (focusTimer) clearTimeout(focusTimer)
 
       focusTimer = setTimeout(() => {
-        // Busca o elemento real da classe v-field__input dentro do seu componente
+        if (!force) {
+          const activeEl = document.activeElement
+          const isUserTypingElsewhere = ['INPUT', 'SELECT', 'TEXTAREA'].includes(activeEl?.tagName)
+          if (isUserTypingElsewhere && !identRef.value?.$el.contains(activeEl)) return
+        }
         const el = identRef.value?.$el?.querySelector('.v-field__input');
 
         if (el) {
-          console.log('✅ Aplicando foco forçado para vencer o bloqueio de autofocus');
           el.focus();
           el.select();
         }
-      }, 150); // Pequeno atraso adicional dentro do ciclo de renderização
+      }, 150); 
     });
   }
 
   // VALIDAÇÃO DE ENTRADA DE DADOS
   const validarIdentidade = (valor) =>{
-    const sequenciaRepetida = /0{4,}/
-    const antiga = /^[A-Z]{3}\d{4}$/i
-    const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/i
-    const prefixo = /^[A-Z0-9]{1,4}-\d{3}$/i
-    const documento = /^\d+$/
-    const eValido =  antiga.test(valor) || mercosul.test(valor) || prefixo.test(valor) || documento.test(valor)
     if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
-    if (valor.length <4) return { valido: false, msg: 'O campo deve ter pelo menos 4 caracteres!' }
-    if (sequenciaRepetida.test(valor)) return { valido: false, msg: 'Sequências repetidas nao permitida.' }
-    if (!eValido) {
-      return {  valido: false, msg: 'Placa ou Prefixo inválido.' }
-    } else {
-      return { valido: true, msg: '' }
-    }
+    
+    const v = String(valor).toUpperCase().trim()
+
+    if (v.length < 4) return { valido: false, msg: 'Mínimo de 4 caracteres.' }
+    if (/^0+$/.test(v)) return { valido: false, msg: 'Sequência inválida' }
+
+    const check =
+      PATTERNS.PLACA_ANTIGA.test(v) ||
+      PATTERNS.PLACA_MERCOSUL.test(v) ||
+      PATTERNS.PREFIXO.test(v) ||
+      PATTERNS.DOCUMENTO.test(v)
+
+    return {
+      valido: check,
+      msg: check ? '' : 'Formato inválido!'
+    }   
+    // const sequenciaRepetida = /0{4,}/
+    // const antiga = /^[A-Z]{3}\d{4}$/i
+    // const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/i
+    // const prefixo = /^[A-Z0-9]{1,4}-\d{3}$/i
+    // const documento = /^\d+$/
+    // const eValido =  antiga.test(valor) || mercosul.test(valor) || prefixo.test(valor) || documento.test(valor)
+    // if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
+    // if (valor.length <4) return { valido: false, msg: 'O campo deve ter pelo menos 4 caracteres!' }
+    // if (sequenciaRepetida.test(valor)) return { valido: false, msg: 'Sequências repetidas nao permitida.' }
+    // if (!eValido) {
+    //   return {  valido: false, msg: 'Placa ou Prefixo inválido.' }
+    // } else {
+    //   return { valido: true, msg: '' }
+    // }
   }
 
   // Geração de headers
@@ -147,17 +173,19 @@ export function useBaseTable(props, emit) {
 
   // Modal
   const selectModal = () => {
-    const check = validarIdentidade(ident.value)
-    if (!check.valido) {
+    const result = validarIdentidade(ident.value)
+    if (!result.valido) {
       emit('show-snackbar', { 
-        message: check.msg, 
+        message: result.msg, 
         color: 'warning',
         timeout: 3000 })
       return
     }
-    const ifPattern = /^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$/
+    // const ifPattern = /^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$/
     modal.isOpen = true
-    modal.type = ifPattern.test(ident.value) ? 'carro' : 'pedestre'
+    modal.type = PATTERNS.PREFIXO.test(ident.value) || PATTERNS.PLACA_ANTIGA.test(ident.value)
+     || PATTERNS.PLACA_MERCOSUL.test(ident.value)
+     ? 'carro' : 'pedestre'
   }
 
   const closeModal = (from) => {
@@ -181,12 +209,15 @@ export function useBaseTable(props, emit) {
   })
 
   watch(ident, (v) => { if (v) ident.value = v.toUpperCase() })
+  let debounceTimer = null  
+  watch(() => props.filters, () => {
+    if (debounceTimer) clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() =>{
+      pageNow.value = 1
+      loadItems()
+  }, 500)       
+  }, { deep: true })
 
-  watch(() => props.filters, () => {    
-    pageNow.value = 1;
-    loadItems();
-  }, { deep: true });
-  // Computed para maxlength
   const getLength = computed(() => {
     const placaRegex = /^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}$/
     const vtrRegex = /^[A-Z]{1,4}\d?-\d{3}$/
@@ -195,6 +226,11 @@ export function useBaseTable(props, emit) {
     if (vtrRegex.test(ident.value)) return ident.value.length
     if (docRegex.test(ident.value)) return 11
     return 10
+  })
+
+  onUnmounted(() => {
+    if (focusTimer) clearTimeout(focusTimer)
+    if (debounceTimer) clearTimeout(debounceTimer)
   })
 
   return {
@@ -206,8 +242,4 @@ export function useBaseTable(props, emit) {
       return v.length === 0 || p.test(v) || 'Identificador inválido'
     }
   }
-
-  onUnmounted(() => {
-    if (focusTimer) clearTimeout(focusTimer)
-  })
 }
