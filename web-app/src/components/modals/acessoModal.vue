@@ -10,9 +10,8 @@
   >
     <template v-if="tipoForm === 'carro'">
       <v-row dense>
-        <v-col cols="12" class="text-subtitle-2">UBM: {{ ubm }}</v-col>
         <v-col cols="6">
-          <v-text-field v-model="documento" label="Documento" variant="underlined" autofocus />
+          <v-text-field v-model="documento" :label="labelDocumento" variant="underlined" autofocus />
         </v-col>
         <v-col cols="6">
           <v-text-field v-model="placa" label="Placa" :maxlength="7" variant="underlined" :disabled="!modelo" />
@@ -26,9 +25,9 @@
     <template v-else>
       <v-row dense>
         <v-col cols="4">
-          <v-text-field v-model="documento" label="Documento" variant="underlined" :readOnly="isReadOnly" :error="showError" autofocus />
+          <v-text-field v-model="documento" :label="labelDocumento" variant="underlined" :readOnly="isReadOnly" :error="showError" autofocus />
         </v-col>
-        <v-col cols="4">
+        <!-- <v-col cols="4">
           <v-select v-model="doc_id" :items="docOptions" :readonly="isReadOnly" item-title="title" item-value="id" label="Tipo" variant="underlined" />
         </v-col>
         <v-col cols="4">
@@ -36,17 +35,14 @@
         </v-col>
         <v-col cols="4">
           <v-select v-model="gradua_id" :items="tratoOptions" :readonly="isReadOnly" item-title="title" item-value="id" label="Posto/Grad" variant="underlined" />
-        </v-col>
+        </v-col> -->
         <v-col cols="8">
-          <v-text-field v-model="nome" label="Nome Completo" :readonly="isReadOnly" variant="underlined" @update:model-value="nome = nome?.toUpperCase()" />
+          <v-text-field v-model="nome" label="Nome" readonly variant="underlined" @update:model-value="nome = nome?.toUpperCase()" />
         </v-col>
       </v-row>
     </template>
 
     <v-row dense>
-      <v-col v-if="tipoForm === 'pedestre'" cols="4">
-        <v-select v-model="ubm_id" :items="unidadesOptions" :readonly="isReadOnly" item-title="title" item-value="id" label="UBM" variant="underlined" />
-      </v-col>
       <v-col :cols="tipoForm === 'pedestre' ? 8 : 12">
         <v-select v-model="destino_id" :items="destinosOptions" :readonly="isReadOnly" item-title="title" item-value="id" label="Destino" variant="underlined" />
       </v-col>
@@ -72,7 +68,7 @@ const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 
 const {
   documento, nome, placa, modelo, isAction, showError, loading, ubm,
-  doc_id, orgao_id, ubm_id, gradua_id, destino_id,
+  doc_id, orgao_id, ubm_id, gradua_id, destino_id, tipo_doc, labelDocumento,
   docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions,
   isValidCarroForm, salvar, close:resetForm, isReadOnly
 } = useAcessoForm(props, emit)

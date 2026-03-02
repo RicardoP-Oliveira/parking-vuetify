@@ -64,20 +64,6 @@ export function useBaseTable(props, emit) {
       valido: check,
       msg: check ? '' : 'Formato inválido!'
     }   
-    // const sequenciaRepetida = /0{4,}/
-    // const antiga = /^[A-Z]{3}\d{4}$/i
-    // const mercosul = /^[A-Z]{3}\d[A-Z]\d{2}$/i
-    // const prefixo = /^[A-Z0-9]{1,4}-\d{3}$/i
-    // const documento = /^\d+$/
-    // const eValido =  antiga.test(valor) || mercosul.test(valor) || prefixo.test(valor) || documento.test(valor)
-    // if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
-    // if (valor.length <4) return { valido: false, msg: 'O campo deve ter pelo menos 4 caracteres!' }
-    // if (sequenciaRepetida.test(valor)) return { valido: false, msg: 'Sequências repetidas nao permitida.' }
-    // if (!eValido) {
-    //   return {  valido: false, msg: 'Placa ou Prefixo inválido.' }
-    // } else {
-    //   return { valido: true, msg: '' }
-    // }
   }
 
   // Geração de headers

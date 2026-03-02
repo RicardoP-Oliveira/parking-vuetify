@@ -13,6 +13,7 @@ export function useAcessoForm(props, emit) {
   const placa = ref('')
   const modelo = ref('')
   const ubm = ref('')
+  const tipo_doc = ref('')
   const isAction = ref(ACTIONS.ENTRADA)
   const formTouched = ref(false)
   const loading = ref(false)
@@ -37,6 +38,9 @@ export function useAcessoForm(props, emit) {
     tratamento: []
   })
 
+  // **** CONTROLES ****
+  let debounceTimer = null
+
   // **** Getters de Opções (COMPUTED) ****
 
   // 1. Define  o mapeamento das listas
@@ -49,6 +53,11 @@ export function useAcessoForm(props, emit) {
   }
 
   // 2. Cria uma lógica dinâmica
+  const labelDocumento = computed (() => {
+    return tipo_doc.value
+      ? `Documento/${tipo_doc.value}`
+      : ''
+  })
   const options = computed(() => {
     const result = {}
 
@@ -83,6 +92,7 @@ export function useAcessoForm(props, emit) {
     nome.value = ''
     placa.value = ''
     modelo.value = ''
+    tipo_doc.value = ''
     destino_id.value = null
     user_id.value = null
     carro_id.value = null
@@ -114,16 +124,19 @@ export function useAcessoForm(props, emit) {
     if (!valor) return
     try {
       const userRes = await service.getUsuarioByDoc(valor.trim())
+
       if (!userRes.erro && userRes.dados) {
         const user = userRes.dados
+        tipo_doc.value = user.tipo_doc || ''
         nome.value = user.nomeCompleto
         ubm.value = user.nomeUbm
         user_id.value = user.user_id
         resolverDestino(user)
+      } else {
+        console.log('Usuário não cadastrado')
       }
     } catch (e) {
       console.error('Erro ao buscar usuário:', e.message)
-      throw e
     }
   }
 
@@ -175,6 +188,7 @@ export function useAcessoForm(props, emit) {
         const dados = pedestreRes?.dados || userRes?.dados
         if (dados) {
           isAction.value = pedestreRes?.dados ? ACTIONS.SAIDA : ACTIONS.ENTRADA
+          tipo_doc.value = dados.tipo_doc || ''
           doc_id.value = dados.doc_id 
           ubm_id.value = dados.ubm_id || ''
           orgao_id.value = dados.orgao_id
@@ -214,17 +228,19 @@ export function useAcessoForm(props, emit) {
     emit('closeModal', from)
   }
 
-  // **** WATCHERS / MOUNTED *****
-  let debounce
+  //**** WATCHERS / MOUNTED *****
   watch(documento, (newVal) => {
-    clearTimeout(debounce)
-    debounce = setTimeout(() => getUser(newVal), 300)
+    if (debounceTimer) clearTimeout(debounceTimer)
+    nome.value = ''
+    destino_id.value = null
+    if (!newVal || newVal.length < 4) return
+    debounceTimer = setTimeout(() => getUser(newVal), 300)
   })
 
   watch(placa, (newVal, oldVal) => {
     if (newVal === oldVal) return
-    clearTimeout(debounce)
-    debounce = setTimeout(() => buscarDados(), 300)
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => buscarDados(), 300)
   })
 
   onMounted(async () => {
@@ -257,7 +273,7 @@ export function useAcessoForm(props, emit) {
 
   return {
     documento, nome, placa, modelo, isAction, formTouched, loading, ubm,
-    doc_id, ubm_id, orgao_id, gradua_id, destino_id,
+    doc_id, ubm_id, orgao_id, gradua_id, destino_id, tipo_doc, labelDocumento,
     isReadOnly,
     docOptions: computed(() => options.value.docOptions),
     tratoOptions: computed(() => options.value.tratoOptions),

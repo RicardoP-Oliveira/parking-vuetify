@@ -74,15 +74,21 @@ class UserController {
           [Sequelize.col('hierarquia.abrev'), 'graduaAbrev'],
           [Sequelize.col('orgaoU.sigla_curta'), 'orgaoSigla'],
           [Sequelize.col('ubm.name'), 'nomeUbm'],
+          [Sequelize.col('docUser.sigla'), 'tipo_doc']
          ],
          include: [
           { model: Order, as: 'hierarquia', attributes: [] },
           { model: Orgao, as: 'orgaoU', attributes: [] },
           { model: Ubm, as: 'ubm', attributes: [] },
+          { model: Doc, as: 'docUser', attributes: []}
          ],
       });
 
-      if (!user) return null;
+      if (!user) {
+        resposta.erro = true
+        resposta.msg = 'Usuário não cadastrado!'
+        return res.json(resposta)
+      }
 
       const dados = user.get({ plain: true })
 
@@ -90,15 +96,15 @@ class UserController {
           dados.graduaAbrev,
           dados.orgaoSigla,
           dados.nome
-        ].filter(Boolean).join(' ').trim();
+        ].filter(Boolean).join(' ').trim()
         
-        resposta.dados = dados;
-        
-        return res.json(resposta);
+        resposta.dados = dados
     } catch (erro) {
-      (resposta.erro = true), (resposta.msg = `Error: ${erro}`);
+      resposta.erro = true
+      resposta.msg = `Error: ${erro}`;
       resposta.dados = erro;
     }
+    return res.json(resposta)
   }
 
   async store(req, res) {
