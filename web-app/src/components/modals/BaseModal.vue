@@ -35,9 +35,12 @@
 import { computed } from 'vue'
 
 const confirmButtonRef= ref(null)
+const getConfirmButtonEl = () => {
+  return confirmButtonRef.value?.$el
+}
 
 defineExpose({
-  confirmButtonRef
+  getConfirmButtonEl
 })
 
 const props = defineProps({

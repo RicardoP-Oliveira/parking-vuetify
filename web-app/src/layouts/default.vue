@@ -84,5 +84,4 @@ const changeTable = (val) => {
   tab.value = val
 };
 
-// watch(tab, (newTab) => { filters.value = getFiltersSchema(newTab); });
 </script>

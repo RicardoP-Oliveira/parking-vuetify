@@ -48,7 +48,7 @@ export function useAcessoForm(props, emit) {
   const labelDocumento = computed (() => {
     return tipo_doc.value
       ? `Documento/${tipo_doc.value}`
-      : ''
+      : 'Documento'
   })
 
   // **** VALIDAÇÕES ****
@@ -62,7 +62,7 @@ export function useAcessoForm(props, emit) {
   const isFormValid = computed(() => {
     return props.tipoForm === 'carro'
       ? isValidCarroForm.value && !!destino_id.value
-      : isValidPedestreForm
+      : isValidPedestreForm.value
   })
 
 
@@ -160,9 +160,10 @@ export function useAcessoForm(props, emit) {
           resolverDestino(carroRes.dados)
         } else {
           console.log('Dados carro não encontrado!')
-          emit('abrirCadastroCarro', {
-            placa: cleanPlaca.toUpperCase(),
-          })
+          // emit('abrirCadastroCarro', {
+          //   placa: cleanPlaca.toUpperCase(),
+          // })
+          placa.value = cleanPlaca
         }
       } else {
         const [userRes, pedestreRes] = await Promise.all([

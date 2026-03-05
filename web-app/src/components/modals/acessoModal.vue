@@ -4,6 +4,7 @@
     :isOpen="dialog.isDialog"
     :title="tipoForm === 'carro' ? 'Acesso Veicular' : 'Acesso Pedestre'"
     :confirmText="isAction"
+    ref="modalRef"
     @confirm="salvar"
     @close="emit('closeModal')"
     :confirmButton ="loading || !isFormValid"
@@ -80,10 +81,12 @@ const {
 watch(() => isFormValid.value, async(valido) => {
   if (valido) {
     await nextTick()
-    const btn = modalRef.value?.confirmButtonRef
-    if (btn) {
-      const el = btn.$el || btn
-      el.focus()
+    const btnEl = modalRef.value?.getConfirmButtonEl()
+    if (btnEl) {
+      btnEl.focus()
+    } else {
+      const fallbackBtn = document.querySelector('.v-card-action .v-btn--variant-flat')
+      fallbackBtn?.focus()
     }
   }
 })
