@@ -20,11 +20,11 @@
             <v-text-field
               v-model="ident"
               ref="identRef"
-              label="Id|Placa|Documento|Prefixo"
+              label="Placa|Documento|Prefixo"
               variant="outlined"
               autofocus
               clearable
-              :rules="[validateIdent]"
+              :rules="[v => validarIdentidade(v).valido || validarIdentidade(v).msg]"
               :maxlength="getLength"
               @click:clear="clearIdent"
               @keypress.enter.prevent="selectModal"
@@ -73,11 +73,17 @@ const props = defineProps({
 const changeTable = (tabDestino) => {
   emit('changeTable', tabDestino)
 }
-const emit = defineEmits(['update-btn', 'changeTable', 'show-snackbar'])
+const emit = defineEmits([
+  'update-btn',
+  'changeTable',
+  'show-snackbar',
+  'abrirCadastroPessoa',
+  'abrirCadastroCarro'
+])
 
 const {
   ident, identRef, loading, pageNow, pageSize, serverItems,
-  totalItems, generatedHeaders, modal, validateIdent, getLength, 
+  totalItems, generatedHeaders, modal, validarIdentidade, getLength, 
   clearIdent, selectModal, closeModal, loadItems, onUpdateOptions
 } = useBaseTable(props, emit)
 

@@ -19,6 +19,8 @@ export function useBaseTable(props, emit) {
   const loading = ref(false)
   const generatedHeaders = ref([])
 
+  let debounceTimer = null
+
   const modal = reactive({ isOpen: false, type: null })
 
   const token = `Bearer ${localStorage.getItem('token')}`
@@ -47,9 +49,11 @@ export function useBaseTable(props, emit) {
 
   // VALIDAÇÃO DE ENTRADA DE DADOS
   const validarIdentidade = (valor) =>{
+
+
     if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
     
-    const v = String(valor).toUpperCase().trim()
+    const v = String(valor || '').toUpperCase().trim()
 
     if (v.length < 4) return { valido: false, msg: 'Mínimo de 4 caracteres.' }
     if (/^0+$/.test(v)) return { valido: false, msg: 'Sequência inválida' }
@@ -191,11 +195,10 @@ export function useBaseTable(props, emit) {
 
   watch(() => props.tab, (newValue, oldValue) => {
     if (newValue !== oldValue) serverItems.value = []
-    console.log('O Watcher')
   })
 
   watch(ident, (v) => { if (v) ident.value = v.toUpperCase() })
-  let debounceTimer = null  
+
   watch(() => props.filters, () => {
     if (debounceTimer) clearTimeout(debounceTimer)
     debounceTimer = setTimeout(() =>{
@@ -222,10 +225,10 @@ export function useBaseTable(props, emit) {
   return {
     ident, identRef, loading, pageNow, pageSize, serverItems, totalItems,
     generatedHeaders, modal, getLength, selectModal, closeModal,
-    onUpdateOptions, loadItems, setFocus,
-    validateIdent: (v) => {
-      const p = /^(?!0+\d?)([0-9]{1,11}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$)/
-      return v.length === 0 || p.test(v) || 'Identificador inválido'
-    }
+    onUpdateOptions, loadItems, setFocus, validarIdentidade
+    // validateIdent: (v) => {
+    //   const p = /^(?!0+\d?)([0-9]{1,11}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$)/
+    //   return v.length === 0 || p.test(v) || 'Identificador inválido'
+    // }
   }
 }

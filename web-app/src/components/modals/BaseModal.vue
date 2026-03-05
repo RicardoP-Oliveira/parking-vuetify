@@ -34,6 +34,12 @@
 <script setup>
 import { computed } from 'vue'
 
+const confirmButtonRef= ref(null)
+
+defineExpose({
+  confirmButtonRef
+})
+
 const props = defineProps({
   title: String,
   isOpen: Boolean,

@@ -6,7 +6,7 @@
     :confirmText="isAction"
     @confirm="salvar"
     @close="emit('closeModal')"
-    :confirmButton ="loading || (tipoForm === 'carro' ? !isValidCarroForm : false)"
+    :confirmButton ="loading || !isFormValid"
   >
     <template v-if="tipoForm === 'carro'">
       <v-row dense>
@@ -14,7 +14,7 @@
           <v-text-field v-model="documento" :label="labelDocumento" variant="underlined" autofocus />
         </v-col>
         <v-col cols="6">
-          <v-text-field v-model="placa" label="Placa" :maxlength="7" variant="underlined" :disabled="!modelo" />
+          <v-text-field v-model="placa" label="Placa" readonly :maxlength="7" variant="underlined" :disabled="!modelo" />
         </v-col>
         <v-col cols="12">
           <v-text-field v-model="nome" label="Condutor" variant="underlined" readonly />
@@ -57,6 +57,7 @@
 <script setup>
 import BaseModal from '@/components/modals/BaseModal.vue'
 import { useAcessoForm } from '@/composables/useAcessoForm'
+import { nextTick, watch } from 'vue'
 
 const props = defineProps({
   dialog: Object,
@@ -64,12 +65,26 @@ const props = defineProps({
   tipo: String
 })
 
-const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
+const modalRef = ref(null)
+
+const emit = defineEmits(['closeModal', 'update:options', 'changeTable', 'abrirCadastroCarro'])
 
 const {
   documento, nome, placa, modelo, isAction, showError, loading, ubm,
   doc_id, orgao_id, ubm_id, gradua_id, destino_id, tipo_doc, labelDocumento,
   docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions,
-  isValidCarroForm, salvar, close:resetForm, isReadOnly
+  isValidCarroForm, salvar, close:resetForm, isReadOnly, isFormValid,
+  isValidPedestreForm
 } = useAcessoForm(props, emit)
+
+watch(() => isFormValid.value, async(valido) => {
+  if (valido) {
+    await nextTick()
+    const btn = modalRef.value?.confirmButtonRef
+    if (btn) {
+      const el = btn.$el || btn
+      el.focus()
+    }
+  }
+})
 </script>
