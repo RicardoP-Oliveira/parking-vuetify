@@ -30,6 +30,7 @@ export function useAcessoForm(props, emit) {
   const formTouched = ref(false)
   const loading = ref(false)
   const lastData = ref(null)
+  const isNovoCadastro = ref(false)
 
   // **** Referências ****
   const user_id = ref(null)
@@ -43,6 +44,7 @@ export function useAcessoForm(props, emit) {
 
   // **** CONTROLES ****
   let debounceTimer = null
+  let requestId = 0
 
   // 2. Cria uma lógica dinâmica
   const labelDocumento = computed (() => {
@@ -99,7 +101,7 @@ export function useAcessoForm(props, emit) {
     if (destinoEncontrado) {
       destino_id.value = destinoEncontrado.id
     } else {
-      destino_id.value = data.destino_id ||  10
+      destino_id.value = data.destino_id ||  null
     }
   }
 
@@ -116,7 +118,7 @@ export function useAcessoForm(props, emit) {
         user_id.value = user.user_id
         resolverDestino(user)
       } else {
-        console.log('Usuário não cadastrado')
+        isNovoCadastro.value = true
       }
     } catch (e) {
       console.error('Erro ao buscar usuário:', e.message)
@@ -124,11 +126,10 @@ export function useAcessoForm(props, emit) {
   }
 
   // **** LÓGICA (BUSCA) ****
-  let requestId = 0
   const buscarDados = async (id) => {
     const valBusca = props.tipoForm === 'carro' ? placa.value : documento.value
     if (!valBusca || valBusca.length < 4) return
-    if (lastData.value === valBusca) return
+    // if (lastData.value === valBusca) return
     const currentReq = ++requestId
     loading.value = true
     try {
@@ -159,7 +160,7 @@ export function useAcessoForm(props, emit) {
           user_id.value = carroRes.dados.user_id
           resolverDestino(carroRes.dados)
         } else {
-          console.log('Dados carro não encontrado!')
+          isNovoCadastro.value = true
           // emit('abrirCadastroCarro', {
           //   placa: cleanPlaca.toUpperCase(),
           // })
@@ -231,10 +232,9 @@ export function useAcessoForm(props, emit) {
     debounceTimer = setTimeout(() => getUser(newVal), 500)
   })
 
-  watch(placa, (newVal, oldVal) => {
-    newVal.toUpperCase()
+  watch(placa, (newVal) => {
     if (debounceTimer) clearTimeout(debounceTimer)
-    if (newVal === oldVal) return
+    if (!newVal) return
     debounceTimer = setTimeout(() => buscarDados(), 500)
   })
 
@@ -253,7 +253,7 @@ export function useAcessoForm(props, emit) {
   const isReadOnly = computed(() => isAction.value === ACTIONS.SAIDA && props.tipoForm === 'pedestre')
 
   return {
-    documento, nome, placa, modelo, isAction, formTouched, loading, ubm,
+    documento, nome, placa, modelo, isAction, formTouched, loading, ubm, user_id, carro_id,
     doc_id, ubm_id, orgao_id, gradua_id, destino_id, tipo_doc, labelDocumento,
     isReadOnly, isFormValid, isValidCarroForm, isValidPedestreForm,
     docOptions,
@@ -261,7 +261,8 @@ export function useAcessoForm(props, emit) {
     orgaosOptions,
     unidadesOptions,
     destinosOptions,
-    showError, salvar, close, patternPlaca, getUser
+    isNovoCadastro,
+    showError, salvar, close, patternPlaca, getUser, buscarDados
   }
   
 }

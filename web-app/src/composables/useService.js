@@ -30,7 +30,7 @@ export function useServices(mock = null) {
     getUsuarioByDoc: (documento) =>
       UserService.getId(documento, token),
 
-    storeUser: (documento) => 
+    storeUsuario: (documento) => 
       UserService.adicionar(documento, token),
 
     /* ========================
@@ -38,6 +38,9 @@ export function useServices(mock = null) {
     =========================*/
     getCarroPlaca: (placa) => 
       CarroSevice.getPlaca(placa, token),
+
+    storeCarro: (placa) => 
+      CarroSevice.adicionar(placa, token),
 
     /* ========================
        CEICS

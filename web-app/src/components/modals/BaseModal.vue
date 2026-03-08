@@ -11,7 +11,7 @@
       <v-card-text>
         <slot />
       </v-card-text>
-      <template v-slot:actions>
+      <template v-slot:actions v-if="!hideActions">
         <v-spacer />
         <v-btn @click="$emit('close')" variant="tonal">
           Cancelar
@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const confirmButtonRef= ref(null)
 const getConfirmButtonEl = () => {
@@ -47,6 +47,7 @@ const props = defineProps({
   title: String,
   isOpen: Boolean,
   confirmButton: Boolean,
+  hideActions: Boolean,
   width: { type: [String, Number], default: 600 },
   confirmText: { type: String, default: 'Salvar' },
   confirmColor: { type: String, default: 'blue-darken-4' },

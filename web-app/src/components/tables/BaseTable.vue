@@ -11,8 +11,10 @@
     density="compact"
     hide-default-footer
     fixed-header
-    hover
-    :class="['flex-table', { 'width-pedestre': tab !== 'carro' }]"
+    :class="['flex-table',{
+      'width-pedestre': tab !== 'carro'
+       }
+    ]"
     >
       <template v-slot:top>
         <v-row class="px-4 pt-4">
@@ -20,7 +22,7 @@
             <v-text-field
               v-model="ident"
               ref="identRef"
-              label="Placa|Documento|Prefixo"
+              label="Placa|RG/CPF|Prefixo"
               variant="outlined"
               autofocus
               clearable
@@ -90,11 +92,12 @@ const {
 </script>
 
 <style scoped>
-tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05);
+:deep(.v-data-table__tr:nth-of-type(odd)) {
+  background-color: rgba(0, 0, 0, 0.05) !important;
 }
-tbody tr:hover {
+:deep(.v-data-table__tr:hover) {
   color: #f07272;
+  background-color: #f072721a !important;
 }
 .flex-table {
   height: 88vh;

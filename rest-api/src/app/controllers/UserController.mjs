@@ -112,6 +112,8 @@ class UserController {
     const foto = req.file;
     const { documento } = req.body
 
+    console.log("Recebendo dados para criar usuário:", req.body)
+
     try {
       const userExists = await User.findOne({
         where: { documento: documento }
