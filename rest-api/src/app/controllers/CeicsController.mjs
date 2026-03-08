@@ -233,6 +233,8 @@ class CeicsController {
 
     const busca = identificador ? identificador.trim() : '';
 
+    console.log('Aqui:', tab)
+
     try {
       const result = await Ceics.findOne({
         order: [['updated_at', 'DESC']],
@@ -275,6 +277,7 @@ class CeicsController {
       })
 
       if (result) {
+        console.log(result)
         resposta.dados = result
       } else {
         resposta.erro = true

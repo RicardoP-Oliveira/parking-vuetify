@@ -1,5 +1,5 @@
 // src/composables/useAcessoForm.js
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, reactive, toRefs } from 'vue'
 import { useServices } from './useService'
 import { useListas } from './useListas'
 
@@ -20,103 +20,119 @@ export function useAcessoForm(props, emit) {
   } = useListas(service)
 
   // ***** STATE *****
-  const documento = ref('')
-  const nome = ref('')
-  const placa = ref('')
-  const modelo = ref('')
-  const ubm = ref('')
-  const tipo_doc = ref('')
+  const formDefault = {
+    documento: '',
+    nome: '',
+    placa: '',
+    modelo: '',
+    ubm: '',
+    tipo_doc: '',
+    user_id: null,
+    carro_id: null,
+    registro_id: null,
+    doc_id: null,
+    orgao_id: null,
+    ubm_id: null,
+    gradua_id: null,
+    destino_id: null
+  }
+
+  const formData = reactive({ ...formDefault }) // Cria o objeto reativo
+  
   const isAction = ref(ACTIONS.ENTRADA)
   const formTouched = ref(false)
   const loading = ref(false)
   const lastData = ref(null)
   const isNovoCadastro = ref(false)
 
-  // **** Referências ****
-  const user_id = ref(null)
-  const carro_id = ref(null)
-  const registro_id = ref(null)
-  const doc_id = ref(null)
-  const orgao_id = ref(null)
-  const ubm_id = ref(null)
-  const gradua_id = ref (null)
-  const destino_id = ref(null)
-
   // **** CONTROLES ****
-  let debounceTimer = null
+  let debouncePlaca = null
+  let debounceDoc = null
   let requestId = 0
+  let isAutofilling = false
 
-  // 2. Cria uma lógica dinâmica
-  const labelDocumento = computed (() => {
-    return tipo_doc.value
-      ? `Documento/${tipo_doc.value}`
-      : 'Documento'
+  // **** MAPAS PERFORMÁTICOS ****
+  const mapaUnidades = computed(() => {
+    const mapa = new Map()
+    listas.value?.unidades?.forEach(u => {
+      if (u.obm?.id) {
+        mapa.set(u.obm.id, u.obm.name.trim().toUpperCase())
+      }
+    })
+    return mapa
+  })
+
+  const mapaDestinos = computed(() => {
+    const mapa = new Map()
+    listas.value?.destinos?.forEach(d => {
+      if (d.target) {
+        mapa.set(d.target.trim().toUpperCase(), d.id)
+      }
+    })
+    return mapa
   })
 
   // **** VALIDAÇÕES ****
   const patternPlaca = /^[A-z]{3}[0-9][A-Z0-9][0-9]{2}$/
-  const isValidCarroForm = computed(() => patternPlaca.test(placa.value)
-    && (nome.value))
-  const showError = computed(() => formTouched.value && (!documento.value || documento.value.length < 4))
+  const isValidCarroForm = computed(() => patternPlaca.test(formData.placa)
+    && (formData.nome))
+  const showError = computed(() => formTouched.value && (!formData.documento || formData.documento.length < 4))
   const isValidPedestreForm = computed(() => {
-    return documento.value?.length >= 4 && !!nome.value && !!destino_id.value
+    return formData.documento?.length >= 4 && !!formData.nome && !!formData.destino_id
   })
   const isFormValid = computed(() => {
     return props.tipoForm === 'carro'
-      ? isValidCarroForm.value && !!destino_id.value
+      ? isValidCarroForm.value && !!formData.destino_id
       : isValidPedestreForm.value
   })
 
 
   // **** APOIO ****
   const limparForm = () => {
-    nome.value = ''
-    placa.value = ''
-    modelo.value = ''
-    tipo_doc.value = ''
-    destino_id.value = null
-    user_id.value = null
-    carro_id.value = null
-    registro_id.value = null
-    doc_id.value = null
-    orgao_id.value = null
-    ubm_id.value = null
-    gradua_id.value = null
+    Object.assign(formData, formDefault)
     isAction.value = ACTIONS.ENTRADA
   }
 
   const resolverDestino = (data = null) => {
     if (!data) return
-    if (!listas.value?.unidades?.length || !listas.value?.destinos?.length) {
-      destino_id.value = data.destino_id || 10
+
+    if (data.destino_id) {
+      formData.destino_id = data.destino_id
+      return
     }
+
     const ubmIdBusca = data.ubm_id || data.user?.ubm_id
-    let destinoEncontrado = null
-    if (ubmIdBusca) {
-      const nomeUbm = listas.value.unidades.find(u => u.obm.id === ubmIdBusca)?.obm?.name.toUpperCase()
+
+    if (ubmIdBusca && mapaUnidades.value.size > 0 && mapaDestinos.value.size > 0) {
+      const nomeUbm = mapaUnidades.value.get(ubmIdBusca)
       if (nomeUbm) {
-        destinoEncontrado = listas.value.destinos.find(d => d.target?.toUpperCase() === nomeUbm)
+        const idDestino = mapaDestinos.value.get(nomeUbm)
+        if (idDestino) {
+          formData.destino_id = idDestino
+          return
+        }
       }
     }
-    if (destinoEncontrado) {
-      destino_id.value = destinoEncontrado.id
-    } else {
-      destino_id.value = data.destino_id ||  null
-    }
+    formData.destino_id = data.destino_id || null
   }
 
-  const getUser = async (valor) => {
+  const getUser = async (valor, isSaida = false) => {
+
     if (!valor) return
     try {
       const userRes = await service.getUsuarioByDoc(valor.trim())
 
       if (!userRes.erro && userRes.dados) {
         const user = userRes.dados
-        tipo_doc.value = user.tipo_doc || ''
-        nome.value = user.nomeCompleto
-        ubm.value = user.nomeUbm
-        user_id.value = user.user_id
-        resolverDestino(user)
+        formData.tipo_doc = user.tipo_doc || ''
+        formData.nome = user.nomeCompleto
+        formData.ubm = user.nomeUbm
+        formData.user_id = user.user_id
+
+        if (!isSaida) {
+          resolverDestino(user)
+        }
+        
       } else {
         isNovoCadastro.value = true
       }
@@ -127,7 +143,7 @@ export function useAcessoForm(props, emit) {
 
   // **** LÓGICA (BUSCA) ****
   const buscarDados = async (id) => {
-    const valBusca = props.tipoForm === 'carro' ? placa.value : documento.value
+    const valBusca = props.tipoForm === 'carro' ? formData.placa : formData.documento
     if (!valBusca || valBusca.length < 4) return
     // if (lastData.value === valBusca) return
     const currentReq = ++requestId
@@ -139,74 +155,91 @@ export function useAcessoForm(props, emit) {
           service.getCarroPlaca(cleanPlaca),
           service.getInfo({ ident: cleanPlaca, tab: props.tipo})
         ])
+
         const valorPreservado = valBusca
         if (currentReq !== requestId) return
+        isAutofilling = true
         limparForm()
         lastData.value = valorPreservado
         if(ceicsRes?.dados) {
           isAction.value = ACTIONS.SAIDA
-          documento.value = ceicsRes.dados.documento
-          placa.value = ceicsRes.dados.placa
-          modelo.value = ceicsRes.dados.modelo
-          destino_id.value = ceicsRes.dados.destino_id
-          registro_id.value = ceicsRes.dados.id
-          carro_id.value = ceicsRes.dados.carro_id
+          formData.documento = ceicsRes.dados.documento
+          formData.placa = ceicsRes.dados.placa
+          formData.modelo = ceicsRes.dados.modelo
+          formData.registro_id = ceicsRes.dados.id
+          formData.destino_id = ceicsRes.dados.destino_id
+          formData.carro_id = ceicsRes.dados.carro_id
+          await getUser(ceicsRes.dados.documento, true)
         } else if (carroRes?.dados) {
           isAction.value = ACTIONS.ENTRADA
-          documento.value = carroRes.dados.documento
-          placa.value = carroRes.dados.placa
-          modelo.value = carroRes.dados.marca
-          carro_id.value = carroRes.dados.id
-          user_id.value = carroRes.dados.user_id
-          resolverDestino(carroRes.dados)
+          formData.documento = carroRes.dados.documento
+          formData.placa = carroRes.dados.placa
+          formData.modelo = carroRes.dados.marca
+          formData.carro_id = carroRes.dados.id
+          formData.user_id = carroRes.dados.user_id
         } else {
           isNovoCadastro.value = true
-          // emit('abrirCadastroCarro', {
-          //   placa: cleanPlaca.toUpperCase(),
-          // })
-          placa.value = cleanPlaca
+          formData.placa = cleanPlaca
         }
       } else {
         const [userRes, pedestreRes] = await Promise.all([
-          service.getUsuarioByDoc(documento.value),
-          service.getInfo({ ident: documento.value, tab: props.tipo })
+          service.getUsuarioByDoc(valBusca),
+          service.getInfo({ ident: valBusca, tab: props.tipo })
         ])
-        if (currentReq !== requestId) return
 
-        const dados = pedestreRes?.dados || userRes?.dados
-        if (dados) {
-          isAction.value = pedestreRes?.dados ? ACTIONS.SAIDA : ACTIONS.ENTRADA
-          tipo_doc.value = dados.tipo_doc || ''
-          doc_id.value = dados.doc_id 
-          ubm_id.value = dados.ubm_id || ''
-          orgao_id.value = dados.orgao_id
-          gradua_id.value = dados.gradua_id
-          user_id.value = dados.user_id
-          registro_id.value =  dados.id || ''
-          resolverDestino(dados)
+        const valorPreservado = valBusca
+        if (currentReq !== requestId) return
+        isAutofilling = true
+        limparForm()
+        lastData.value = valorPreservado
+
+        formData.documento = valBusca
+
+        if (pedestreRes?.dados) {
+          isAction.value = ACTIONS.SAIDA
+          const dadosCeics = pedestreRes.dados
+          formData.registro_id = dadosCeics.id
+          formData.destino_id = dadosCeics.destino_id
+          formData.user_id = dadosCeics.user_id
+
+          await getUser(valorPreservado, true)
+        } else if (userRes?.dados) {
+          isAction.value = ACTIONS.ENTRADA
+          const dadosUser = userRes.dados
+          formData.tipo_doc = dadosUser.tipo_doc
+          formData.doc_id = dadosUser.doc_id
+          formData.ubm_id = dadosUser.ubm_id
+          formData.orgao_id = dadosUser.orgao_id
+          formData.gradua_id = dadosUser.gradua_id
+          formData.user_id = dadosUser.user_id
+          formData.nome = dadosUser.nomeCompleto
+          formData.ubm = dadosUser.nomeUbm
+
+          resolverDestino(dadosUser)
         } else {
-          // emit('abrirCadastroPessoa', {
-          //   documento: documento.value
-          // })
+          isNovoCadastro.value = true
         }
       }
       lastData.value = valBusca
     } catch (error) {
       console.error('Erro na busca de dados:', error)
-    } finally { loading.value = false }
+    } finally { 
+      isAutofilling = false
+      loading.value = false 
+    }
   }
 
   // ***** REGISTRAR *****
   const salvar = async () => {
     formTouched.value = true
     const payload = { 
-      user_id: user_id.value,
-      destino_id: destino_id.value,
-      ...(props.tipo === 'carro' && { carro_id: carro_id.value })
+      user_id: formData.user_id,
+      destino_id: formData.destino_id,
+      ...(props.tipo === 'carro' && { carro_id: formData.carro_id })
     }
     try {
-      if (isAction.value === ACTIONS.SAIDA && registro_id.value) {
-        payload.registro_id = registro_id.value
+      if (isAction.value === ACTIONS.SAIDA && formData.registro_id) {
+        payload.registro_id = formData.registro_id
         await service.saida( payload )
       } else {
         await service.entrada({ dados: payload, tab: props.tipo})
@@ -224,44 +257,54 @@ export function useAcessoForm(props, emit) {
   }
 
   //**** WATCHERS / MOUNTED *****
-  watch(documento, (newVal) => {
-    if (debounceTimer) clearTimeout(debounceTimer)
-    nome.value = ''
-    destino_id.value = null
-    if (!newVal || newVal.length < 4) return
-    debounceTimer = setTimeout(() => getUser(newVal), 500)
-  })
+  watch(() => [formData.documento, formData.placa],
+    ([newDoc, newPlaca], [oldDoc, oldPlaca]) => {
+    if (isAutofilling) return
+    if (newDoc !== oldDoc) {
+      if (debounceDoc) clearTimeout(debounceDoc)
+      if (isAction.value !== ACTIONS.SAIDA) {
+       formData.destino_id = null
+       if (newDoc && newDoc.length >= 4) {
+        if (props.tipoForm === 'pedestre') {
+           debounceDoc = setTimeout(() => buscarDados(), 500) 
+        } else {
+          debounceDoc = setTimeout(() => getUser(newDoc), 500) 
+        }
+       }
+      }
+    }
 
-  watch(placa, (newVal) => {
-    if (debounceTimer) clearTimeout(debounceTimer)
-    if (!newVal) return
-    debounceTimer = setTimeout(() => buscarDados(), 500)
+    if (newPlaca !== oldPlaca) {
+      if (debouncePlaca) clearTimeout(debouncePlaca)
+      
+      if (newPlaca && newPlaca.length >= 7) {
+        debouncePlaca = setTimeout(() => buscarDados(), 500)
+      }
+    }
   })
 
   onMounted(async () => {
     await fetchListas()
  
     const idInicial = props.dialog?.idPlaca || props.dialog?.documento
-    if (props.tipoForm === 'carro') {
-      placa.value = idInicial
-    } else {
-      documento.value = idInicial
+    if (idInicial) {
+      if (props.tipoForm === 'carro') {
+        formData.placa = idInicial
+        isAutofilling = false
+      } else {
+        formData.documento = idInicial
+        isAutofilling = false 
+      }
     }
-    await buscarDados()
   })
 
   const isReadOnly = computed(() => isAction.value === ACTIONS.SAIDA && props.tipoForm === 'pedestre')
 
   return {
-    documento, nome, placa, modelo, isAction, formTouched, loading, ubm, user_id, carro_id,
-    doc_id, ubm_id, orgao_id, gradua_id, destino_id, tipo_doc, labelDocumento,
+    formData,
+    isAction, formTouched, loading, isNovoCadastro,
     isReadOnly, isFormValid, isValidCarroForm, isValidPedestreForm,
-    docOptions,
-    tratoOptions,
-    orgaosOptions,
-    unidadesOptions,
-    destinosOptions,
-    isNovoCadastro,
+    docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions,
     showError, salvar, close, patternPlaca, getUser, buscarDados
   }
   
