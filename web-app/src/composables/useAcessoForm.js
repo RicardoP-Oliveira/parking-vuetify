@@ -1,9 +1,11 @@
 // src/composables/useAcessoForm.js
-import { ref, computed, watch, onMounted, reactive, toRefs } from 'vue'
+import { ref, computed, watch, onMounted, reactive } from 'vue'
 import { useServices } from './useService'
 import { useListas } from './useListas'
+import { createUnidadeMap, createDestinosMap } from '@/config/listasConfig'
+import { ACTIONS } from '@/utils/constants'
 
-const ACTIONS = { ENTRADA: 'Entrada', SAIDA: 'Saída' }
+const patternPlaca = /^[A-z]{3}[0-9][A-Z0-9][0-9]{2}$/
 
 export function useAcessoForm(props, emit) {
   const service = useServices()
@@ -52,28 +54,10 @@ export function useAcessoForm(props, emit) {
   let isAutofilling = false
 
   // **** MAPAS PERFORMÁTICOS ****
-  const mapaUnidades = computed(() => {
-    const mapa = new Map()
-    listas.value?.unidades?.forEach(u => {
-      if (u.obm?.id) {
-        mapa.set(u.obm.id, u.obm.name.trim().toUpperCase())
-      }
-    })
-    return mapa
-  })
-
-  const mapaDestinos = computed(() => {
-    const mapa = new Map()
-    listas.value?.destinos?.forEach(d => {
-      if (d.target) {
-        mapa.set(d.target.trim().toUpperCase(), d.id)
-      }
-    })
-    return mapa
-  })
+  const mapaUnidades = computed(() => createUnidadeMap(listas.value?.unidades))
+  const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos))
 
   // **** VALIDAÇÕES ****
-  const patternPlaca = /^[A-z]{3}[0-9][A-Z0-9][0-9]{2}$/
   const isValidCarroForm = computed(() => patternPlaca.test(formData.placa)
     && (formData.nome))
   const showError = computed(() => formTouched.value && (!formData.documento || formData.documento.length < 4))

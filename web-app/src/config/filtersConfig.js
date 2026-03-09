@@ -20,13 +20,6 @@ export const getFiltersByTab = (tab) => {
   return commonFilters
 }
 
-// export const getFiltersSchema = (tab) => {
-//     const schema = getFiltersByTab(tab)
-//     return Object.keys(schema).reduce((acc, key) => {
-//       acc[key] = null
-//       return acc
-//     }, {})
-//   }
 export const getAllFiltersSchema = () => {
   return {
     placa: null,

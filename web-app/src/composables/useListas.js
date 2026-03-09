@@ -1,5 +1,6 @@
 // src/composables/useListas.js
 import { ref, computed } from "vue"
+import { LISTAS_MAP, transformList } from "@/config/listasConfig"
 
 export function useListas(service) {
   const listas = ref ({
@@ -10,32 +11,11 @@ export function useListas(service) {
     tratamento: []
   })
 
-  const LISTAS_CONFIG = {
-    documentos: { key: 'docOptions', id: 'id', text: 'sigla' },
-    tratamento: { key: 'tratoOptions', id: 'id', text: 'abrev' },
-    orgaos: { key: 'orgaosOptions', id: 'id', text: 'sigla', nested: 'orgao' },
-    unidades: { key: 'unidadesOptions', id: 'id', text: 'name', nested: 'obm' },
-    destinos: { key: 'destinosOptions', id: 'id', text: 'target' }
-  }
-
-  const options = computed(() => {
+  const mappedOptions = computed(() => {
     const result = {}
-
-    Object.keys(LISTAS_CONFIG).forEach(listkey => {
-      const config = LISTAS_CONFIG[listkey];
-      const rawData = listas.value[listkey] || []
-    
-      if (Array.isArray(rawData)) {
-        result[config.key] = rawData.map(item => {
-          const source = config.nested ? item[config.nested] : item
-
-          return {
-            id: source?.[config.id],
-            title: source?.[config.text]
-          }
-        })
-      }
-    })
+    for (const [listKey, config] of Object.entries(LISTAS_MAP)) {
+      result[config.key] = transformList(listas.value[listKey], config)
+    }
     return result
   })
 
@@ -60,10 +40,10 @@ export function useListas(service) {
   return {
     listas,
     fetchListas,
-    docOptions: computed(() => options.value.docOptions),
-    tratoOptions: computed(() => options.value.tratoOptions),
-    orgaosOptions: computed(() => options.value.orgaosOptions),
-    unidadesOptions: computed(() => options.value.unidadesOptions),
-    destinosOptions: computed(() => options.value.destinosOptions),
+    docOptions: computed(() => mappedOptions.value.docOptions),
+    tratoOptions: computed(() => mappedOptions.value.tratoOptions),
+    orgaosOptions: computed(() => mappedOptions.value.orgaosOptions),
+    unidadesOptions: computed(() => mappedOptions.value.unidadesOptions),
+    destinosOptions: computed(() => mappedOptions.value.destinosOptions),
   }
 }
