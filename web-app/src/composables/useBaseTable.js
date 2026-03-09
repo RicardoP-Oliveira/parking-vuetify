@@ -171,7 +171,6 @@ export function useBaseTable(props, emit) {
         timeout: 3000 })
       return
     }
-    // const ifPattern = /^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$/
     modal.isOpen = true
     modal.type = PATTERNS.PREFIXO.test(ident.value) || PATTERNS.PLACA_ANTIGA.test(ident.value)
      || PATTERNS.PLACA_MERCOSUL.test(ident.value)
@@ -226,9 +225,5 @@ export function useBaseTable(props, emit) {
     ident, identRef, loading, pageNow, pageSize, serverItems, totalItems,
     generatedHeaders, modal, getLength, selectModal, closeModal,
     onUpdateOptions, loadItems, setFocus, validarIdentidade
-    // validateIdent: (v) => {
-    //   const p = /^(?!0+\d?)([0-9]{1,11}$|^[A-Z]{1,4}\d?-\d{3}$|^[A-Z]{3}[0-9][A-Z0-9]{1}[0-9]{2}|^#\d*$)/
-    //   return v.length === 0 || p.test(v) || 'Identificador inválido'
-    // }
   }
 }
