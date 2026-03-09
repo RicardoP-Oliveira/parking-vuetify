@@ -21,13 +21,27 @@
     <template v-if="tipoForm === 'carro' && !isNovoCadastro">
       <v-row dense>
         <v-col cols="6">
-          <v-text-field v-model="formData.placa" label="Placa" readonly :maxlength="7" variant="underlined" :disabled="!formData.modelo" />
+          <v-text-field
+            v-model="formData.placa"
+            label="Placa"
+            @keyup.enter="onPlacaEnter"
+            @blur="onPlacaEnter"
+            :loading="loading"
+            :maxlength="7"
+          />
         </v-col>
         <v-col cols="6">
           <v-text-field v-model="formData.modelo" label="Modelo/Prefixo" readonly :maxlength="7" variant="underlined" :disabled="!formData.modelo" />
         </v-col>
         <v-col cols="12">
-          <v-text-field v-model="formData.documento" label="Documento(RG/CPF)" variant="underlined" autofocus />
+          <v-text-field
+            v-model="formData.documento"
+            label="Documento(RG/CPF)"
+            @keyup.enter.prevent="onDocEnter"
+            @blur="onDocEnter"
+            :loading="loading"
+            variant="underlined"
+            />
         </v-col>
         <v-col cols="12">
           <v-text-field v-model="formData.nome" label="Condutor" variant="underlined" readonly />
@@ -38,7 +52,15 @@
     <template v-else-if="tipoForm === 'pedestre' && !isNovoCadastro">
       <v-row dense>
         <v-col cols="4">
-          <v-text-field v-model="formData.documento" label="Documento(RG/CPF)" variant="underlined" :readOnly="isReadOnly" :error="showError" autofocus />
+          <v-text-field
+            v-model="formData.documento"
+            label="Documento(RG/CPF)"
+            variant="underlined"
+            @keyup.enter.prevent="onDocEnter"
+            @blur="onDocEnter"
+            :readOnly="isReadOnly"
+            :error="showError"
+          />
         </v-col>
         <v-col cols="8">
           <v-text-field v-model="formData.nome" label="Nome" readonly variant="underlined" @update:model-value="nome = nome?.toUpperCase()" />
@@ -98,7 +120,7 @@ const {
   isAction, showError, loading,
   destinosOptions, salvar, close, isReadOnly,
   isFormValid, buscarDados,
-  isNovoCadastro
+  isNovoCadastro, onPlacaEnter, onDocEnter,
 } = useAcessoForm(props, emit)
 
 watch(() => isFormValid.value, async(valido) => {
@@ -112,7 +134,7 @@ watch(() => isFormValid.value, async(valido) => {
         const fallbackBtn = document.querySelector('.v-card-action .v-btn--variant-flat')
         fallbackBtn?.focus()
       }
-    }, 50)    
+    }, 250)    
   }
 })
 </script>

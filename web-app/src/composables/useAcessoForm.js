@@ -72,8 +72,29 @@ export function useAcessoForm(props, emit) {
 
 
   // **** APOIO ****
-  const limparForm = () => {
+  const onDocEnter = async () => {
+    if (loading.value) return
+    if (formData.documento?.length >= 4) {
+      if (isAction.value !== ACTIONS.ENTRADA) {
+        formData.nome = ''
+        await getUser(formData.documento, true)
+      } else {
+        formData.nome = ''
+        await getUser(formData.documento)
+      }
+    }
+  }
+
+  const onPlacaEnter = () => {
+    if (patternPlaca.test(formData.placa)) {
+      buscarDados()
+    } 
+  }
+
+  const limparForm = (preservarCampo = null) => {
+    const valorPreservado = preservarCampo ? formData[preservarCampo] : ''
     Object.assign(formData, formDefault)
+    if (preservarCampo) formData[preservarCampo] = valorPreservado
     isAction.value = ACTIONS.ENTRADA
   }
 
@@ -101,7 +122,6 @@ export function useAcessoForm(props, emit) {
   }
 
   const getUser = async (valor, isSaida = false) => {
-
     if (!valor) return
     try {
       const userRes = await service.getUsuarioByDoc(valor.trim())
@@ -143,7 +163,7 @@ export function useAcessoForm(props, emit) {
         const valorPreservado = valBusca
         if (currentReq !== requestId) return
         isAutofilling = true
-        limparForm()
+        limparForm('placa')
         lastData.value = valorPreservado
         if(ceicsRes?.dados) {
           isAction.value = ACTIONS.SAIDA
@@ -174,7 +194,7 @@ export function useAcessoForm(props, emit) {
         const valorPreservado = valBusca
         if (currentReq !== requestId) return
         isAutofilling = true
-        limparForm()
+        limparForm('documento')
         lastData.value = valorPreservado
 
         formData.documento = valBusca
@@ -240,45 +260,21 @@ export function useAcessoForm(props, emit) {
     emit('closeModal', from)
   }
 
-  //**** WATCHERS / MOUNTED *****
-  watch(() => [formData.documento, formData.placa],
-    ([newDoc, newPlaca], [oldDoc, oldPlaca]) => {
-    if (isAutofilling) return
-    if (newDoc !== oldDoc) {
-      if (debounceDoc) clearTimeout(debounceDoc)
-      if (isAction.value !== ACTIONS.SAIDA) {
-       formData.destino_id = null
-       if (newDoc && newDoc.length >= 4) {
-        if (props.tipoForm === 'pedestre') {
-           debounceDoc = setTimeout(() => buscarDados(), 500) 
-        } else {
-          debounceDoc = setTimeout(() => getUser(newDoc), 500) 
-        }
-       }
-      }
-    }
-
-    if (newPlaca !== oldPlaca) {
-      if (debouncePlaca) clearTimeout(debouncePlaca)
-      
-      if (newPlaca && newPlaca.length >= 7) {
-        debouncePlaca = setTimeout(() => buscarDados(), 500)
-      }
-    }
-  })
-
   onMounted(async () => {
     await fetchListas()
  
     const idInicial = props.dialog?.idPlaca || props.dialog?.documento
     if (idInicial) {
+      isAutofilling = true
       if (props.tipoForm === 'carro') {
         formData.placa = idInicial
-        isAutofilling = false
+        await buscarDados()
       } else {
         formData.documento = idInicial
-        isAutofilling = false 
+        await buscarDados()
       }
+
+      isAutofilling = false
     }
   })
 
@@ -289,7 +285,7 @@ export function useAcessoForm(props, emit) {
     isAction, formTouched, loading, isNovoCadastro,
     isReadOnly, isFormValid, isValidCarroForm, isValidPedestreForm,
     docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions,
-    showError, salvar, close, patternPlaca, getUser, buscarDados
+    showError, salvar, close, patternPlaca, getUser, buscarDados, onPlacaEnter, onDocEnter
   }
   
 }

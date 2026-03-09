@@ -59,7 +59,6 @@ export function useCadastroGeral(props, emit) {
         carro.value.orgao_id = null
         nome.value = ''
       } else {
-        console.log("Nenhum dono encontrado para o documento:", buscaDoc.value)
         donoEncontrado.value = null
         carro.value.user_id = null
       }
