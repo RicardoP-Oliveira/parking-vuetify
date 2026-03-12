@@ -4,7 +4,7 @@ import { getTableConfig } from '@/config/headersConfig'
 const PATTERNS = {
     PLACA_ANTIGA: /^[A-Z]{3}\d{4}$/,
     PLACA_MERCOSUL: /^[A-Z]{3}\d[A-Z]\d{2}$/,
-    PREFIXO: /^[A-Z]{1,4}-\d{3}$/,
+    PREFIXO: /^[A-Z][A-Z0-9]{1,3}-\d{3}$/,
     DOCUMENTO: /^\d{4,11}$/
   }
 

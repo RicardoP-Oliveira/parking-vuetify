@@ -1,103 +1,103 @@
 // src/composables/useAcessoForm.js
-import { ref, computed, watch, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, nextTick } from 'vue'
 import { useServices } from './useService'
 import { useListas } from './useListas'
 import { createUnidadeMap, createDestinosMap } from '@/config/listasConfig'
 import { ACTIONS } from '@/utils/constants'
 
-const patternPlaca = /^[A-z]{3}[0-9][A-Z0-9][0-9]{2}$/
+const patternPlaca = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/
+const cache = new Map()
+const TTL = 1000 * 60 * 5
 
-export function useAcessoForm(props, emit) {
+export function useAcessoForm(props, emit, modalRef) {
   const service = useServices()
+
+  const buscarServicos = async (valor) => {
+
+    const key = valor.trim().toUpperCase()
+
+    if (cache.has(key)) {
+      const entry = cache.get(key)
+      if (Date.now() - entry.time < TTL) {
+        return entry.promise
+      }
+      cache.delete(key)
+    }
+    
+    const resultado = Promise.all([
+    service.getInfo({ ident: key, tab: props.tipo }),
+    isCarro.value
+      ? service.getCarroPlaca(key)
+      : service.getUsuarioByDoc(key)
+    ]).catch(err => {
+    cache.delete(key)
+    throw err
+    })
+
+    if (cache.size > 50) {
+      const firstKey = cache.keys().next().value
+      cache.delete(firstKey)
+    }
+
+    cache.set(key, {
+      promise: resultado,
+      time: Date.now()
+    })
+    return resultado
+  }
 
   // **** INTEGRANDO AS LISTAS ****
   const {
-    listas,
-    fetchListas,
-    docOptions,
-    tratoOptions,
-    orgaosOptions,
-    unidadesOptions,
-    destinosOptions
+    listas, fetchListas, docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions
   } = useListas(service)
 
   // ***** STATE *****
   const formDefault = {
-    documento: '',
-    nome: '',
-    placa: '',
-    modelo: '',
-    ubm: '',
-    tipo_doc: '',
-    user_id: null,
-    carro_id: null,
-    registro_id: null,
-    doc_id: null,
-    orgao_id: null,
-    ubm_id: null,
-    gradua_id: null,
-    destino_id: null
+    documento: '', nome: '', placa: '', modelo: '', user_id: null, carro_id: null, registro_id: null,
+    doc_id: null, orgao_id: null, ubm_id: null, gradua_id: null, destino_id: null
   }
 
   const formData = reactive({ ...formDefault }) // Cria o objeto reativo
-  
   const isAction = ref(ACTIONS.ENTRADA)
-  const formTouched = ref(false)
   const loading = ref(false)
-  const lastData = ref(null)
   const isNovoCadastro = ref(false)
-
-  // **** CONTROLES ****
-  let debouncePlaca = null
-  let debounceDoc = null
+  const lastData = ref(null)
   let requestId = 0
-  let isAutofilling = false
-
-  // **** MAPAS PERFORMÁTICOS ****
+  
   const mapaUnidades = computed(() => createUnidadeMap(listas.value?.unidades))
   const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos))
+  const isCarro = computed(() => props.tipoForm === 'carro')
 
-  // **** VALIDAÇÕES ****
-  const isValidCarroForm = computed(() => patternPlaca.test(formData.placa)
-    && (formData.nome))
-  const showError = computed(() => formTouched.value && (!formData.documento || formData.documento.length < 4))
-  const isValidPedestreForm = computed(() => {
-    return formData.documento?.length >= 4 && !!formData.nome && !!formData.destino_id
-  })
-  const isFormValid = computed(() => {
-    return props.tipoForm === 'carro'
-      ? isValidCarroForm.value && !!formData.destino_id
-      : isValidPedestreForm.value
-  })
-
-
-  // **** APOIO ****
-  const onDocEnter = async () => {
-    if (loading.value) return
-    if (formData.documento?.length >= 4) {
-      if (isAction.value !== ACTIONS.ENTRADA) {
-        formData.nome = ''
-        await getUser(formData.documento, true)
-      } else {
-        formData.nome = ''
-        await getUser(formData.documento)
-      }
+  /**   VALIDAÇÕES */
+  const isFormValid = computed (() => {
+    if (loading.value) return false
+    const baseOk = !!formData.nome && !!formData.destino_id && formData.documento?.length > 3
+    if (isCarro.value) {
+      const placaOk = patternPlaca.test(formData.placa)
+      return placaOk && baseOk
     }
-  }
+    return baseOk
+  })
 
-  const onPlacaEnter = () => {
-    if (patternPlaca.test(formData.placa)) {
-      buscarDados()
-    } 
-  }
+  /** FUNÇÕES AUXILIARES */
+  const mapUser = (user) => ({
+    user_id: user.user_id,
+    nome: user.nomeCompleto,
+    ubm_id: user.ubm_id,
+    orgao_id: user.orgao_id,
+    gradua_id: user.gradua_id,
+    documento: user.doc
+  })
 
-  const limparForm = (preservarCampo = null) => {
-    const valorPreservado = preservarCampo ? formData[preservarCampo] : ''
-    Object.assign(formData, formDefault)
-    if (preservarCampo) formData[preservarCampo] = valorPreservado
-    isAction.value = ACTIONS.ENTRADA
-  }
+  const preencherUsuario = (user) => {
+    if (!user) return
 
+    Object.assign(formData, mapUser(user))
+
+    isNovoCadastro.value = false
+    resolverDestino(user)
+  }
+  
   const resolverDestino = (data = null) => {
     if (!data) return
 
@@ -118,174 +118,148 @@ export function useAcessoForm(props, emit) {
         }
       }
     }
-    formData.destino_id = data.destino_id || null
+    formData.destino_id = null
   }
 
-  const getUser = async (valor, isSaida = false) => {
-    if (!valor) return
-    try {
-      const userRes = await service.getUsuarioByDoc(valor.trim())
+  const resolverFluxo = async ({ info, extra }) => {
+    //SAÍDA
+    if (info?.dados) {
+      const saida = info.dados
+      isAction.value = ACTIONS.SAIDA
 
-      if (!userRes.erro && userRes.dados) {
-        const user = userRes.dados
-        formData.tipo_doc = user.tipo_doc || ''
-        formData.nome = user.nomeCompleto
-        formData.ubm = user.nomeUbm
-        formData.user_id = user.user_id
+      formData.registro_id = saida.id
+      formData.destino_id = saida.destino_id
 
-        if (!isSaida) {
-          resolverDestino(user)
-        }
-        
-      } else {
-        isNovoCadastro.value = true
+      if(isCarro.value) {
+        formData.carro_id = saida.carro_id
+        formData.modelo = saida.modelo
+        formData.placa = saida.placa
       }
-    } catch (e) {
-      console.error('Erro ao buscar usuário:', e.message)
+
+      await getUser(saida.documento, true)
+      return
     }
+
+    // ENTRADA
+    if (extra?.dados) {
+      const entrada = extra.dados
+      isAction.value = ACTIONS.ENTRADA
+
+      if (isCarro.value) {
+        formData.modelo = entrada.marca
+        formData.carro_id = entrada.id
+        formData.placa = entrada.placa
+
+        if(entrada.documento) {
+          await getUser(entrada.documento)
+        }
+      } else {
+        preencherUsuario(entrada)
+      }
+      return
+    }
+    isNovoCadastro.value = true
   }
 
-  // **** LÓGICA (BUSCA) ****
-  const buscarDados = async (id) => {
-    const valBusca = props.tipoForm === 'carro' ? formData.placa : formData.documento
-    if (!valBusca || valBusca.length < 4) return
-    // if (lastData.value === valBusca) return
-    const currentReq = ++requestId
+  const limparForm = (preservar = null) => {
+    const backup = preservar ? formData[preservar] : ''
+    Object.assign(formData, { ...formDefault})
+    if (preservar) formData[preservar] = backup
+    isAction.value = ACTIONS.ENTRADA
+    isNovoCadastro.value = false
+  }
+
+  const close = (from) => emit('closeModal', from)
+
+  /** LÓGICA PRINCIPAL */
+  const getUser = async (valor, isSaida = false) => {
+    if (!valor || valor.length < 4) return
     loading.value = true
     try {
-      if (props.tipoForm === 'carro'){
-        const cleanPlaca = valBusca.replace('#', '').toUpperCase()
-        const [carroRes, ceicsRes] = await Promise.all([
-          service.getCarroPlaca(cleanPlaca),
-          service.getInfo({ ident: cleanPlaca, tab: props.tipo})
-        ])
-
-        const valorPreservado = valBusca
-        if (currentReq !== requestId) return
-        isAutofilling = true
-        limparForm('placa')
-        lastData.value = valorPreservado
-        if(ceicsRes?.dados) {
-          isAction.value = ACTIONS.SAIDA
-          formData.documento = ceicsRes.dados.documento
-          formData.placa = ceicsRes.dados.placa
-          formData.modelo = ceicsRes.dados.modelo
-          formData.registro_id = ceicsRes.dados.id
-          formData.destino_id = ceicsRes.dados.destino_id
-          formData.carro_id = ceicsRes.dados.carro_id
-          await getUser(ceicsRes.dados.documento, true)
-        } else if (carroRes?.dados) {
-          isAction.value = ACTIONS.ENTRADA
-          formData.documento = carroRes.dados.documento
-          formData.placa = carroRes.dados.placa
-          formData.modelo = carroRes.dados.marca
-          formData.carro_id = carroRes.dados.id
-          formData.user_id = carroRes.dados.user_id
-        } else {
-          isNovoCadastro.value = true
-          formData.placa = cleanPlaca
-        }
+      const userRes = await service.getUsuarioByDoc(valor.trim())
+      if (userRes?.dados) {
+        preencherUsuario(userRes.dados)
+        isNovoCadastro.value = false
+        if (!isSaida) resolverDestino(userRes.dados)
       } else {
-        const [userRes, pedestreRes] = await Promise.all([
-          service.getUsuarioByDoc(valBusca),
-          service.getInfo({ ident: valBusca, tab: props.tipo })
-        ])
-
-        const valorPreservado = valBusca
-        if (currentReq !== requestId) return
-        isAutofilling = true
-        limparForm('documento')
-        lastData.value = valorPreservado
-
-        formData.documento = valBusca
-
-        if (pedestreRes?.dados) {
-          isAction.value = ACTIONS.SAIDA
-          const dadosCeics = pedestreRes.dados
-          formData.registro_id = dadosCeics.id
-          formData.destino_id = dadosCeics.destino_id
-          formData.user_id = dadosCeics.user_id
-
-          await getUser(valorPreservado, true)
-        } else if (userRes?.dados) {
-          isAction.value = ACTIONS.ENTRADA
-          const dadosUser = userRes.dados
-          formData.tipo_doc = dadosUser.tipo_doc
-          formData.doc_id = dadosUser.doc_id
-          formData.ubm_id = dadosUser.ubm_id
-          formData.orgao_id = dadosUser.orgao_id
-          formData.gradua_id = dadosUser.gradua_id
-          formData.user_id = dadosUser.user_id
-          formData.nome = dadosUser.nomeCompleto
-          formData.ubm = dadosUser.nomeUbm
-
-          resolverDestino(dadosUser)
-        } else {
-          isNovoCadastro.value = true
-        }
+        isNovoCadastro.value = true
+        formData.user_id = null
       }
-      lastData.value = valBusca
-    } catch (error) {
-      console.error('Erro na busca de dados:', error)
     } finally { 
-      isAutofilling = false
-      loading.value = false 
+      loading.value = false
     }
   }
 
-  // ***** REGISTRAR *****
-  const salvar = async () => {
-    formTouched.value = true
-    const payload = { 
-      user_id: formData.user_id,
-      destino_id: formData.destino_id,
-      ...(props.tipo === 'carro' && { carro_id: formData.carro_id })
-    }
+  const buscarDados = async () => {
+    const termo = isCarro.value 
+      ? formData.placa
+      : formData.documento
+
+    if (!termo || termo.length < 4 || termo === lastData.value) return
+
+    const reqId = ++requestId
+    loading.value = true
+
     try {
-      if (isAction.value === ACTIONS.SAIDA && formData.registro_id) {
-        payload.registro_id = formData.registro_id
-        await service.saida( payload )
-      } else {
-        await service.entrada({ dados: payload, tab: props.tipo})
-      }
-    } catch (error) {
-      console.error("Erro ao processar operações:", error)
+      const [infoRes, extraRes] = await buscarServicos(termo)
+
+      if (reqId !== requestId) return
+      lastData.value = termo
+      limparForm(isCarro.value ? 'placa' : 'documento')
+
+      await resolverFluxo({ info: infoRes, extra: extraRes })
+
     } finally {
       loading.value = false
     }
-    close(props.tipo)   
   }
 
-  const close = (from) => {
-    emit('closeModal', from)
+  const salvar = async () => {
+    loading.value = true
+    try {
+      const payload = { ...formData, tab: props.tipo }
+      isAction.value === ACTIONS.SAIDA
+        ? await service.saida({ registro_id: formData.registro_id,
+          user_id: formData.user_id, carro_id: formData.carro_id })
+        : await service.entrada({ dados: payload, tab: props.tipo })
+        emit ('closeModal', props.tipo)
+    } finally { loading.value = false }
   }
 
+  /** CICLO DE VIDA */
   onMounted(async () => {
     await fetchListas()
- 
-    const idInicial = props.dialog?.idPlaca || props.dialog?.documento
-    if (idInicial) {
-      isAutofilling = true
-      if (props.tipoForm === 'carro') {
-        formData.placa = idInicial
-        await buscarDados()
-      } else {
-        formData.documento = idInicial
-        await buscarDados()
-      }
-
-      isAutofilling = false
+    const inicial = props.dialog?.idPlaca || props.dialog?.documento
+    if (inicial) {
+      isCarro.value ? formData.placa = inicial : formData.documento = inicial
+      await buscarDados()
+    }
+    if (isFormValid.value) {
+      await nextTick()
+        modalRef.value?.getConfirmButtonEl()?.focus()
     }
   })
 
-  const isReadOnly = computed(() => isAction.value === ACTIONS.SAIDA && props.tipoForm === 'pedestre')
+  const onPlacaEnter = () => buscarDados()
+  const onDocEnter = async () => {
+    const valor = formData.documento?.trim()
+    if (!valor || valor.length < 4) return
+
+    if (valor === lastData.value) return
+
+    await getUser(valor, isAction.value === ACTIONS.SAIDA)
+
+    lastData.value = valor
+
+    if (isFormValid.value)  {
+      await nextTick()
+      modalRef.value?.getConfirmButtonEl()?.focus()
+    }
+  }
 
   return {
-    formData,
-    isAction, formTouched, loading, isNovoCadastro,
-    isReadOnly, isFormValid, isValidCarroForm, isValidPedestreForm,
+    formData, isAction, loading, isNovoCadastro, isFormValid,
     docOptions, tratoOptions, orgaosOptions, unidadesOptions, destinosOptions,
-    showError, salvar, close, patternPlaca, getUser, buscarDados, onPlacaEnter, onDocEnter
+    lastData, close, salvar, getUser, buscarDados, onPlacaEnter, onDocEnter
   }
-  
 }
