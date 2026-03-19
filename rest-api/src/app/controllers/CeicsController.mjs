@@ -8,7 +8,8 @@ import Ubm from '../models/ubm.mjs'
 import Orgao from '../models/orgao.mjs'
 import Hierarquia from '../models/hierarcar.mjs'
 import Target from '../models/target.mjs'
-import { Op, Sequelize } from 'sequelize'
+import { json, Op, Sequelize } from 'sequelize'
+import { userInfo } from 'os'
 
 const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
   const conditions = []
@@ -233,8 +234,6 @@ class CeicsController {
 
     const busca = identificador ? identificador.trim() : '';
 
-    console.log('Aqui:', tab)
-
     try {
       const result = await Ceics.findOne({
         order: [['updated_at', 'DESC']],
@@ -249,13 +248,10 @@ class CeicsController {
         },
         attributes: [
           'id', 'tipo', 'destino_id', 'e_user_id', 'carro_id',
-          [Sequelize.col('destinos.target'), 'destino'],
           [Sequelize.col('entrada_id.documento'), 'documento'],
-          [Sequelize.col('entrada_id.ubm_id'), 'ubm_id'],
-          [Sequelize.col('entrada_id.orgao_id'), 'orgao_id'],
-          [Sequelize.col('entrada_id.doc_id'), 'doc_id'],
-          [Sequelize.col('entrada_id.gradua_id'), 'gradua_id'],
           [Sequelize.col('entrada_id.n_guerra'), 'nome'],
+          [Sequelize.col('entrada_id->orgaoU.sigla_curta'), 'orgaoSigla'],
+          [Sequelize.col('entrada_id->hierarquia.abrev'), 'graduaAbrev'],
           [Sequelize.col('carro.placa'), 'placa'],
           [Sequelize.col('carro.marca'), 'modelo']
         ],
@@ -276,15 +272,23 @@ class CeicsController {
         ]
       })
 
-      if (result) {
-        console.log(result)
-        resposta.dados = result
-      } else {
+      if (!result) {
         resposta.erro = true
         resposta.visitor = true
         resposta.msg = 'Nenhum registro encontrado'
+        return res.json(resposta)
       }
+
+      const dados = result.get({ plain: true })
+      dados.nomeCompleto = [
+        dados.graduaAbrev,
+        dados.orgaoSigla,
+        dados.nome
+      ].filter(Boolean).join(' ')
+
+      resposta.dados = dados
       return res.json(resposta)
+      
     } catch (e) {
       resposta.erro = true
       resposta.msg = 'Surgiu um erro'

@@ -12,9 +12,10 @@
           </v-col>
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="carro.marca"
-              @update:model-value="carro.marca = $event?.toUpperCase()"
+              v-model="carro.modelo"
+              @update:model-value="v => carro.modelo = v.toUpperCase()"
               label="Modelo/Prefixo (Opcional)"
+              readonly
               variant="outlined" />
           </v-col>
           <v-divider class="my-2 w-100" />
@@ -33,6 +34,7 @@
         <v-col cols="6">
           <v-text-field
             v-model="buscaDoc"
+            autofocus
             :label="placaInicial ? 'Documento do Condutor' : 'Documento'"
             variant="outlined"
             append-inner-icon="mdi-magnify"
@@ -81,7 +83,7 @@
             :label="(!buscaDoc || buscaDoc.length < 4) ? 'Órgão Proprietário do Veículo' : 'Órgão do Pedestre / Condutor'"
             variant="outlined"
             clearable
-            :disabled="!!donoEncontrado"
+            :disabled="modo === 'condutor'"
             :hint="(!buscaDoc || buscaDoc.length < 4) ? 'Deixe o documento em branco para cadastrar como Veículo Oficial da frota.' : 'O órgão será vinculado ao perfil do visitante.'"
             persistent-hint
           />
@@ -132,7 +134,8 @@ import { useCadastroGeral } from '@/composables/useCadastroGeral'
 
 const props = defineProps({
   placaInicial: String,
-  documentoInicial: String
+  documentoInicial: String,
+  modo: String
 })
 
 const emit = defineEmits(['sucesso', 'cancelar'])
@@ -141,4 +144,10 @@ const {
   carro, buscaDoc, donoEncontrado, nome, destino_id, orgaosOptions, unidadesOptions,
   loading, podeSalvar, salvar, docOptions, tratoOptions, destinosOptions, pedestre,
 } = useCadastroGeral(props, emit)
+
+const modo = computed(() => {
+  if (props.placaInicial && carro.orgao_id) return 'condutor'
+  if (props.placaInicial) return 'parcial'
+  return 'completo'
+})
 </script>

@@ -4,7 +4,7 @@
     :isOpen="dialog.isDialog"
     :hide-actions="isNovoCadastro"
     :title="tipoForm === 'carro' ? 'Acesso Veicular' : 'Acesso Pedestre'"
-    :confirmText="isAction"
+    :confirmText="confirmText"
     ref="modalRef"
     @confirm="salvar"
     @close="close(props.tipo)"
@@ -15,7 +15,7 @@
       :placa-inicial="formData.placa" 
       :documento-inicial="formData.documento"
       :modelo="formData.modelo"
-      :tipo-form="tipoForm"
+      :modo="modoCadastro"
       @sucesso="voltarParaAcesso"
       @cancelar="isNovoCadastro = false"
     />
@@ -94,7 +94,7 @@
       </v-row>
     </template>
     <v-row dense>
-      <v-col cols="8" v-if="!isNovoCadastro">
+      <v-col cols="8" v-if="!isNovoCadastro && confirmText !== 'SAÍDA'">
         <v-select
           v-model="formData.destino_id"
           :items="destinosOptions"
@@ -119,7 +119,8 @@
 import BaseModal from '@/components/modals/BaseModal.vue'
 import formAcessoCadastro from './formAcessoCadastro.vue'
 import { useAcessoForm } from '@/composables/useAcessoForm'
-import { nextTick, watch, ref} from 'vue'
+import { nextTick, computed, ref} from 'vue'
+import { ACTIONS } from '@/utils/constants'
 
 const props = defineProps({
   dialog: Object,
@@ -128,17 +129,16 @@ const props = defineProps({
 })
 const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 const modalRef = ref(null)
+const modoCadastro = ref(null)
 
 const {
-  formData, isAction, loading, buscando, lastData,
+  formData, loading, buscando, confirmText,
   destinosOptions, isReadOnly, salvar, close, 
-  isFormValid, isNovoCadastro, onPlacaEnter, onDocEnter,
+  isFormValid, isNovoCadastro, onPlacaEnter, onDocEnter, buscarDados
 } = useAcessoForm(props, emit, modalRef)
 
 const voltarParaAcesso = async (dadosCadastro) => {
-  console.log('Log de dadosCadastro:', dadosCadastro)
   if (!dadosCadastro || dadosCadastro.fecharTudo) {
-    console.log('Teste de cancelamento')
     isNovoCadastro.value = false
     formData.placa = ''
     emit('closeModal')
@@ -147,15 +147,20 @@ const voltarParaAcesso = async (dadosCadastro) => {
 
   if (!dadosCadastro.user_id && dadosCadastro.carro_id) {
     formData.placa = dadosCadastro.placa
-    isNovoCadastro.value = false
-    lastData.value = null
-    await buscarDados()
-    nextTick(() => { documentoInput.value?.focus() })
+    formData.modelo = dadosCadastro.modelo
+
+    modoCadastro.value = dadosCadastro.orgao_id
+      ? 'condutor'
+      : 'completo'
+
+    isNovoCadastro.value = true
     return
-  } else if (dadosCadastro.finalizar && dadosCadastro.user_id) {
-    if (dadosCadastro.user_id) formData.user_id = dadosCadastro.user_id
-    if (dadosCadastro.carro_id) formData.carro_id = dadosCadastro.carro_id
-    if (dadosCadastro.destino_id) formData.destino_id = dadosCadastro.destino_id
+  }
+
+  if (dadosCadastro.finalizar && dadosCadastro.user_id) {
+    formData.user_id = dadosCadastro.user_id
+    formData.carro_id = dadosCadastro.carro_id
+    formData.destino_id = dadosCadastro.destino_id
 
     isNovoCadastro.value = false
     await nextTick()

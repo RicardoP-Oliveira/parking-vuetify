@@ -14,11 +14,11 @@ import App from './App.vue'
 import sessionService from '@/services/SessionService';
 import ceicsService from '@/services/CeicsServices';
 import userService from '@/services/UserServices';
-import ubmService from '@/services/UbmServices';
+import ubmService from '@/services/UnidadeServices';
 import orgaoService from '@/services/OrgaoServices';
 import pedestreService from '@/services/PedestreService';
 import servicoService from '@/services/ServicoServices';
-import targetService from '@/services/TargetService';
+import targetService from '@/services/DestinoService';
 
 import '@/assets/global.css';
 

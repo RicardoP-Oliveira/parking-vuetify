@@ -3,6 +3,8 @@ import { ref, computed, onMounted, watch } from "vue"
 import { useServices } from "./useService"
 import { useListas } from "./useListas"
 
+const PREFIXO = /^[A-Z][A-Z0-9]{1,3}-\d{3}$/
+
 export function useCadastroGeral(props, emit) {
   const service = useServices()
   const {
@@ -23,8 +25,8 @@ export function useCadastroGeral(props, emit) {
   const loading = ref(false)
 
   const carro = ref({
-    placa: props.placaInicial,
-    marca: '',
+    placa: PREFIXO.test(!props.placaInicial) ? props.placaInicial : '',
+    modelo: PREFIXO.test(props.placaInicial) ? props.placaInicial : '',
     user_id: null,
     orgao_id: null
   })
@@ -35,18 +37,6 @@ export function useCadastroGeral(props, emit) {
     doc_id: null,
     orgao_id: null,
   })
-
-  const tipoVinculo = ref('pedestre')
-
-  watch(tipoVinculo, (val) => {
-  if (val === 'orgao') {
-    buscaDoc.value = ''
-    nome.value = ''
-    donoEncontrado.value = null
-  } else {
-    carro.value.orgao_id = null
-  }
-})
 
   const buscarDono = async () => {
     if (buscaDoc.value.length < 4) return
@@ -68,6 +58,10 @@ export function useCadastroGeral(props, emit) {
       loading.value = false
     }
   }
+
+  const isViatura = computed(() => !!carro.value.orgao_id)
+  const temCondutor = computed(() => !!pedestre.value?.user_id)
+  const temCarro = computed(() => !!carro.value?.placa)
   
   const podeSalvar = computed(() => {
     const temPlaca = !!carro.value.placa
@@ -151,7 +145,7 @@ export function useCadastroGeral(props, emit) {
 
   return {
     carro, buscaDoc, nome, destino_id, donoEncontrado, orgaosOptions, unidadesOptions, pedestre,
-    loading, tratoOptions, docOptions, destinosOptions, buscarDono, podeSalvar, tipoVinculo, salvar
+    loading, tratoOptions, docOptions, destinosOptions, buscarDono, podeSalvar, salvar
   }
 }
 

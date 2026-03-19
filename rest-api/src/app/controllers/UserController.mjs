@@ -92,13 +92,13 @@ class UserController {
 
       const dados = user.get({ plain: true })
 
-        dados.nomeCompleto = [
-          dados.graduaAbrev,
-          dados.orgaoSigla,
-          dados.nome
-        ].filter(Boolean).join(' ').trim()
-        
-        resposta.dados = dados
+      dados.nomeCompleto = [
+        dados.graduaAbrev,
+        dados.orgaoSigla,
+        dados.nome
+      ].filter(Boolean).join(' ').trim()
+      
+      resposta.dados = dados
     } catch (erro) {
       resposta.erro = true
       resposta.msg = `Error: ${erro}`;

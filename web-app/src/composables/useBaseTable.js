@@ -185,8 +185,9 @@ export function useBaseTable(props, emit) {
         emit('changeTable', from)
         return
       } else {
-      loadItems({ page: 1 })
-      setFocus()
+        pageNow.value = 1
+        loadItems({ page: pageNow.value })
+        setFocus()
       }
     }, 400)
   }
