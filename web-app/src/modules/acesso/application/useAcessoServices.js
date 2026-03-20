@@ -1,7 +1,7 @@
-import { creataHttpClient } from "@/core/http/httpCliente"
+import { createHttpClient } from "@/core/http/httpCliente"
 
 export function useAcessoServices(rawServices) {
-  const { withAuth } = creataHttpClient()
+  const { withAuth } = createHttpClient()
 
   return {
     getPedestreByDoc: withAuth(rawServices.getPedestreByDoc),
@@ -13,7 +13,7 @@ export function useAcessoServices(rawServices) {
     getCarroPlaca: withAuth(rawServices.getCarroPlaca),
     salvarCarro: withAuth(rawServices.salvarCarro),
 
-    getNaUBM: withAuth(rawServices.getNaUBM),
+    getInfo: withAuth(rawServices.getInfo),
     entrada: withAuth(rawServices.entrada),
     saida: withAuth(rawServices.saida) 
   }

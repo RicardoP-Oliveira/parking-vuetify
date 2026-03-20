@@ -1,4 +1,4 @@
-export function creataHttpClient() {
+export function createHttpClient() {
   const getToken = () => localStorage.getItem('token')
 
   const withAuth = (fn) => (...args) => {

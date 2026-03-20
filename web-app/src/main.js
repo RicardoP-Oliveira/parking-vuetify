@@ -11,14 +11,14 @@ import { registerPlugins } from '@/plugins'
 import App from './App.vue'
 
 // Serviços de API
-import sessionService from '@/services/SessionService';
-import ceicsService from '@/services/CeicsServices';
-import userService from '@/services/UserServices';
-import ubmService from '@/services/UnidadeServices';
-import orgaoService from '@/services/OrgaoServices';
-import pedestreService from '@/services/PedestreService';
-import servicoService from '@/services/ServicoServices';
-import targetService from '@/services/DestinoService';
+import sessionService from '@/core/services/SessionService';
+import ceicsService from '@/core/services/CeicsService';
+import userService from '@/core/services/UserServices';
+import ubmService from '@/core/services/UnidadeServices';
+import orgaoService from '@/core/services/OrgaoServices';
+import pedestreService from '@/core/services/PedestreService';
+import servicoService from '@/core/services/ServicoServices';
+import targetService from '@/core/services/DestinoService';
 
 import '@/assets/global.css';
 

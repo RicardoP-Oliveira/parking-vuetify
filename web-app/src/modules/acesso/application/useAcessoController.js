@@ -1,52 +1,21 @@
 import { ref } from "vue"
-import { detectarFluxo, FLUXO } from "../domain/fluxo"
+import { detectarFluxo } from "../domain/fluxo"
+import { acessoStates } from "../domain/stateMachine"
 
 export function useAcessoController({ service, isCarro }) {
   const loading = ref(false)
   let requestId = 0
 
   const executarFluxo = async (fluxo, payload, ctx) => {
-    const { formData, limparForm, preencherUsuario, setFluxo } = ctx
-    setFluxo(fluxo)
+    ctx.setFluxo?.(fluxo)
+    const state = acessoStates[fluxo]
 
-    switch (fluxo) {
-      case FLUXO.SAIDA:
-        const saida = payload.info.dados
-
-        Object.assign(formData, {
-          registro_id: saida.id,
-          destino_id: saida.destino_id,
-          nome: saida.nomeCompleto,
-          documento: saida.documento
-        })
-
-        if (isCarro) {
-          Object.assign(formData, {
-            carro_id: saida.carro_id,
-            modelo: saida.modelo,
-            placa: saida.placa
-          })
-        }
-        break
-
-      case FLUXO.ENTRADA_USUARIO:
-        preencherUsuario(payload.extra.dados)
-        break
-
-      case FLUXO.ENTRADA_CARRO_USUARIO:
-        Object.assign(formData, payload.extra.dados)
-        preencherUsuario(payload.extra.dados)
-        break
-
-      case FLUXO.CARRO_SEM_CONDUTOR:
-        Object.assign(formData, payload.extra.dados)
-        formData.destino_id = null
-        break
-
-      case FLUXO.NOVO:
-        limparForm()
-        break
+    if (!state) {
+      console.warn('Fluxo não tratado:', fluxo)
+      return
     }
+
+    await state.onEnter({ payload, ctx, isCarro})
   }
 
   const buscar = async (termo, ctx, tipo) => {

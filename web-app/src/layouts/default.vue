@@ -47,8 +47,8 @@
 
 <script setup>
 import { ref, computed, watch, provide } from 'vue';
-import FilterDrawer from '@/components/FilterDrawer.vue';
-import { getAllFiltersSchema } from '@/config/filtersConfig';
+import FilterDrawer from '@/modules/shared/components/FilterDrawer.vue';
+import { getAllFiltersSchema } from '@/core/config/filtersConfig';
 
 const snackbar = ref({
   show: false,

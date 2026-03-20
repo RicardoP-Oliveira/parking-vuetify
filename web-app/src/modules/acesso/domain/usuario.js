@@ -1,4 +1,4 @@
-import { calcularDestino } from "@/utils/constants"
+import { calcularDestino } from "./destinos"
 
 export function buildUsuarioData({
   user,
@@ -11,16 +11,14 @@ export function buildUsuarioData({
 
   const mapped = mapUser(user)
 
-  let destinoCalculado = null
-
-  if (isEntrada) {
-    destinoCalculado = calcularDestino({
-      data: user,
-      isEntrada,
-      mapaUnidades,
-      mapaDestinos
-    })
-  }
+  const destinoCalculado = isEntrada 
+    ? calcularDestino({
+        data: user,
+        isEntrada,
+        mapaUnidades,
+        mapaDestinos
+      })
+    : null
 
   return {
     ...mapped,

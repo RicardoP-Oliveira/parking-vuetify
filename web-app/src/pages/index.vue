@@ -12,9 +12,9 @@
 
 <script setup>
   import { computed, getCurrentInstance } from 'vue'
-  import BaseTable from '@/components/tables/BaseTable.vue'
-  import { useCarroTable } from '@/composables/useCarroTable'
-  import { usePedestreTable } from '@/composables/usePedestreTable'
+  import BaseTable from '@/modules/shared/components/BaseTable.vue'
+  import { useCarroTable } from '@/modules/carro/presentation/composables/useCarroTable'
+  import { usePedestreTable } from '@/modules/pedestre/presentation/composables/usePedestreTable'
 
   const props = defineProps(['tab', 'filters'])
 
