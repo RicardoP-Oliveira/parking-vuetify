@@ -46,7 +46,11 @@
 
     <acessoModal
       v-if="modal.isOpen"
-      :dialog="{isDialog: modal.isOpen, idPlaca: ident }"
+      :dialog="{
+        isDialog: modal.isOpen,
+        idPlaca: modal.idPlaca,
+        documento: modal.documento,
+      }"
       :tipoForm="modal.type"
       :tipo="modal.type"
       @closeModal="closeModal"

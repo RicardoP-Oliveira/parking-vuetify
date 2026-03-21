@@ -1,7 +1,7 @@
 const cache = new Map()
 const TTL = 1000 * 60 * 5
 
-const getKey = (valor) => valor.trim().toUpperCase()
+const getKey = (valor) => String(valor || '').trim().toUpperCase()
 
 const isValid = (entry) => Date.now() - entry.time < TTL
 
@@ -60,7 +60,7 @@ export function useCache(service) {
       const user = await service.getUsuarioByDoc(key)
       return user?.dados || null
     } catch (err) {
-      console.err('Erro getUser:', err)
+      console.error('Erro getUser:', err)
       return null
     }
   }

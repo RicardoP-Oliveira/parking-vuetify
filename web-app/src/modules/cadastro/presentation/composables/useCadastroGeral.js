@@ -1,12 +1,14 @@
 // src/composables/useCadastroGeral.js
 import { ref, computed, onMounted, watch } from "vue"
-import { useAcessoServices } from "../../../acesso/application/useAcessoServices"
+import { useServices } from "@/modules/acesso/application/useServices"
+import { useListasModules } from "@/modules/acesso/application/useListasModules"
 import { useListas } from "@/modules/shared/composables/useListas"
 
 const PREFIXO = /^[A-Z][A-Z0-9]{1,3}-\d{3}$/
 
 export function useCadastroGeral(props, emit) {
-  const service = useAcessoServices()
+  const service = useServices()
+  const listasService = useListasModules()
   const {
     fetchListas,
     orgaosOptions,
@@ -14,9 +16,7 @@ export function useCadastroGeral(props, emit) {
     unidadesOptions,
     tratoOptions,
     destinosOptions,
-  } = useListas(service)
-
-  let debounceTimer = null
+  } = useListas(listasService) 
   
   const buscaDoc = ref(props.documentoInicial || '')
   const nome = ref('')
@@ -24,9 +24,12 @@ export function useCadastroGeral(props, emit) {
   const donoEncontrado = ref(null)
   const loading = ref(false)
 
+  const valorInicial = props.placaInicial || ''
+  const isPrefixo = PREFIXO.test(valorInicial)
+
   const carro = ref({
-    placa: PREFIXO.test(!props.placaInicial) ? props.placaInicial : '',
-    modelo: PREFIXO.test(props.placaInicial) ? props.placaInicial : '',
+    placa: isPrefixo ? '' : valorInicial,
+    marca: props.marca || (isPrefixo ? valorInicial : ''),
     user_id: null,
     orgao_id: null
   })
@@ -39,10 +42,11 @@ export function useCadastroGeral(props, emit) {
   })
 
   const buscarDono = async () => {
-    if (buscaDoc.value.length < 4) return
+    const valor = String(buscaDoc.value || '').trim()
+    if (valor.length < 4) return
     loading.value = true
     try {
-      const res = await service.getUsuarioByDoc(buscaDoc.value)
+      const res = await service.getUsuarioByDoc(valor)
       if (res?.dados) {
         donoEncontrado.value = res.dados
         carro.value.user_id = res.dados.user_id
@@ -58,11 +62,15 @@ export function useCadastroGeral(props, emit) {
       loading.value = false
     }
   }
-
-  const isViatura = computed(() => !!carro.value.orgao_id)
-  const temCondutor = computed(() => !!pedestre.value?.user_id)
-  const temCarro = computed(() => !!carro.value?.placa)
   
+  const contexto = computed(() => props.contexto ?? {
+    carroCadastrado: false,
+    carro_id: null,
+    usuarioCadastrado: false,
+    user_id: null,
+    isCarro: false
+  })
+
   const podeSalvar = computed(() => {
     const temPlaca = !!carro.value.placa
     const temOrgao = !!carro.value.orgao_id
@@ -70,6 +78,10 @@ export function useCadastroGeral(props, emit) {
     const temNome = !!nome.value
     const temDestino = !!destino_id.value
     const temDoc = !!pedestre.value.doc_id
+
+    if (contexto.value.isCarro && contexto.value.carroCadastrado) {
+      return temDestino && (temDono || (temNome && temDoc))
+    }
 
     if (props.placaInicial) {
       return temPlaca && temDestino && (temOrgao || temDono || temNome)
@@ -92,30 +104,34 @@ export function useCadastroGeral(props, emit) {
           orgao_id: carro.value.orgao_id,
           destino_id: destino_id.value,
         }
-        const resUser = await service.storeUsuario(payloadUser)
+        const resUser = await service.salvarUsuario(payloadUser)
         userIdFinal = resUser?.dados?.id || null
       }
 
-      if (props.placaInicial) {
+      if (contexto.value.isCarro && !contexto.value.carroCadastrado) {
         const payload = {
-          placa: props.placaInicial,
+          placa: carro.value.placa || props.placaInicial,
           marca: carro.value.marca,
           orgao_id: userIdFinal ? null : carro.value.orgao_id,
           user_id: userIdFinal || null,
           destino_id: destino_id.value
         }
-        const resCarro = await service.storeCarro(payload)
+        const resCarro = await service.salvarCarro(payload)
         carroIdFinal = resCarro?.dados?.id || null
+
       }
 
       emit(
         'sucesso', {
-          placa: carro.value.placa,
-          user_id: userIdFinal,
+          placa: payload.placa,
+          user_id: userIdFinal || null,
           destino_id: destino_id.value,
-          carro_id: props.placaInicial ? carroIdFinal : null,
-          ogaro_id: carro.value.orgao_id,
-          finalizar: true
+          carro_id: contexto.value.carroCadastrado 
+            ? contexto.value.carro_id 
+            : carroIdFinal,
+          orgao_id: carro.value.orgao_id,
+          finalizar: true,
+          documento: payloadUser.documento
         }
       )
 
@@ -124,28 +140,33 @@ export function useCadastroGeral(props, emit) {
     } finally { loading.value = false }
   }
 
-  watch(nome, (val) => {
-    if (val) return nome.value = nome.value.toUpperCase()
-})
-
-  watch(buscaDoc, (newVal) => {
-    if (debounceTimer) clearTimeout(debounceTimer)
-    if (!newVal || newVal.length < 4) {
-      donoEncontrado.value = null
-      carro.value.user_id = null
-      return
-    }
-    debounceTimer = setTimeout(() => buscarDono(newVal), 500)
-  })
-
   onMounted(async () => {
     await fetchListas()
     if (buscaDoc.value) buscarDono()
   })
 
   return {
-    carro, buscaDoc, nome, destino_id, donoEncontrado, orgaosOptions, unidadesOptions, pedestre,
-    loading, tratoOptions, docOptions, destinosOptions, buscarDono, podeSalvar, salvar
+    state: {
+      carro,
+      pedestre,
+      buscaDoc,
+      nome,
+      destino_id,
+      donoEncontrado,
+      loading
+    },
+    ui: {
+      orgaosOptions,
+      unidadesOptions,
+      tratoOptions,
+      docOptions,
+      destinosOptions,
+      podeSalvar
+    },
+    actions: {
+      buscarDono,
+      salvar
+    }            
   }
 }
 

@@ -20,46 +20,69 @@ export function useAcessoForm(props, emit, modalRef) {
   
   // **** INTEGRANDO AS LISTAS ****
   const {
-    listas, fetchListas, destinosOptions
+    listas,
+    fetchListas,
+    destinosOptions
   } = useListas(listaService)
 
   // ***** STATE *****
   const formDefault = {
-    documento: '', nome: '', placa: '', marca: '', user_id: null, carro_id: null, registro_id: null,
-    doc_id: null, orgao_id: null, ubm_id: null, gradua_id: null, destino_id: null
+    documento: '',
+    nome: '',
+    placa: '',
+    marca: '',
+    user_id: null,
+    carro_id: null,
+    registro_id: null,
+    doc_id: null,
+    orgao_id: null,
+    ubm_id: null,
+    gradua_id: null,
+    destino_id: null
   }
 
   const formData = reactive({ ...formDefault }) // Cria o objeto reativo
   const fluxoAtual = ref(null)
   const isNovoCadastro = ref(false)
   const lastData = ref(null)
+  const modoCadastro = ref(null)
   
   const mapaUnidades = computed(() => createUnidadeMap(listas.value?.unidades))
   const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos))
   const isCarro = computed(() => props.tipoForm === 'carro')
-  const confirmText = computed(() => {
-    return fluxoAtual.value === FLUXO.SAIDA
-      ? 'SAÍDA'
-      : 'ENTRADA'
-  })
+  
+  const confirmText = computed(() => 
+    fluxoAtual.value === FLUXO.SAIDA ? 'SAÍDA' : 'ENTRADA'
+  )
+
+  const isSaida = computed(() => fluxoAtual.value === FLUXO.SAIDA)
+  const buscando = computed(() => loading.value)
+  const isReadOnly = computed(() => isSaida.value)
+  const contexto = computed(() => ({
+    carroCadastrado: !!formData.carro_id,
+    carro_id: formData.carro_id,
+    usuarioCadastrado: !!formData.user_id,
+    user_id: formData.user_id,
+    isCarro: isCarro.value
+  }))
   
   const controller = useAcessoController({
     service: { buscarServicos },
     isCarro: isCarro.value
   })
 
-  const { loading: loadingBusca } = controller
-  const loadingSalvar = ref(false)
-
-  const loading = computed(() => loadingBusca.value || loadingSalvar.value)
+  const { loading } = controller
 
   /**   VALIDAÇÕES */
   const isFormValid = computed (() => {
     if (loading.value) return false
-    const baseOk = !!formData.nome && !!formData.destino_id && formData.documento?.length > 3
+    const baseOk = 
+      !!formData.nome && 
+      !!formData.destino_id && 
+      formData.documento?.length > 3
+
     if (isCarro.value) {
-      const placaOk = patternPlaca.test(formData.placa)
-      return placaOk && baseOk
+      return patternPlaca.test(formData.placa) && baseOk
     }
     return baseOk
   })
@@ -70,10 +93,10 @@ export function useAcessoForm(props, emit, modalRef) {
       isEntrada: fluxoAtual.value !== FLUXO.SAIDA,
       mapaUnidades: mapaUnidades.value,
       mapaDestinos: mapaDestinos.value,
+      destinoAtual: formData.destino_id,
       mapUser
     })
     applyUsuario(formData, dados)
-
     isNovoCadastro.value = false
   }
 
@@ -83,7 +106,6 @@ export function useAcessoForm(props, emit, modalRef) {
       formData[key] = formDefault[key]
     })
     if (preservar) formData[preservar] = backup
-    fluxoAtual.value = null
     isNovoCadastro.value = false
   }
 
@@ -96,24 +118,30 @@ export function useAcessoForm(props, emit, modalRef) {
     formData.destino_id = null
   }
 
+  const close = (from) => emit('closeModal', from)
+
   const buscarDados = async () => {
-    const termo = isCarro.value 
-      ? formData.placa
-      : formData.documento
+    const termo =  isCarro.value ? formData.placa : formData.documento
 
     if (!termo || termo.length < 4) return
     if (termo === lastData.value) return
     
     try {
-      await controller.buscar(termo, {
-        formData,
-        limparForm,
-        preencherUsuario,
-        setFluxo: (f) => fluxoAtual.value = f
-      }, props.tipo)
+      await controller.buscar(
+        termo, 
+        {
+          formData,
+          limparForm,
+          preencherUsuario,
+          setFluxo: (f) => {
+            fluxoAtual.value = f
+          },
+          abrirNovoCadastro
+        },
+        props.tipo
+      )
 
       lastData.value = termo
-
     } catch (err) {
       console.error('Erro ao buscar:', err)
     }
@@ -124,11 +152,7 @@ export function useAcessoForm(props, emit, modalRef) {
     try {
       const payload = { ...formData, tab: props.tipo }
       if (fluxoAtual.value === FLUXO.SAIDA) {
-        await service.saida({
-          registro_id: formData.registro_id,
-          user_id: formData.user_id,
-          carro_id: formData.carro_id
-        })
+        await service.saida(payload)
       } else {
         await service.entrada({
           dados: payload,
@@ -138,23 +162,13 @@ export function useAcessoForm(props, emit, modalRef) {
       emit('closeModal', props.tipo)
     } catch (e) {
       console.error('Erro ao salvar:', e)
+    } finally {
+      loading.value = false
     }
   }
 
-  onMounted(async () => {
-    await fetchListas()
-    const inicial = props.dialog?.idPlaca || props.dialog?.documento
-    if (inicial) {
-      isCarro.value ? formData.placa = inicial : formData.documento = inicial
-      await buscarDados()
-    }
-    if (isFormValid.value) {
-      await nextTick()
-        modalRef.value?.getConfirmButtonEl()?.focus()
-    }
-  })
-
   const onPlacaEnter = () => buscarDados()
+
   const onDocEnter = async () => {
     const valor = formData.documento?.trim()
     if (!valor || valor.length < 4) return
@@ -164,10 +178,9 @@ export function useAcessoForm(props, emit, modalRef) {
     const user = await getUser(valor)
     if (user) {
       preencherUsuario(user)
-      isNovoCadastro.value = false
     } else {
       limparUsuario()
-      isNovoCadastro.value = true
+      abrirNovoCadastro()
     }
     lastData.value = valor
 
@@ -177,26 +190,102 @@ export function useAcessoForm(props, emit, modalRef) {
     }
   }
 
-  const close = (from) => emit('closeModal', from)
+  const abrirNovoCadastro = () => {
+    if (contexto.value.isCarro && contexto.value.carroCadastrado) {
+      modoCadastro.value = 'condutor'
+    } else if (contexto.value.isCarro) {
+      modoCadastro.value = 'completo'
+    } else {
+      modoCadastro.value = null
+    }
+    isNovoCadastro.value = true
+  }
 
-  watch(() => formData.destino_id, async (val) => {
-    if (!val) return
-    await nextTick()
-    modalRef.value?.getConfirmButtonEl()?.focus()
+  const cancelarCadastro = () => {
+    isNovoCadastro.value = false
+  }
+
+  const voltarParaAcesso = async (dadosCadastro) => {
+    if (dadosCadastro.finalizar) {
+      formData.user_id = dadosCadastro.user_id
+      formData.carro_id = dadosCadastro.carro_id
+      formData.destino_id = dadosCadastro.destino_id
+      
+      const user = await getUser(dadosCadastro.documento)
+      if (user) {
+        preencherUsuario(user)
+      }
+      
+      await nextTick()
+      await salvar()
+    }
+  }
+
+  onMounted(async () => {
+    await fetchListas()
+
+    if (props.dialog?.novoCadastro) {
+      if (isCarro.value) {
+        formData.placa = props.dialog?.idPlaca || ''
+        modoCadastro.value = 'completo'
+      } else {
+        formData.documento = props.dialog?.documento || ''
+      }
+      isNovoCadastro.value = true
+      return
+    }
+
+    const inicial = props.dialog?.idPlaca || props.dialog?.documento
+
+    if (inicial) {
+      if (isCarro.value) {
+        formData.placa = inicial
+      } else {
+        formData.documento = inicial
+      }
+      await buscarDados()
+    }
+
+    if (isFormValid.value) {
+      await nextTick()
+        modalRef.value?.getConfirmButtonEl()?.focus()
+    }
   })
 
+  watch(
+    () => formData.destino_id,
+    async (val) => {
+      if (!val) return
+      await nextTick()
+      modalRef.value?.getConfirmButtonEl()?.focus()
+    }
+  )
+
   return {
-    formData,
-    loading,
-    isNovoCadastro,
-    isFormValid,
-    destinosOptions,
-    lastData,
-    confirmText,
-    close,
-    salvar,
-    buscarDados,
-    onPlacaEnter,
-    onDocEnter
+    state: {
+      formData,
+      loading,
+      isNovoCadastro,
+      isFormValid,
+      isSaida,
+      isReadOnly,
+      contexto,
+      lastData
+    },
+    ui: {
+      confirmText,
+      destinosOptions,
+      modoCadastro,
+      isCarro
+    },
+    actions: {
+      close,
+      salvar,
+      buscarDados,
+      onPlacaEnter,
+      onDocEnter,
+      cancelarCadastro,
+      voltarParaAcesso
+    }    
   }
 }

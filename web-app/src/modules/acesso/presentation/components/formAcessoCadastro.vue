@@ -1,50 +1,66 @@
 <template>
   <v-card :loading="loading" elevation="0">
     <v-card-title class="text-h6 pb-0">
-      {{ placaInicial ? 'Cadastro de Veículo' : 'Cadastro de Pedestre' }}
+      {{ tituloCadastro }}
     </v-card-title>
 
     <v-card-text class="pt-4">
       <v-row dense>
-        <template v-if="placaInicial">
+        <template v-if="mostrarCadastroVeiculo">
           <v-col cols="12" md="6">
-            <v-text-field v-model="carro.placa" label="Placa" variant="outlined" readonly />
+            <v-text-field
+              v-model="carro.placa"
+              @update:model-value="v => carro.placa = (v || '').toUpperCase()"
+              label="Placa"
+              variant="outlined"
+              density="compact"
+            />
           </v-col>
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="carro.modelo"
-              @update:model-value="v => carro.modelo = v.toUpperCase()"
+              v-model="carro.marca"
+              @update:model-value="v => carro.marca = (v || '').toUpperCase()"
               label="Modelo/Prefixo (Opcional)"
-              readonly
-              variant="outlined" />
+              variant="outlined"
+              density="compact"
+            />
           </v-col>
           <v-divider class="my-2 w-100" />
         </template>
         
         <v-col cols="4" md="4" v-if="!donoEncontrado">
           <v-select 
-            v-model="pedestre.doc_id" 
+            v-model="pedestre.doc_id"
             :items="docOptions"
             item-title="title"
             item-value="id"
             label="Tipo Doc" 
-            variant="outlined" 
+            variant="outlined"
+            density="compact"
           />
         </v-col>
         <v-col cols="6">
           <v-text-field
             v-model="buscaDoc"
+            @input="buscaDoc = buscaDoc.replace(/\D/g, '')"
+            @keyup.enter="buscarDono"
+            @blur="buscarDono"
             autofocus
-            :label="placaInicial ? 'Documento do Condutor' : 'Documento'"
+            :label="mostrarCadastroVeiculo ? 'Documento do Condutor' : 'Documento'"
             variant="outlined"
+            clearable
             append-inner-icon="mdi-magnify"
             persistent-hint
+            density="compact"
           />
         </v-col>
 
         <v-col cols="12">
           <v-fade-transition mode="out-in">
-            <div v-if="donoEncontrado" key="dono">
+            <div
+              v-if="donoEncontrado && buscaDoc?.length"
+              key="dono"
+            >
               <v-alert type="success" variant="tonal" icon="mdi-account-check" density="compact">
                 Vinculado a: <strong>{{ donoEncontrado.nomeCompleto }}</strong>
               </v-alert>
@@ -53,19 +69,34 @@
             <div v-else-if="buscaDoc && buscaDoc.length > 3" key="avulso">
               <v-row dense>
                 <v-col cols="3">
-                  <v-select v-model="pedestre.gradua_id" :items="tratoOptions" item-title="title" item-value="id" label="Trato" variant="underlined" />
+                  <v-select
+                    v-model="pedestre.gradua_id"
+                    :items="tratoOptions"
+                    item-title="title"
+                    item-value="id"
+                    label="Trato"
+                    variant="outlined"
+                    density="compact"
+                  />
                 </v-col>
                 <v-col cols="9">
-                  <v-text-field v-model="nome" label="Nome Completo" variant="underlined" />
+                  <v-text-field
+                    v-model="nome"
+                    @update:model-value="v => nome = (v || '').toUpperCase()"
+                    label="Nome Completo"
+                    variant="outlined"
+                    density="compact"
+                  />
                 </v-col>
                 <v-col cols="12">
                   <v-autocomplete 
                     v-model="pedestre.unidade_id" 
                     :items="unidadesOptions" 
                     label="Unidade" 
-                    variant="underlined" 
+                    variant="outlined" 
                     item-title="title"
                     item-value="id"
+                    density="compact"
                   />
                 </v-col>
               </v-row>
@@ -80,12 +111,13 @@
             :items="orgaosOptions"
             item-title="title"
             item-value="id"
-            :label="(!buscaDoc || buscaDoc.length < 4) ? 'Órgão Proprietário do Veículo' : 'Órgão do Pedestre / Condutor'"
+            :label="labelOrgao"
             variant="outlined"
             clearable
-            :disabled="modo === 'condutor'"
-            :hint="(!buscaDoc || buscaDoc.length < 4) ? 'Deixe o documento em branco para cadastrar como Veículo Oficial da frota.' : 'O órgão será vinculado ao perfil do visitante.'"
+            :disabled="modoEfetivo === 'condutor'"
+            :hint="hintOrgao"
             persistent-hint
+            density="compact"
           />
         </v-col>
         <v-col cols="6">
@@ -93,9 +125,10 @@
             v-model="destino_id" 
             :items="destinosOptions" 
             label="Destino" 
-            variant="underlined" 
+            variant="outlined" 
             item-title="title"
             item-value="id"
+            density="compact"
           />
         </v-col>
       </v-row>
@@ -130,24 +163,65 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { useCadastroGeral } from '@/modules/cadastro/presentation/composables/useCadastroGeral'
 
 const props = defineProps({
   placaInicial: String,
   documentoInicial: String,
+  marca: String,
+  contexto: Object,
   modo: String
 })
 
 const emit = defineEmits(['sucesso', 'cancelar'])
 
-const {
-  carro, buscaDoc, donoEncontrado, nome, destino_id, orgaosOptions, unidadesOptions,
-  loading, podeSalvar, salvar, docOptions, tratoOptions, destinosOptions, pedestre,
-} = useCadastroGeral(props, emit)
+const { state, ui, actions } = useCadastroGeral(props, emit)
 
-const modo = computed(() => {
-  if (props.placaInicial && carro.orgao_id) return 'condutor'
-  if (props.placaInicial) return 'parcial'
-  return 'completo'
+const {
+  carro,
+  pedestre,
+  buscaDoc,
+  nome,
+  destino_id,
+  donoEncontrado,
+  loading
+} = state
+
+const {
+  orgaosOptions,
+  unidadesOptions,
+  tratoOptions,
+  docOptions,
+  destinosOptions,
+  podeSalvar
+} = ui 
+
+const { salvar, buscarDono } = actions
+
+const modoEfetivo = computed(() => {
+  return props.modo || (props.placaInicial ? 'parcial' : 'completo')
+})
+
+const mostrarCadastroVeiculo = computed(() => {
+  return !!props.placaInicial && modoEfetivo.value !== 'condutor'
+})
+
+const tituloCadastro = computed(() => {
+  return mostrarCadastroVeiculo.value
+    ? 'Cadastro de Veículo'
+    : 'Cadastro de Pedestre/Condutor'
+})
+
+const labelOrgao = computed(() => {
+  return (!buscaDoc.value || buscaDoc.value.length < 4)
+    ? 'Órgão Proprietário do Veículo'
+    : 'Órgao do Pedestre / Condutor'
+})
+
+const hintOrgao = computed(() => {
+  return (!buscaDoc.value || buscaDoc.value.length < 4)
+    ? 'Deixe o documento em branco para cadastrar como Veículo Oficial.'
+    : ' O órgao será vinculado ao perfil do militar/visitante'
 })
 </script>

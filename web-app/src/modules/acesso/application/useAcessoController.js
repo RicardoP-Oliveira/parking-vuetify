@@ -30,7 +30,7 @@ export function useAcessoController({ service, isCarro }) {
       if (id !== requestId) return
 
       const fluxo = detectarFluxo({ info, extra, isCarro })
-      await executarFluxo(fluxo, { info, extra }, ctx)
+      await executarFluxo(fluxo, { info, extra }, ctx, isCarro)
     } catch (e) {
       console.error('Erro controller:', e)
     } finally {

@@ -305,6 +305,7 @@ class CeicsController {
     if (carro_id) {
       payload.s_user_id = req.body.user_id
     }
+
     try {
       const [rowsUpdate] = await Ceics.update(payload, {
         where: { id: registro_id }

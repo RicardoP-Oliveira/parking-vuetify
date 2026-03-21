@@ -5,12 +5,11 @@ export const acessoStates = {
     onEnter: ({ payload, ctx, isCarro }) => {
       const saida = payload.info.dados
       const { formData } = ctx
-
       formData.registro_id = saida.id
       formData.destino_id = saida.destino_id
       formData.nome = saida.nomeCompleto
       formData.documento = saida.documento
-      
+      formData.user_id = saida.e_user_id
 
       if (isCarro) {        
         formData.carro_id = saida.carro_id
@@ -51,8 +50,9 @@ export const acessoStates = {
   },
 
   [FLUXO.NOVO]: {
-    onEnter: ({ ctx }) => {
-      ctx.limparForm()
+    onEnter: ({ ctx , isCarro}) => {
+      ctx.limparForm(isCarro ? 'placa' : 'documento')
+      ctx.abrirNovoCadastro?.()
     }
   }
 }

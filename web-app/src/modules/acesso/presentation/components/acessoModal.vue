@@ -3,7 +3,7 @@
     v-if="dialog"
     :isOpen="dialog.isDialog"
     :hide-actions="isNovoCadastro"
-    :title="tipoForm === 'carro' ? 'Acesso Veicular' : 'Acesso Pedestre'"
+    :title="isCarro ? 'Acesso Veicular' : 'Acesso Pedestre'"
     :confirmText="confirmText"
     ref="modalRef"
     @confirm="salvar"
@@ -14,18 +14,20 @@
       v-if="isNovoCadastro"
       :placa-inicial="formData.placa" 
       :documento-inicial="formData.documento"
-      :modelo="formData.modelo"
+      :marca="formData.marca"
       :modo="modoCadastro"
+      :contexto="contexto"
       @sucesso="voltarParaAcesso"
-      @cancelar="isNovoCadastro = false"
+      @cancelar="cancelarCadastro"
     />
     
-    <template v-if="tipoForm === 'carro' && !isNovoCadastro">
+    <template v-if="isCarro && !isNovoCadastro">
       <v-row dense>
         <v-col cols="6">
           <v-text-field
             v-model="formData.placa"
             label="Placa"
+            @update:model-value="v => formData.placa = (v || '').toUpperCase()"
             @keyup.enter.stop="onPlacaEnter"
             @blur.stop="onPlacaEnter"
             :loading="loading || buscando"
@@ -68,7 +70,7 @@
       </v-row>
     </template>
 
-    <template v-else-if="tipoForm === 'pedestre' && !isNovoCadastro">
+    <template v-else-if="!isNovoCadastro">
       <v-row dense>
         <v-col cols="4">
           <v-text-field
@@ -93,8 +95,9 @@
         </v-col>
       </v-row>
     </template>
+    
     <v-row dense>
-      <v-col cols="8" v-if="!isNovoCadastro && confirmText !== 'SAÍDA'">
+      <v-col cols="8" v-if="!isNovoCadastro && !isSaida">
         <v-select
           v-model="formData.destino_id"
           :items="destinosOptions"
@@ -108,7 +111,7 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="tipoForm === 'carro' && formData.placa && !isNovoCadastro" class="mt-4">
+    <v-row v-if="isCarro && formData.placa && !isNovoCadastro" class="mt-4">
       <v-col align="center"><vue-barcode :value="formData.placa" :height="30" /></v-col>
     </v-row>
     
@@ -116,10 +119,10 @@
 </template>
 
 <script setup>
+import { ref} from 'vue'
 import BaseModal from '@/modules/shared/components/BaseModal.vue'
 import formAcessoCadastro from './formAcessoCadastro.vue'
 import { useAcessoForm } from '@/modules/acesso/presentation/composables/useAcessoForm'
-import { nextTick, ref} from 'vue'
 
 const props = defineProps({
   dialog: Object,
@@ -128,42 +131,33 @@ const props = defineProps({
 })
 const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 const modalRef = ref(null)
-const modoCadastro = ref(null)
+
+const { state, ui, actions } = useAcessoForm(props, emit, modalRef)
 
 const {
-  formData, loading, buscando, confirmText,
-  destinosOptions, isReadOnly, salvar, close, 
-  isFormValid, isNovoCadastro, onPlacaEnter, onDocEnter, buscarDados
-} = useAcessoForm(props, emit, modalRef)
+  formData,
+  loading,
+  buscando,
+  isNovoCadastro,
+  isFormValid,
+  isSaida,
+  contexto,
+  isReadOnly
+} = state
 
-const voltarParaAcesso = async (dadosCadastro) => {
-  if (!dadosCadastro || dadosCadastro.fecharTudo) {
-    isNovoCadastro.value = false
-    formData.placa = ''
-    emit('closeModal')
-    return
-  }
+const {
+  confirmText,
+  destinosOptions,
+  modoCadastro,
+  isCarro
+} = ui
 
-  if (!dadosCadastro.user_id && dadosCadastro.carro_id) {
-    formData.placa = dadosCadastro.placa
-    formData.modelo = dadosCadastro.modelo
-
-    modoCadastro.value = dadosCadastro.orgao_id
-      ? 'condutor'
-      : 'completo'
-
-    isNovoCadastro.value = true
-    return
-  }
-
-  if (dadosCadastro.finalizar && dadosCadastro.user_id) {
-    formData.user_id = dadosCadastro.user_id
-    formData.carro_id = dadosCadastro.carro_id
-    formData.destino_id = dadosCadastro.destino_id
-
-    isNovoCadastro.value = false
-    await nextTick()
-    await salvar()
-  }
-}
+const {
+  close,
+  salvar,
+  onPlacaEnter,
+  onDocEnter,
+  cancelarCadastro,
+  voltarParaAcesso,
+} = actions
 </script>

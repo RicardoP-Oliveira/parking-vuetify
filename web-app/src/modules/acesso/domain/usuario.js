@@ -5,13 +5,14 @@ export function buildUsuarioData({
   isEntrada,
   mapaUnidades,
   mapaDestinos,
-  mapUser
+  mapUser,
+  destinoAtual
 }) {
   if (!user) return null
 
   const mapped = mapUser(user)
 
-  const destinoCalculado = isEntrada 
+  const destinoCalculado = isEntrada && !destinoAtual
     ? calcularDestino({
         data: user,
         isEntrada,
@@ -22,7 +23,7 @@ export function buildUsuarioData({
 
   return {
     ...mapped,
-    destino_id: destinoCalculado ?? mapped.destino_id ?? null
+    destino_id: destinoAtual ?? destinoCalculado ?? mapped.destino_id ?? null
   }
 }
 

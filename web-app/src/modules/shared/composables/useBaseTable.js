@@ -21,7 +21,12 @@ export function useBaseTable(props, emit) {
 
   let debounceTimer = null
 
-  const modal = reactive({ isOpen: false, type: null })
+  const modal = reactive({ 
+    isOpen: false,
+    type: null,
+    documento: null,
+    idPlaca: null, 
+  })
 
   const token = `Bearer ${localStorage.getItem('token')}`
 
@@ -171,15 +176,27 @@ export function useBaseTable(props, emit) {
         timeout: 3000 })
       return
     }
+
+    const valor = String(ident.value || '').toUpperCase().trim()
+
+    const isCarroIdent = 
+      PATTERNS.PREFIXO.test(valor) ||
+      PATTERNS.PLACA_ANTIGA.test(valor) ||
+      PATTERNS.PLACA_MERCOSUL.test(valor)
+
     modal.isOpen = true
-    modal.type = PATTERNS.PREFIXO.test(ident.value) || PATTERNS.PLACA_ANTIGA.test(ident.value)
-     || PATTERNS.PLACA_MERCOSUL.test(ident.value)
-     ? 'carro' : 'pedestre'
+    modal.type = isCarroIdent ? 'carro' : 'pedestre'
+    modal.idPlaca = isCarroIdent ? valor : null
+    modal.documento = isCarroIdent ? null : valor
   }
 
   const closeModal = (from) => {
     modal.isOpen = false
+    modal.type = null
+    modal.documento = null
+    modal.idPlaca = null
     ident.value = ''
+
     setTimeout(() => {
       if (from && from !== props.tab) {
         emit('changeTable', from)
