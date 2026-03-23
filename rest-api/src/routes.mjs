@@ -3,9 +3,10 @@ import multer from 'multer';
 import uploadConfig from './config/upload.mjs';
 import auth from './app/middlewares/auth.mjs'
 
+import usuarioRoutes from './modules/usuario/index.mjs'
+
 import VeiculoController from './app/controllers/VeiculoController.mjs';
 import UnidadeController from './app/controllers/UnidadeController.mjs';
-import UsuarioController from './app/controllers/UsuarioController.mjs';
 import MovimentacaoController from './app/controllers/MovimentacaoController.mjs';
 import DestinoController from './app/controllers/DestinoController.mjs';
 import TipoDocController from './app/controllers/TipoDocController.mjs'
@@ -32,15 +33,7 @@ routes.delete('/ubm/:id', UnidadeController.destroy);
 
 // -----  Rotas de USUÁRIOS ---- //
 
-routes.get('/user', UsuarioController.index);
-
-routes.get('/user/:id', UsuarioController.show);
-
-routes.post('/user',  upload.single('foto'), UsuarioController.store);
-
-routes.patch('/user/:id',  upload.single('foto'), UsuarioController.update);
-
-routes.delete('/user/:id', UsuarioController.destroy);
+routes.use('/user', usuarioRoutes)
 
 // -----  Rotas de CARROS ---- //
 
