@@ -97,7 +97,7 @@
     </template>
     
     <v-row dense>
-      <v-col cols="8" v-if="!isNovoCadastro && !isSaida">
+      <v-col cols="6" v-if="!isNovoCadastro && !isSaida">
         <v-select
           v-model="formData.destino_id"
           :items="destinosOptions"
@@ -148,6 +148,7 @@ const {
 const {
   confirmText,
   destinosOptions,
+  unidadesOptions,
   modoCadastro,
   isCarro
 } = ui

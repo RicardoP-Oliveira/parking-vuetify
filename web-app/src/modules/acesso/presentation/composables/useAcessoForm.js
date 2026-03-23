@@ -22,7 +22,8 @@ export function useAcessoForm(props, emit, modalRef) {
   const {
     listas,
     fetchListas,
-    destinosOptions
+    destinosOptions,
+    unidadesOptions
   } = useListas(listaService)
 
   // ***** STATE *****
@@ -32,7 +33,7 @@ export function useAcessoForm(props, emit, modalRef) {
     placa: '',
     marca: '',
     user_id: null,
-    carro_id: null,
+    veiculo_id: null,
     registro_id: null,
     doc_id: null,
     orgao_id: null,
@@ -48,8 +49,8 @@ export function useAcessoForm(props, emit, modalRef) {
   const modoCadastro = ref(null)
   
   const mapaUnidades = computed(() => createUnidadeMap(listas.value?.unidades))
-  const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos))
-  const isCarro = computed(() => props.tipoForm === 'carro')
+  const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos, listas.value?.unidades))
+  const isCarro = computed(() => props.tipoForm === 'VEICULO')
   
   const confirmText = computed(() => 
     fluxoAtual.value === FLUXO.SAIDA ? 'SAÍDA' : 'ENTRADA'
@@ -59,8 +60,8 @@ export function useAcessoForm(props, emit, modalRef) {
   const buscando = computed(() => loading.value)
   const isReadOnly = computed(() => isSaida.value)
   const contexto = computed(() => ({
-    carroCadastrado: !!formData.carro_id,
-    carro_id: formData.carro_id,
+    carroCadastrado: !!formData.veiculo_id,
+    veiculo_id: formData.veiculo_id,
     usuarioCadastrado: !!formData.user_id,
     user_id: formData.user_id,
     isCarro: isCarro.value
@@ -91,7 +92,6 @@ export function useAcessoForm(props, emit, modalRef) {
     const dados = buildUsuarioData({
       user,
       isEntrada: fluxoAtual.value !== FLUXO.SAIDA,
-      mapaUnidades: mapaUnidades.value,
       mapaDestinos: mapaDestinos.value,
       destinoAtual: formData.destino_id,
       mapUser
@@ -133,6 +133,7 @@ export function useAcessoForm(props, emit, modalRef) {
           formData,
           limparForm,
           preencherUsuario,
+          getUser,
           setFluxo: (f) => {
             fluxoAtual.value = f
           },
@@ -208,7 +209,7 @@ export function useAcessoForm(props, emit, modalRef) {
   const voltarParaAcesso = async (dadosCadastro) => {
     if (dadosCadastro.finalizar) {
       formData.user_id = dadosCadastro.user_id
-      formData.carro_id = dadosCadastro.carro_id
+      formData.veiculo_id = dadosCadastro.veiculo_id
       formData.destino_id = dadosCadastro.destino_id
       
       const user = await getUser(dadosCadastro.documento)
@@ -275,6 +276,7 @@ export function useAcessoForm(props, emit, modalRef) {
     ui: {
       confirmText,
       destinosOptions,
+      unidadesOptions,
       modoCadastro,
       isCarro
     },

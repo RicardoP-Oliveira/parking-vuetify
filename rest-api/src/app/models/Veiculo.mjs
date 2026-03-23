@@ -55,9 +55,9 @@ class Veiculo extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Usuario, { foreignKey: 'user_id', as: 'user' })
+    this.belongsTo(models.Usuario, { foreignKey: 'usuario_id', as: 'user' })
     this.belongsTo(models.Orgao, { foreignKey: 'orgao_id', as: 'orgao' })
-    this.hasMany(models.Movimentacao, { foreignKey: 'veiculo_id' as: 'veiculo'})
+    this.hasMany(models.Movimentacao, { foreignKey: 'veiculo_id', as: 'veiculo'})
   }
 }
 

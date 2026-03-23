@@ -1,7 +1,7 @@
 'user strict';
 import { Model, DataTypes } from 'sequelize';
 
-class Documentos extends Model {
+class Tipo_Documento extends Model {
 	static init(sequelize) {
 		super.init(
 			{
@@ -16,7 +16,7 @@ class Documentos extends Model {
 			},
 			{
 				sequelize,
-				modelName: 'tipoDoc',
+				modelName: 'Tipo_Documento',
 				tableName: 'tipo_documentos',
 				underscored: true,
 				timestamps: true
@@ -30,4 +30,4 @@ class Documentos extends Model {
 	}
 }
 
-export default Documentos;
+export default Tipo_Documento

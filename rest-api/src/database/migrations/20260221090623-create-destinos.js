@@ -1,22 +1,29 @@
-/** @type {import('sequelize-cli').Migration} */
-module.exports = {
+'use strict';
+
+export default {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('unidades', {
+    await queryInterface.createTable('destinos', {
       id: {
-        allowNull: false,
+        type: Sequelize.BIGINT,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGINT
+        allowNull: false
       },
-      sigla: {
+      unidade_id: {
         allowNull: false,
         unique: true,
-        type: Sequelize.STRING
+        type: Sequelize.BIGINT,
+        references: {
+          model: 'unidades',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
-      unidade: {
+      ativo: {
         allowNull: false,
-        unique: true,
-        type: Sequelize.STRING
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       created_at: {
         allowNull: false,
@@ -30,7 +37,8 @@ module.exports = {
       }
     });
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('unidades');
+
+  async down(queryInterface) {
+    await queryInterface.dropTable('destinos');
   }
 };

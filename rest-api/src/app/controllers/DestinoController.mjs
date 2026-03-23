@@ -1,12 +1,8 @@
-import Target from '../models/target.mjs';
+import Destino from '../models/Destino.mjs';
 
 class DestinoController {
   async index(req, res) {
-    const dest = await Target.findAll({
-      order: [
-        ['target', 'ASC']
-      ]
-    });
+    const dest = await Destino.findAll({});
     return res.json(dest);
   }
 

@@ -1,5 +1,4 @@
-// scr/composables/useCarroTable.js
-export function useCarroTable(carroService) {
+export function useVeiculoTable(VeiculoService) {
   const loadCarData = async (
     page,
     itemsPerPage,
@@ -28,7 +27,7 @@ export function useCarroTable(carroService) {
       }
     });
 
-    return carroService.getTodos(
+    return VeiculoService.getTodos(
       page,
       itemsPerPage,
       token,

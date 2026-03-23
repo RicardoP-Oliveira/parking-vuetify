@@ -1,19 +1,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tipo_documentos', {
+    await queryInterface.createTable('tratamentos', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.BIGSERIAL
+        type: Sequelize.BIGINT
       },
-      tipo: {
+      sigla: {
         allowNull: false,
         unique: true,
         type: Sequelize.STRING
       },
-      documento: {
+      nome: {
         allowNull: false,
         unique: true,
         type: Sequelize.STRING
@@ -30,7 +30,8 @@ module.exports = {
       }
     });
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tipo_documentos');
+
+  async down(queryInterface) {
+    await queryInterface.dropTable('tratamentos');
   }
 };

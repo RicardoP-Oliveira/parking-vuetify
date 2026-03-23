@@ -1,14 +1,14 @@
-import Ubm from '../models/ubm.mjs';
-import Resposta from '../models/Resposta.mjs';
-import User from '../models/user.mjs';
-import Carro from '../models/carro.mjs';
-import Orgao from '../models/orgao.mjs';
+import Unidade from '../models/Unidade.mjs'
+import Usuario from '../models/Usuario.mjs'
+import Veiculo from '../models/Veiculo.mjs'
+import Orgao from '../models/Orgao.mjs'
+import Resposta from '../models/Resposta.mjs'
 
-class UbmController {
+class UnidadeController {
   async index(req, res) {
     const resposta = new Resposta();
     try {
-      const ubms = await Ubm.findAll({ order: [['name', 'ASC']] });
+      const ubms = await Unidade.findAll({ order: [['unidade', 'ASC']] });
       if(!ubms.length) {
         resposta.msg = 'Não existe(m) unidade(s) cadastrada(s).';
       } else {
@@ -32,16 +32,16 @@ class UbmController {
     const resposta = new Resposta();
     try {
       const { id } = req.params;
-      const ubmExists = await Ubm.findByPk(id,{
+      const ubmExists = await Unidade.findByPk(id,{
         // attributes: ['id','sigla', 'name'],
         include: {
-          model: User,
-          as:"users",
+          model: Usuario,
+          as:"usuarios",
           // attributes:['id', 'rg', 'n_guerra', 'foto', 'fotoUri'],
           include: [
             {
-              model: Carro,
-              as: "carros",
+              model: Veiculo,
+              as: "veiculos",
               // attributes: ['id', 'placa', 'marca']
             }
           ]
@@ -74,7 +74,7 @@ class UbmController {
   async store(req, res) {
     const resposta = new Resposta();
     try {
-      const ubmExists = await Ubm.findOne({where: { name: req.body.name }});
+      const ubmExists = await Unidade.findOne({where: { name: req.body.name }});
 
       if (ubmExists) {
         resposta.erro = true;
@@ -98,7 +98,7 @@ class UbmController {
       const { id } = req.params;
       const body = req.body;
 
-      const obm = await Ubm.findByPk(id);
+      const obm = await Unidade.findByPk(id);
 
       if (!obm) {
         resposta.erro = true;
@@ -121,7 +121,7 @@ class UbmController {
     const resposta = new Resposta();
     try {
       const { id } = req.params;
-      const ubm = await Ubm.findByPk(id);
+      const ubm = await Unidade.findByPk(id);
 
       if(!ubm){
         resposta.erro = true;
@@ -164,4 +164,4 @@ class UbmController {
 
 }
 
-export default new UbmController();
+export default new UnidadeController();

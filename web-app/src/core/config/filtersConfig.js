@@ -2,14 +2,14 @@
 export const getFiltersByTab = (tab) => {
   const commonFilters = {
     documento: { label: 'Documento', type: 'text', icon: 'mdi-file-documento' },
-    condutor: { label: tab === 'carro' ? 'Condutor' : 'Nome', type: 'text', icon: 'mdi-account-search' },
+    condutor: { label: tab === 'VEICULO' ? 'Condutor' : 'Nome', type: 'text', icon: 'mdi-account-search' },
     dataInicio: { label: 'Data Inicial', type: 'date' },
     dataFim: { label: 'Data Final', type: 'date', dependsOn: 'dataInicio' },
     horaInicio: { label: 'Hora Inicial', type: 'time' },
     horaFim: { label: 'Hora Final', type: 'time', dependsOn: 'horaInicio' }
   }
 
-  if (tab === 'carro') {
+  if (tab === 'VEICULO') {
     return {
       placa: { label: 'Placa', type: 'text', icon: 'mdi-car-back' },
       modelo: { label: 'Modelo', type: 'text', icon: 'mdi-car-info' },

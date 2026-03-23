@@ -2,7 +2,7 @@ import ConfigClass from '../../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/carro`;
 
-export default class UserService {
+export default class VeiculoService {
   static getPlaca(placa, token) {
     return fetch(`${caminho}/${placa}`, {
       headers: {

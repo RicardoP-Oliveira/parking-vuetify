@@ -7,7 +7,7 @@ export function useListasModules() {
     UnidadeService: deps.UnidadeService,
     OrgaoService: deps.OrgaoService,
     DestinoService: deps.DestinoService,
-    DocumentoService: deps.DocumentoService,
+    TipoDocService: deps.TipoDocService,
     TratamentoService: deps.TratamentoService
   })
 }

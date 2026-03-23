@@ -27,9 +27,9 @@ class Unidade extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.Usuario, { foreignKey: "ubm_id", as: "users"});
+    this.hasMany(models.Usuario, { foreignKey: "ubm_id", as: "usuarios"});
   }
 }
 
-export default Ubm;
+export default Unidade;
 

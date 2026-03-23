@@ -35,7 +35,7 @@ const getExtra = (service, key, isCarro) => {
   }
 
   const extraPromise = isCarro
-    ? service.getCarroPlaca(key)
+    ? service.getVeiculoPlaca(key)
     : service.getUsuarioByDoc(key)
 
   saveCache(key, { extraPromise })

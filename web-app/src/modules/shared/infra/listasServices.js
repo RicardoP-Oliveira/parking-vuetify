@@ -3,7 +3,7 @@ export function createListasService(deps) {
     UnidadeService,
     OrgaoService,
     DestinoService,
-    DocumentoService,
+    TipoDocService,
     TratamentoService,
   } = deps
 
@@ -11,7 +11,7 @@ export function createListasService(deps) {
     getUnidades: UnidadeService.getTodos,
     getOrgaos: OrgaoService.getOrgaos,
     getDestinos: DestinoService.getTodos,
-    getDocs: DocumentoService.getTodos,
+    getDocs: TipoDocService.getDocs,
     getTratos: TratamentoService.getTodos
   }
 }

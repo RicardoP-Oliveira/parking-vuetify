@@ -1,13 +1,13 @@
-import Carro from '../models/carro.mjs'
+import Veiculo from '../models/Veiculo.mjs'
 import Resposta from '../models/Resposta.mjs'
-import Ubm from '../models/ubm.mjs'
-import User from '../models/user.mjs'
-import Orgao from '../models/orgao.mjs'
-import Doc from '../models/documentos.mjs'
-import Order from '../models/hierarcar.mjs'
+import Unidade from '../models/Unidade.mjs'
+import Usuario from '../models/Usuario.mjs'
+import Orgao from '../models/Orgao.mjs'
+import Tipo_Documento from '../models/Tipo_Documento.mjs'
+import Tratamento from '../models/Tratamento.mjs'
 import { Op, Sequelize } from 'sequelize'
 
-class CarroController {
+class VeiculoController {
   async index(req, res) {
 
         const resposta = new Resposta();
@@ -15,29 +15,27 @@ class CarroController {
           const page = req.query.page || 1;
           let perPage = req.query.perPage || 25;
           if(perPage <=0 ){
-            perPage = await Carro.count();
+            perPage = await Veiculo.count();
           }
 
-          const { count, rows } = await Carro.findAndCountAll({
+          const { count, rows } = await Veiculo.findAndCountAll({
             order: [["id", "ASC"]],
             offset: (page - 1) * perPage,
             limit: perPage,
-
-            // attributes: ['id', 'placa', 'marca'],
             include: [{
-              model: User,
-              as:'userCar',
-              // attributes:['id', 'rg', 'n_guerra', 'foto', 'fotoUri'],
+              model: Usuario,
+              as:'user',
+              attributes:[],
               include: [
                 {
                   required: true,
-                  model: Ubm,
-                  as: 'ubm',
-                  // attributes:['id', 'sigla']
+                  model: Unidade,
+                  as: 'unidade',
+                  attributes:[]
                 },
                 {
-                  model: Doc,
-                  as: 'docUser'
+                  model: Tipo_Documento,
+                  as: 'tipoDoc'
                 }
               ]
               },
@@ -59,7 +57,6 @@ class CarroController {
           resposta.msg = `Error: ${erro}`;
           resposta.dados = erro;
         }
-        console.log(JSON.stringify(resposta,null,2))
         return res.json([resposta, total]);
       }
 
@@ -67,15 +64,15 @@ class CarroController {
     const resposta = new Resposta();
     try {
         const { placa } = req.body;
-        const carroExists = await Carro.findOne({where: { placa: placa }});
-        if (carroExists) {
+        const veiculoExists = await Veiculo.findOne({where: { placa: placa }});
+        if (veiculoExists) {
           resposta.erro = true;
-          resposta.msg = 'Carro já cadastrado';
+          resposta.msg = 'Veículo já cadastrado';
         } else {
-          const carro = await Carro.create(req.body);
-          if(carro){
+          const veiculo = await Veiculo.create(req.body);
+          if(veiculo){
             resposta.msg = 'Registro cadastrado com sucesso.';
-            resposta.dados = carro;
+            resposta.dados = veiculo;
           }
         }
     } catch (erro) {
@@ -90,47 +87,48 @@ class CarroController {
       const { placa } = req.params;
       const resposta = new Resposta();
       try {
-        const carroExists = await Carro.findOne({
+        const veiculoExists = await Veiculo.findOne({
           where: {
             [Op.or]: [
               { placa: { [Op.iLike]: `%${placa}%` } },
-              { marca: { [Op.iLike]: `%${placa}%` } }
+              { marca: { [Op.iLike]: `%${placa}%` } },
+              { prefixo: { [Op.iLike]: `%${placa}%` }}
             ]
           }, 
           attributes: [
-            'id', 'placa', 'marca', 'user_id', 'orgao_id',
-            [Sequelize.col('userCar.ubm_id'), 'ubm_id'],
-            [Sequelize.col('userCar.documento'), 'documento'],
-            [Sequelize.col('userCar.n_guerra'), 'condutor'],
-            [Sequelize.col('userCar.doc_id'), 'doc_id'],
-            [Sequelize.col('userCar.gradua_id'), 'guadua_id'],
-            [Sequelize.col('userCar->docUser.sigla'), 'docSigla'],
-            [Sequelize.col('userCar->ubm.name'), 'nomeUbm'],
-            [Sequelize.col('userCar->hierarquia.abrev'), 'graduaAbrev'],
-            [Sequelize.col('userCar->orgaoU.sigla_curta'), 'orgaoSigla'],
+            'id', 'placa', 'marca', 'prefixo', 'usuario_id', 'orgao_id',
+            [Sequelize.col('user.ubm_id'), 'ubm_id'],
+            [Sequelize.col('user.documento'), 'documento'],
+            [Sequelize.col('user.nome'), 'condutor'],
+            [Sequelize.col('user.tipo_doc_id'), 'doc_id'],
+            [Sequelize.col('user.tratamento_id'), 'guadua_id'],
+            [Sequelize.col('user->tipoDoc.tipo'), 'docSigla'],
+            [Sequelize.col('user->unidade.unidade'), 'nomeUbm'],
+            [Sequelize.col('user->tratamento.sigla'), 'graduaAbrev'],
+            [Sequelize.col('user->orgao.sigla_curta'), 'orgaoSigla'],
 
           ],
           include: [
             {
-              model: User,
-              as:'userCar',
+              model: Usuario,
+              as:'user',
               attributes: [],
               include: [
-                { model: Order, as: 'hierarquia', attributes: [] },
-                { model: Doc, as: 'docUser', attributes: [] },
-                { model: Ubm, as: 'ubm', attributes: [] },
-                { model: Orgao, as: 'orgaoU', attributes: [] }
+                { model: Tratamento, as: 'tratamento', attributes: [] },
+                { model: Tipo_Documento, as: 'tipoDoc', attributes: [] },
+                { model: Unidade, as: 'unidade', attributes: [] },
+                { model: Orgao, as: 'orgao', attributes: [] }
               ]
             },
           ]
       });
-        if (!carroExists) {
+        if (!veiculoExists) {
           resposta.erro = true;
           resposta.visitor = true;
-          resposta.msg = 'Carro não encontrado.';
+          resposta.msg = 'Veículo não encontrado.';
         } else {
 
-          resposta.dados = carroExists;
+          resposta.dados = veiculoExists;
         }
       } catch (erro) {
         resposta.erro = true;
@@ -144,26 +142,25 @@ class CarroController {
     const resposta = new Resposta();
     try {
       const { id } = req.params;
-      const carro = await Carro.findByPk(id, {
+      const carro = await Veiculo.findByPk(id, {
         include: {
-          model: User,
+          model: Usuario,
           as: 'user'
         }
       });
 
       if (!carro) {
         resposta.erro = true;
-        resposta.msg = 'Carro não encontrado.';
+        resposta.msg = 'Veículo não encontrado.';
       } else {
-        const { placa, marcaModelo, user_id, orgao_id, renavam } = req.body;
+        const { placa, marcaModelo, orgao_id, renavam } = req.body;
         const dados = {
           placa,
-          marcaModelo ,
-          user_id ,
+          marca: marcaModelo ,
           orgao_id,
           renavam
         }
-        const updated = await carro.update(dados);
+        const updated = await Veiculo.update(dados);
         if(updated) {
           resposta.msg = 'Registro atualizado com sucesso.';
         };
@@ -180,11 +177,11 @@ class CarroController {
     const resposta = new Resposta();
     try {
       const { id } = req.params;
-      const carro = await Carro.findByPk(id);
+      const carro = await Veiculo.findByPk(id);
 
       if(!carro){
         resposta.erro = true;
-        resposta.msg = 'Carro não encontrado.';
+        resposta.msg = 'Veículo não encontrado.';
       } else {
         if (await carro.destroy()){
           resposta.msg = 'Arquivo deletado com sucesso.';
@@ -200,4 +197,4 @@ class CarroController {
 
 }
 
-export default new CarroController();
+export default new VeiculoController();

@@ -30,8 +30,8 @@ class Orgao extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.User, { foreignKey: "orgao_id", as: "users" });
-    this.hasMany(models.Carro, { foreignKey: "orgao_id", as: "carros" });
+    this.hasMany(models.Usuario, { foreignKey: "orgao_id", as: "usuarios" })
+    this.hasMany(models.Veiculo, { foreignKey: "orgao_id", as: "veiculos"})
   }
 } 
 

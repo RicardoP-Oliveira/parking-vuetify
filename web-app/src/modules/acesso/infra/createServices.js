@@ -1,23 +1,19 @@
 export function createServices(deps) {
   const {
-    PedestreService,
-    UserService,
-    CarroService,
-    CeicsService
+    UsuarioService,
+    VeiculoService,
+    MovimentacaoService
   } = deps
 
   return {
-    getPedestreByDoc: PedestreService.getByDoc,
-    salvarPedestre: PedestreService.adicionar,
+    getUsuarioByDoc: UsuarioService.getId,
+    salvarUsuario: UsuarioService.adicionar,
 
-    getUsuarioByDoc: UserService.getId,
-    salvarUsuario: UserService.adicionar,
+    getVeiculoPlaca: VeiculoService.getPlaca,
+    salvarVeiculo: VeiculoService.adicionar,
 
-    getCarroPlaca: CarroService.getPlaca,
-    salvarCarro: CarroService.adicionar,
-
-    getInfo: CeicsService.getInfo,
-    entrada: CeicsService.adicionar,
-    saida: CeicsService.cadastrarSaida
+    getInfo: MovimentacaoService.getInfo,
+    entrada: MovimentacaoService.adicionar,
+    saida: MovimentacaoService.cadastrarSaida
   }
 }

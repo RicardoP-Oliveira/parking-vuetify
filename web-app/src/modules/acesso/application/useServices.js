@@ -1,17 +1,15 @@
-import PedestreService from '@/core/services/PedestreService'
-import UserService from '@/core/services/UserServices'
-import CarroService from '@/core/services/CarroService'
-import CeicsService from '@/core/services/CeicsService'
+import UsuarioService from '@/core/services/UserServices'
+import VeiculoService from '@/core/services/VeiculoService'
+import MovimentacaoService from '@/core/services/MovimentacaoService'
 
 import { createServices } from '@/modules/acesso/infra/createServices'
 import { useAcessoServices } from '@/modules/acesso/application/useAcessoServices'
 
 export function useServices() {
   const rawServices = createServices({
-    PedestreService,
-    UserService,
-    CarroService,
-    CeicsService
+    UsuarioService,
+    VeiculoService,
+    MovimentacaoService
   })
 
   return useAcessoServices(rawServices)

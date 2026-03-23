@@ -1,13 +1,13 @@
-import Document from '../models/documentos.mjs'
+import Tratamento from "../models/Tratamento.mjs";
 
-class DocumentController {
+class TratamentoController {
   async index(req, res) {
-    const doc = await Document.findAll({
+    const response = await Tratamento.findAll({
       order: [
         ['id', 'ASC']
       ]
     });
-    return res.json(doc);
+    return res.json(response);
   }
 
   async show(req, res) {
@@ -27,4 +27,4 @@ class DocumentController {
   }
 }
 
-export default new DocumentController();
+export default new TratamentoController();

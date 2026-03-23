@@ -1,19 +1,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('unidades', {
+    await queryInterface.createTable('tipo_documentos', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.BIGINT
       },
-      sigla: {
+      tipo: {
         allowNull: false,
         unique: true,
         type: Sequelize.STRING
       },
-      unidade: {
+      documento: {
         allowNull: false,
         unique: true,
         type: Sequelize.STRING
@@ -31,6 +31,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('unidades');
+    await queryInterface.dropTable('tipo_documentos');
   }
 };

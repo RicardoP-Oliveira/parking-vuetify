@@ -12,13 +12,13 @@
     hide-default-footer
     fixed-header
     :class="['flex-table',{
-      'width-pedestre': tab !== 'carro'
+      'width-pedestre': tab !== 'VEICULO'
        }
     ]"
     >
       <template v-slot:top>
         <v-row class="px-4 pt-4">
-          <v-col :cols="tab === 'carro' ? 2 : 3">
+          <v-col :cols="tab === 'VEICULO' ? 2 : 3">
             <v-text-field
               v-model="ident"
               ref="identRef"

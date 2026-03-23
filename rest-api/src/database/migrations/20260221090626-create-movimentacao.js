@@ -6,18 +6,18 @@ module.exports = {
 				allowNull: false,
 				autoIncrement: true,
 				primaryKey: true,
-				type: Sequelize.BIGSERIAL
+				type: Sequelize.BIGINT
 			},
 			tipo: {
 				allowNull: false,
-				type: Sequelize.ENUM('CARRO', 'PEDESTRE')
+				type: Sequelize.ENUM('VEICULO', 'PEDESTRE')
 			},
 			entrada: {
 				allowNull: false,
-				type: Sequelize.dropTable
+				type: Sequelize.DATE
 			},
 			saida: {
-				type: Sequelize.Date
+				type: Sequelize.DATE
 			},
 			user_entrada_id: {
 				allowNull: false,
@@ -38,7 +38,7 @@ module.exports = {
 				onUpdate: 'CASCADE',
 				onDelete: 'SET NULL'
 			},
-			carro_id: {
+			veiculo_id: {
 				type: Sequelize.BIGINT,
 				references: {
 					model: 'carros',
@@ -46,6 +46,16 @@ module.exports = {
 				},
 				onUpdate: 'CASCADE',
 				onDelete: 'SET NULL'
+			},
+			destino_id: {
+				allowNull: false,
+				type: Sequelize.BIGINT,
+				references: {
+					model: 'destinos',
+					key: 'id'
+				},
+				onUpdate: 'CASCADE',
+				onDelete: 'RESTRICT'
 			},
 			created_at: {
 				allowNull: false,

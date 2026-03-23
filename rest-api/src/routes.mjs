@@ -3,85 +3,73 @@ import multer from 'multer';
 import uploadConfig from './config/upload.mjs';
 import auth from './app/middlewares/auth.mjs'
 
-import CarroController from './app/controllers/CarroController.mjs';
-import UbmController from './app/controllers/UbmController.mjs';
-import UserController from './app/controllers/UserController.mjs';
-import CeicsController from './app/controllers/CeicsController.mjs';
-import SessionController from './app/controllers/SessionController.mjs';
-import PedestreController from './app/controllers/PedestreController.mjs';
-import ServicoController from './app/controllers/ServicoController.mjs';
+import VeiculoController from './app/controllers/VeiculoController.mjs';
+import UnidadeController from './app/controllers/UnidadeController.mjs';
+import UsuarioController from './app/controllers/UsuarioController.mjs';
+import MovimentacaoController from './app/controllers/MovimentacaoController.mjs';
 import DestinoController from './app/controllers/DestinoController.mjs';
-import DocumentController from './app/controllers/DocumentController.mjs';
-import HierarquiaController from './app/controllers/HierarquiaController.mjs';
+import TipoDocController from './app/controllers/TipoDocController.mjs'
+import TratamentoController from './app/controllers/TratamentoController.mjs';
 
 const routes = new Router();
 const upload = multer(uploadConfig.getConfig());
 
-routes.post('/sessions', SessionController.store);
 
-routes.post('/sessions/validate', SessionController.validate);
 
 // -----  Rotas de UBM ---- //
-routes.get('/ubm',  UbmController.index);
+routes.get('/ubm',  UnidadeController.index);
 
-routes.get('/ubm/orgaos', UbmController.getOrgaos);
+routes.get('/ubm/orgaos', UnidadeController.getOrgaos);
 
-routes.get('/ubm/:id', UbmController.show);
+routes.get('/ubm/:id', UnidadeController.show);
 
-routes.post('/ubm', UbmController.store);
+routes.post('/ubm', UnidadeController.store);
 
-routes.put('/ubm/:id', UbmController.update);
+routes.put('/ubm/:id', UnidadeController.update);
 
-routes.delete('/ubm/:id', UbmController.destroy);
+routes.delete('/ubm/:id', UnidadeController.destroy);
 
 
 // -----  Rotas de USUÁRIOS ---- //
 
-routes.get('/user', UserController.index);
+routes.get('/user', UsuarioController.index);
 
-routes.get('/user/:id', UserController.show);
+routes.get('/user/:id', UsuarioController.show);
 
-routes.post('/user',  upload.single('foto'), UserController.store);
+routes.post('/user',  upload.single('foto'), UsuarioController.store);
 
-routes.patch('/user/:id',  upload.single('foto'), UserController.update);
+routes.patch('/user/:id',  upload.single('foto'), UsuarioController.update);
 
-routes.delete('/user/:id', UserController.destroy);
+routes.delete('/user/:id', UsuarioController.destroy);
 
 // -----  Rotas de CARROS ---- //
 
-routes.get('/carro', CarroController.index);
+routes.get('/carro', VeiculoController.index);
 
-routes.get('/carro/:placa', CarroController.show);
+routes.get('/carro/:placa', VeiculoController.show);
 
 // routes.get('/carro/placa/:placa', CarroController.showPlaca);
 
-routes.post('/carro', CarroController.store);
+routes.post('/carro', VeiculoController.store);
 
-routes.put('/carro/:id', CarroController.update);
+routes.put('/carro/:id', VeiculoController.update);
 
-routes.delete('/carro/:id', CarroController.destroy);
+routes.delete('/carro/:id', VeiculoController.destroy);
 
 // -----  Rotas de Estacionamento ---- //
 
-routes.post('/ceics',  auth, CeicsController.cadastrarEntrada);
-routes.get('/ceics', CeicsController.index);
-routes.get('/ceics/:identificador', CeicsController.show);
-routes.put('/ceics/', CeicsController.cadastarSaida);
-
-routes.get('/pedestre', PedestreController.index);
-routes.post('/pedestre', PedestreController.store);
-routes.get('/pedestre/doc/:doc', PedestreController.show);
-
-routes.post('/servico', ServicoController.store);
-routes.get('/servico', ServicoController.index);
+routes.post('/ceics',  auth, MovimentacaoController.cadastrarEntrada);
+routes.get('/ceics', MovimentacaoController.index);
+routes.get('/ceics/:identificador', MovimentacaoController.show);
+routes.put('/ceics/', MovimentacaoController.cadastarSaida);
 
 // ----- Rotas de Destino ----- //
 routes.get('/destino', DestinoController.index);
 
 // --- Documentos ----- ///
-routes.get('/document', DocumentController.index);
+routes.get('/document', TipoDocController.index);
 
 // ---- Hierarquia ----- //
-routes.get('/hierarquia', HierarquiaController.index);
+routes.get('/hierarquia', TratamentoController.index);
 
 export default routes;

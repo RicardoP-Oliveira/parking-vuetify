@@ -185,7 +185,7 @@ export function useBaseTable(props, emit) {
       PATTERNS.PLACA_MERCOSUL.test(valor)
 
     modal.isOpen = true
-    modal.type = isCarroIdent ? 'carro' : 'pedestre'
+    modal.type = isCarroIdent ? 'VEICULO' : 'PEDESTRE'
     modal.idPlaca = isCarroIdent ? valor : null
     modal.documento = isCarroIdent ? null : valor
   }

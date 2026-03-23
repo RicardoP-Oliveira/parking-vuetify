@@ -6,7 +6,7 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequeli.BIGSERIAL
+        type: Sequelize.BIGINT
       },
       documento: {
         allowNull: false,
@@ -26,11 +26,11 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'
       },
-      trato_id: {
+      tratamento_id: {
         allowNull: false,
         type: Sequelize.BIGINT,
         references: {
-          model: 'tratos',
+          model: 'tratamentos',
           key: 'id'
         },
         onUpdate: 'CASCADE',

@@ -1,30 +1,25 @@
 import Sequelize  from 'sequelize';
 import databaseConfig from '../config/database.mjs';
 
-import Ubm from '../app/models/ubm.mjs';
-import User from '../app/models/user.mjs';
-import Carro from '../app/models/carro.mjs';
-import Ceics from '../app/models/ceics.mjs';
-import Orgao from '../app/models/orgao.mjs';
-import Pedestre from '../app/models/pedestre.mjs';
-import Servico from '../app/models/servico.mjs';
-import vtrAdd from '../app/models/vtradd.mjs';
-import Target from '../app/models/target.mjs';
-import Document from '../app/models/documentos.mjs';
-import Hierarquia from '../app/models/hierarcar.mjs';
+import Destino from '../app/models/Destino.mjs'
+import Movimentacao from '../app/models/Movimentacao.mjs'
+import Tipo_Documento from '../app/models/Tipo_Documento.mjs'
+import Tratamento from '../app/models/Tratamento.mjs'
+import Unidade from '../app/models/Unidade.mjs'
+import Usuario from '../app/models/Usuario.mjs'
+import Veiculo from '../app/models/Veiculo.mjs'
+import Orgao from '../app/models/Orgao.mjs';
+
 
 const models = [
-  Ubm,
-  User,
-  Carro,
-  Ceics,
   Orgao,
-  Pedestre,
-  Servico,
-  vtrAdd,
-  Target,
-  Document,
-  Hierarquia
+  Destino,
+  Movimentacao,
+  Tipo_Documento,
+  Tratamento,
+  Unidade,
+  Usuario,
+  Veiculo
 ];
 
 class Database {

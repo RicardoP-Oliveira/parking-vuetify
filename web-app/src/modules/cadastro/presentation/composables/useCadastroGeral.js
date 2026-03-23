@@ -35,7 +35,7 @@ export function useCadastroGeral(props, emit) {
   })
 
   const pedestre = ref({
-    unidade_id: 241,
+    unidade_id: '238',
     gradua_id: null,
     doc_id: null,
     orgao_id: null,
@@ -116,6 +116,7 @@ export function useCadastroGeral(props, emit) {
           user_id: userIdFinal || null,
           destino_id: destino_id.value
         }
+
         const resCarro = await service.salvarCarro(payload)
         carroIdFinal = resCarro?.dados?.id || null
 
@@ -123,7 +124,7 @@ export function useCadastroGeral(props, emit) {
 
       emit(
         'sucesso', {
-          placa: payload.placa,
+          placa: carro.value.placa,
           user_id: userIdFinal || null,
           destino_id: destino_id.value,
           carro_id: contexto.value.carroCadastrado 
@@ -131,7 +132,7 @@ export function useCadastroGeral(props, emit) {
             : carroIdFinal,
           orgao_id: carro.value.orgao_id,
           finalizar: true,
-          documento: payloadUser.documento
+          documento: buscaDoc.value
         }
       )
 
@@ -142,8 +143,10 @@ export function useCadastroGeral(props, emit) {
 
   onMounted(async () => {
     await fetchListas()
+
     if (buscaDoc.value) buscarDono()
   })
+
 
   return {
     state: {

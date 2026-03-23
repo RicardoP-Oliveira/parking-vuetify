@@ -13,7 +13,7 @@
 <script setup>
   import { computed, getCurrentInstance } from 'vue'
   import BaseTable from '@/modules/shared/components/BaseTable.vue'
-  import { useCarroTable } from '@/modules/carro/presentation/composables/useCarroTable'
+  import { useVeiculoTable } from '@/modules/carro/presentation/composables/useVeiculoTable'
   import { usePedestreTable } from '@/modules/pedestre/presentation/composables/usePedestreTable'
 
   const props = defineProps(['tab', 'filters'])
@@ -21,12 +21,12 @@
   const emit = defineEmits(['update-btn', 'changeTable', 'show-snackbar'])
 
   const { proxy } = getCurrentInstance()
-  const ceics = proxy.$ceicsservice
+  const movimentacao = proxy.$movimentacaoService
 
-  const { loadCarData } = useCarroTable(ceics)
-  const { loadPedestreData } = usePedestreTable(ceics)
+  const { loadCarData } = useVeiculoTable(movimentacao)
+  const { loadPedestreData } = usePedestreTable(movimentacao)
 
   const currentDataService = computed(() => {
-    return props.tab === 'carro' ? loadCarData : loadPedestreData
+    return props.tab === 'VEICULO' ? loadCarData : loadPedestreData
   })
 </script>

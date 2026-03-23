@@ -9,10 +9,10 @@ export const acessoStates = {
       formData.destino_id = saida.destino_id
       formData.nome = saida.nomeCompleto
       formData.documento = saida.documento
-      formData.user_id = saida.e_user_id
+      formData.user_id = saida.user_entrada_id
 
       if (isCarro) {        
-        formData.carro_id = saida.carro_id
+        formData.veiculo_id = saida.veiculo_id
         formData.marca = saida.marca
         formData.placa = saida.placa
       }
@@ -26,25 +26,33 @@ export const acessoStates = {
   },
 
   [FLUXO.ENTRADA_CARRO_USUARIO]: {
-    onEnter: ({ payload, ctx }) => {
+    onEnter: async ({ payload, ctx }) => {
       const { formData } = ctx
-      const carro = payload.extra.dados
+      const veiculo = payload.extra.dados
 
-      formData.carro_id = carro.id ?? carro.carro_id ?? null
-      formData.placa = carro.placa ?? ''
-      formData.marca = carro.marca ?? ''
-      ctx.preencherUsuario(carro)
+      formData.veiculo_id = veiculo.id ?? veiculo.veiculo_id ?? null
+      formData.placa = veiculo.placa ?? ''
+      formData.marca = veiculo.marca ?? ''
+      
+      if (veiculo.documento && ctx.getUser) {
+        const user = await ctx.getUser(veiculo.documento)
+        if (user) {
+          ctx.preencherUsuario(user)
+          return
+        }
+      }
+      ctx.preencherUsuario(veiculo)
     }
   },
 
   [FLUXO.CARRO_SEM_CONDUTOR]: {
     onEnter: ({ payload, ctx }) => {
       const { formData } = ctx
-      const carro = payload.extra.dados
+      const veiculo = payload.extra.dados
 
-      formData.carro_id = carro.id ?? carro.carro_id ?? null
-      formData.placa = carro.placa ?? ''
-      formData.marca = carro.marca ?? ''
+      formData.veiculo_id = veiculo.id ?? veiculo.veiculo_id ?? null
+      formData.placa = veiculo.placa ?? ''
+      formData.marca = veiculo.marca ?? ''
       formData.destino_id = null
     }
   },

@@ -6,8 +6,8 @@
       <template v-slot:extension>
         <v-app-bar-nav-icon icon="mdi-dots-vertical" @click="drawer = !drawer" />
         <v-tabs v-model="tab" fixed-tabs class="flex-grow-1">
-          <v-tab value="carro" prepend-icon="mdi-car">Veículos</v-tab>
-          <v-tab value="pedestre" prepend-icon="mdi-walk">Pedestres</v-tab>
+          <v-tab value="VEICULO" prepend-icon="mdi-car">Veículos</v-tab>
+          <v-tab value="PEDESTRE" prepend-icon="mdi-walk">Pedestres</v-tab>
         </v-tabs>
         <v-btn v-if="hasActiveFilters" icon="mdi-printer" variant="text" />
       </template>
@@ -67,7 +67,7 @@ const handleShowSnackbar = (options) => {
   }
 }
 
-const tab = ref('carro');
+const tab = ref('VEICULO');
 const drawer = ref(false);
 const dataTable = ref(false);
 const filters = ref(getAllFiltersSchema());

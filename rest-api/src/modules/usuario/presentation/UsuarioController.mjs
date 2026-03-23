@@ -1,10 +1,10 @@
-import User from '../models/user.mjs';
-import Resposta from '../models/Resposta.mjs';
-import uploadConfig from '../../config/upload.mjs';
-import Ubm from '../models/ubm.mjs';
-import Orgao from '../models/orgao.mjs';
-import Doc from '../models/documentos.mjs'
-import Order from '../models/hierarcar.mjs'
+import Usuario from '../../../app/models/Usuario.mjs'
+import Resposta from '../../../app/models/Resposta.mjs';
+import uploadConfig from '../../../config/upload.mjs';
+import Unidade from '../../../app/models/Unidade.mjs'
+import Orgao from '../../../app/models/Orgao.mjs';
+import Tipo_Documento from '../../../app/models/Tipo_Documento.mjs'
+import Tratamento from '../../../app/models/Tratamento.mjs'
 import { Sequelize } from 'sequelize'
 
 const upload = uploadConfig;
@@ -15,29 +15,29 @@ class UserController {
       const page = req.query.page || 1;
       let perPage = req.query.perPage || 25;
       if (perPage <= 0) {
-        perPage = await User.count();
+        perPage = await Usuario.count();
       }
 
-      const { count, rows } = await User.findAndCountAll({
+      const { count, rows } = await Usuario.findAndCountAll({
         order: [['id', 'ASC']],
         offset: (page - 1) * perPage,
         limit: perPage,
         include: [
           {
-            model: Ubm,
-            as: 'ubm',
+            model: Unidade,
+            as: 'unidade',
           },
           {
             model: Orgao,
-            as: 'orgaoU',
+            as: 'orgao',
           },
           {
-            model: Doc,
-            as: 'docUser',
+            model: Tipo_Documento,
+            as: 'tipoDoc',
           },
           {
-            model: Order,
-            as: 'hierarquia'
+            model: Tratamento,
+            as: 'tratamento'
           }
         ],
       });
@@ -61,26 +61,26 @@ class UserController {
     const { id } = req.params;
 
     try {
-      let user = await User.findOne({
+      let user = await Usuario.findOne({
         where: { documento: id},
         attributes: [
           ['id', 'user_id'],
           ['documento', 'doc'],
-          ['n_guerra', 'nome'],
-          'gradua_id',
+          'nome',
+          'tratamento_id',
           'ubm_id',
           'orgao_id',
-          'doc_id',
-          [Sequelize.col('hierarquia.abrev'), 'graduaAbrev'],
-          [Sequelize.col('orgaoU.sigla_curta'), 'orgaoSigla'],
-          [Sequelize.col('ubm.name'), 'nomeUbm'],
-          [Sequelize.col('docUser.sigla'), 'tipo_doc']
+          'tipo_doc_id',
+          [Sequelize.col('tratamento.sigla'), 'graduaAbrev'],
+          [Sequelize.col('orgao.sigla_curta'), 'orgaoSigla'],
+          [Sequelize.col('unidade.sigla'), 'siglaUbm'],
+          [Sequelize.col('tipoDoc.tipo'), 'tipo_doc']
          ],
          include: [
-          { model: Order, as: 'hierarquia', attributes: [] },
-          { model: Orgao, as: 'orgaoU', attributes: [] },
-          { model: Ubm, as: 'ubm', attributes: [] },
-          { model: Doc, as: 'docUser', attributes: []}
+          { model: Tratamento, as: 'tratamento', attributes: [] },
+          { model: Orgao, as: 'orgao', attributes: [] },
+          { model: Unidade, as: 'unidade', attributes: [] },
+          { model: Tipo_Documento, as: 'tipoDoc', attributes: []}
          ],
       });
 
@@ -115,7 +115,7 @@ class UserController {
     console.log("Recebendo dados para criar usuário:", req.body)
 
     try {
-      const userExists = await User.findOne({
+      const userExists = await Usuario.findOne({
         where: { documento: documento }
       });
       if (userExists) {
@@ -125,7 +125,7 @@ class UserController {
         resposta.dados = userExists;
         return res.json(resposta);
       }
-      const newUser = await User.create(req.body);
+      const newUser = await Usuario.create(req.body);
 
       if (newUser) {
         resposta.msg = 'Usuário cadastrado com sucesso.';
@@ -147,7 +147,7 @@ class UserController {
     const foto = req.file;
 
     try {
-      const user = await User.findByPk(id);
+      const user = await Usuario.findByPk(id);
       if (!user) {
         if (req.file) upload.delete(req, foto.filename);
         
@@ -170,7 +170,7 @@ class UserController {
 
         const oldPicture = user.foto;
 
-        const updated = await user.update(body);
+        const updated = await Usuario.update(body);
 
         if (updated) {
           resposta.erro = false;
@@ -193,7 +193,7 @@ class UserController {
     const resposta = new Resposta();
     try {
       const { id } = req.params;
-      const user = await User.findByPk(id);
+      const user = await Usuario.findByPk(id);
 
       if (!user) {
         resposta.erro = true;

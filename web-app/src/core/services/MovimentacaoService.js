@@ -2,7 +2,7 @@ import ConfigClass from '../../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/ceics`;
 
-export default class CeicsService {
+export default class MovimentacaoService {
   static getTodos(page, perPage, token, key='', filters = {}) {
     let queryString = `page=${page}&perPage=${perPage}`;
 

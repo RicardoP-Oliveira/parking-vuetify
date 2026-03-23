@@ -1,15 +1,13 @@
-import Carro from '../models/carro.mjs'
-import Ceics from '../models/ceics.mjs'
-import vtrAdd from '../models/vtradd.mjs'
+import Veiculo from '../models/Veiculo.mjs'
+import Movimentacao from '../models/Movimentacao.mjs'
 import Resposta from '../models/Resposta.mjs'
-import User from '../models/user.mjs'
-import Documento from '../models/documentos.mjs'
-import Ubm from '../models/ubm.mjs'
-import Orgao from '../models/orgao.mjs'
-import Hierarquia from '../models/hierarcar.mjs'
-import Target from '../models/target.mjs'
-import { json, Op, Sequelize } from 'sequelize'
-import { userInfo } from 'os'
+import Usuario from '../models/Usuario.mjs'
+import Tipo_Documento from '../models/Tipo_Documento.mjs'
+import Unidade from '../models/Unidade.mjs'
+import Orgao from '../models/Orgao.mjs'
+import Destino from '../models/Destino.mjs'
+import Tratamento from '../models/Tratamento.mjs'
+import { Op, Sequelize } from 'sequelize'
 
 const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
   const conditions = []
@@ -40,7 +38,7 @@ const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
   return conditions.length > 0 ? { [Op.and]: conditions } : null
 }
 
-class CeicsController {
+class MovimentacaoController {
   async index(req, res) {
     const resposta = new Resposta();
     const page = req.query.page || 1;
@@ -53,12 +51,8 @@ class CeicsController {
       condutor,
       dataInicio,
       dataFim,
-      dataSaidaInicio,
-      dataSaidaFim,
       horaInicio,
       horaFim,
-      horaSaidaInicio,
-      horaSaidaFim,
       query,
     } = req.query;
 
@@ -74,27 +68,32 @@ class CeicsController {
 
 
     if (placa) {
-      conditions.push({ '$carro.placa$': { [Op.iLike]: `%${placa}%` } });
+      conditions.push({ '$veiculo.placa$': { [Op.iLike]: `%${placa}%` } });
     }
 
     if (documento) {
       conditions.push({
         [Op.or]: [
-          { '$entrada_id.documento$': { [Op.iLike]: `%${documento}%` } },
-          { '$saida_id.documento$': { [Op.iLike]: `%${documento}%` } }
+          { '$entradaUser.documento$': { [Op.iLike]: `%${documento}%` } },
+          { '$saidaUser.documento$': { [Op.iLike]: `%${documento}%` } }
         ]
       });
     }
 
     if (modelo) {
-      conditions.push({ '$carro.marca$': { [Op.iLike]: `%${modelo}%` } });
+      conditions.push({
+        [Op.or] : [
+          { '$veiculo.marca$': { [Op.iLike]: `%${modelo}%` }},
+          { '$veiculo.prefixo$': { [Op.iLike]: `%${modelo}%` }}
+        ]
+      })
     }
 
     if (condutor) {
       conditions.push({
         [Op.or]: [
-          { '$entrada_id.n_guerra$': { [Op.iLike]: `%${condutor}%` } },
-          { '$saida_id.n_guerra$': { [Op.iLike]: `%${condutor}%` } }
+          { '$entradaUser.nome$': { [Op.iLike]: `%${condutor}%` } },
+          { '$saidaUser.nome$': { [Op.iLike]: `%${condutor}%` } }
         ]
       });
     }
@@ -126,56 +125,68 @@ class CeicsController {
       [Sequelize.literal(`TO_CHAR(saida AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI:SS')`), 'hSaida'],
 
       // Campo comum destino
-      [Sequelize.col('destinos.target'), 'destino'],
+      [Sequelize.col('destino->unidade.unidade'), 'destino'],
 
       // Campos do condutor/pedestre de entrada
-      [Sequelize.col('entrada_id.n_guerra'), 'e_condutor'],
-      [Sequelize.col('entrada_id.documento'), 'e_documento'],
-      [Sequelize.col('entrada_id->docUser.sigla'), 'e_tipoDoc'],
-      [Sequelize.col('entrada_id->hierarquia.abrev'), 'e_graduaAbrev'],
-      [Sequelize.col('entrada_id->orgaoU.sigla_curta'), 'e_siglaCurta'],
+      [Sequelize.col('entradaUser.nome'), 'e_condutor'],
+      [Sequelize.col('entradaUser.documento'), 'e_documento'],
+      [Sequelize.col('entradaUser->tipoDoc.tipo'), 'e_tipoDoc'],
+      [Sequelize.col('entradaUser->tratamento.sigla'), 'e_graduaAbrev'],
+      [Sequelize.col('entradaUser->orgao.sigla_curta'), 'e_siglaCurta'],
       // Campos do condutor/pedestre de saída
-      [Sequelize.col('saida_id.n_guerra'), 's_condutor'],
-      [Sequelize.col('saida_id.documento'), 's_documento'],
-      [Sequelize.col('saida_id->hierarquia.abrev'), 's_graduaAbrev'],
-      [Sequelize.col('saida_id->orgaoU.sigla_curta'), 's_siglaCurta'],
+      [Sequelize.col('saidaUser.nome'), 's_condutor'],
+      [Sequelize.col('saidaUser.documento'), 's_documento'],
+      [Sequelize.col('saidaUser->tratamento.sigla'), 's_graduaAbrev'],
+      [Sequelize.col('saidaUser->orgao.sigla_curta'), 's_siglaCurta'],
     ]
 
     const include = [
       {
-        model: User,
-        as: 'entrada_id',
+        model: Usuario,
+        as: 'entradaUser',
         attributes: [],
         required: false,
         include: [
-          { model: Orgao, as: 'orgaoU', attributes: [] },
-          { model: Hierarquia, as: 'hierarquia', attributes: [] },
-          { model: Documento, as: 'docUser', attributes: [] },
+          { model: Orgao, as: 'orgao', attributes: [] },
+          { model: Tratamento, as: 'tratamento', attributes: [] },
+          { model: Tipo_Documento, as: 'tipoDoc', attributes: [] },
         ]
       },
       {
-        model: User,
-        as: 'saida_id',
+        model: Usuario,
+        as: 'saidaUser',
         attributes: [],
         required: false,
         include: [
-          { model: Orgao, as: 'orgaoU', attributes: [] },
-          { model: Hierarquia, as: 'hierarquia', attributes: [] },
+          { model: Orgao, as: 'orgao', attributes: [] },
+          { model: Tratamento, as: 'tratamento', attributes: [] },
         ]
       },
-      { model: Target, as: 'destinos', attributes: [] },
+      { 
+        model: Destino,
+        as: 'destino',
+        attributes: [],
+        include: [
+          {
+            model:Unidade,
+            as: 'unidade',
+            attributes: []
+          }
+        ]
+      },
     ]
 
-    if (tab === 'carro') {
+    if (tab === 'VEICULO') {
       attributes.push(
-        [Sequelize.col('carro.placa'), 'placa'],
-        [Sequelize.col('carro.marca'), 'marcaModelo'],
+        [Sequelize.col('veiculo.placa'), 'placa'],
+        [Sequelize.col('veiculo.marca'), 'marca'],
+        [Sequelize.col('veiculo.prefixo'), 'prefixo']
       )
 
       include.push(
         {
-          model: Carro,
-          as: 'carro',
+          model: Veiculo,
+          as: 'veiculo',
           attributes: [],
         }
       )
@@ -183,10 +194,10 @@ class CeicsController {
 
     try {
       if (perPage <= 0) {
-        perPage = await Ceics.count({ where: whereCondition });
+        perPage = await Movimentacao.count({ where: whereCondition });
       }
 
-      const { count, rows } = await Ceics.findAndCountAll({
+      const { count, rows } = await Movimentacao.findAndCountAll({
         order: [['updated_at', 'DESC']],
         where: whereCondition,
         attributes: attributes,
@@ -235,40 +246,41 @@ class CeicsController {
     const busca = identificador ? identificador.trim() : '';
 
     try {
-      const result = await Ceics.findOne({
+      const result = await Movimentacao.findOne({
         order: [['updated_at', 'DESC']],
         where: {
           tipo: tab,
           saida: null,
           [Op.or]:[
-            { '$entrada_id.documento$': busca },
-            { '$carro.placa$': { [Op.iLike]: `%${busca}%` }},
-            { '$carro.marca$': { [Op.iLike]: `%${busca}%` }}
+            { '$entradaUser.documento$': busca },
+            { '$veiculo.placa$': { [Op.iLike]: `%${busca}%` }},
+            { '$veiculo.marca$': { [Op.iLike]: `%${busca}%` }},
+            { '$veiculo.prefixo$': { [Op.iLike]: `%${busca}%` }}
           ]
         },
         attributes: [
-          'id', 'tipo', 'destino_id', 'e_user_id', 'carro_id',
-          [Sequelize.col('entrada_id.documento'), 'documento'],
-          [Sequelize.col('entrada_id.n_guerra'), 'nome'],
-          [Sequelize.col('entrada_id->orgaoU.sigla_curta'), 'orgaoSigla'],
-          [Sequelize.col('entrada_id->hierarquia.abrev'), 'graduaAbrev'],
-          [Sequelize.col('carro.placa'), 'placa'],
-          [Sequelize.col('carro.marca'), 'modelo']
+          'id', 'tipo', 'destino_id', 'user_entrada_id', 'veiculo_id',
+          [Sequelize.col('entradaUser.documento'), 'documento'],
+          [Sequelize.col('entradaUser.nome'), 'nome'],
+          [Sequelize.col('entradaUser->orgao.sigla_curta'), 'orgaoSigla'],
+          [Sequelize.col('entradaUser->tratamento.sigla'), 'graduaAbrev'],
+          [Sequelize.col('veiculo.placa'), 'placa'],
+          [Sequelize.col('veiculo.marca'), 'modelo']
         ],
         include: [
           {
-            model: User,
-            as: 'entrada_id',
+            model: Usuario,
+            as: 'entradaUser',
             attributes: [],
             include: [
-              { model: Hierarquia, as: 'hierarquia', attributes: [] },
-              { model: Documento, as: 'docUser', attributes: [] },
-              { model: Ubm, as: 'ubm', attributes: [] },
-              { model: Orgao, as: 'orgaoU', attributes: [] }
+              { model: Tratamento, as: 'tratamento', attributes: [] },
+              { model: Tipo_Documento, as: 'tipoDoc', attributes: [] },
+              { model: Unidade, as: 'unidade', attributes: [] },
+              { model: Orgao, as: 'orgao', attributes: [] }
             ]
           },
-          { model: Target, as: 'destinos', attributes: [] },
-          { model: Carro, as: 'carro', attributes: [] }
+          { model: Destino, as: 'destino', attributes: [] },
+          { model: Veiculo, as: 'veiculo', attributes: [] }
         ]
       })
 
@@ -296,18 +308,18 @@ class CeicsController {
   }
 
   async cadastarSaida(req, res) {
-    const { registro_id, user_id, carro_id } = req.body
+    const { registro_id, user_id, veiculo_id } = req.body
 
     if (!registro_id) {
       return res.status(400).json({ erro: true, msg: 'ID do registro não informado!'})
     }
     const payload = { saida: new Date().toISOString() }
-    if (carro_id) {
-      payload.s_user_id = req.body.user_id
+    if (veiculo_id) {
+      payload.user_saida_id = req.body.user_id
     }
 
     try {
-      const [rowsUpdate] = await Ceics.update(payload, {
+      const [rowsUpdate] = await Movimentacao.update(payload, {
         where: { id: registro_id }
         })
       if (rowsUpdate > 0) {
@@ -319,8 +331,6 @@ class CeicsController {
     } catch (e) {
       console.error({ erro: true, msg: e.msg})
     }
-    
-
   }
 
   async cadastrarEntrada(req, res) {
@@ -328,9 +338,9 @@ class CeicsController {
     const body = req.body
 
     try {
-      const movimentacao = await Ceics.create({
-        e_user_id: body.user_id,
-        carro_id: body.carro_id || null,
+      const movimentacao = await Movimentacao.create({
+        user_entrada_id: body.user_id,
+        veiculo_id: body.veiculo_id || null,
         tipo: tab,
         destino_id: body.destino_id,
         entrada: new Date().toISOString()
@@ -348,4 +358,4 @@ class CeicsController {
     }}
 }
 
-export default new CeicsController();
+export default new MovimentacaoController();

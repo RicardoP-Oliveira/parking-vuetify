@@ -4,7 +4,7 @@ class Movimentacao extends Model {
   static init(sequelize) {
     super.init({
       tipo: {
-        type: DataTypes.ENUM('CARRO', 'PEDESTRE'),
+        type: DataTypes.ENUM('VEICULO', 'PEDESTRE'),
         allowNull: false
       },
       entrada: {
@@ -33,22 +33,38 @@ class Movimentacao extends Model {
       veiculo_id: {
         type: DataTypes.INTEGER,
         allowNull: true
+      },
+      destino_id: {
+        type:DataTypes.INTEGER,
+        allowNull: false
       }
+      
     }, {
       sequelize,
       modelName: 'Movimentacao',
       tableName: 'movimentacoes',
       underscored: true,
-      timestamps: true
+      timestamps: true,
+      validate: {
+        coerenciaTipoVeiculo() {
+          if (this.tipo === 'PEDESTRE' && this.veiculo_id) {
+            throw new Error('Movimentação do tipo PEDESTRE não pode ter veículo.');
+          }
+          if (this.tipo === 'VEICULO' && !this.veiculo_id) {
+            throw new Error('Movimentação do tipo VEICULO de ter veículo.')
+          }
+        }
+      }
     });
 
     return this;
   }
 
   static associate(models) {
-    this.belongsTo(models.User, { foreignKey: 'user_entrada_id', as: 'entradaUser' })
-    this.belongsTo(models.User, { foreignKey: 'user_saida_id', as: 'saidaUser' })
+    this.belongsTo(models.Usuario, { foreignKey: 'user_entrada_id', as: 'entradaUser' })
+    this.belongsTo(models.Usuario, { foreignKey: 'user_saida_id', as: 'saidaUser' })
     this.belongsTo(models.Veiculo, { foreignKey: 'veiculo_id', as: 'veiculo' })
+    this.belongsTo(models.Destino, { foreignKey: 'destino_id', as: 'destino' })
   }
 }
 

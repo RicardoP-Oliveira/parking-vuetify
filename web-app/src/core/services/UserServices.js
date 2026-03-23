@@ -2,7 +2,7 @@ import ConfigClass from '../../class/configClass';
 
 const caminho = `${ConfigClass.getUrlApi().toString()}/user`;
 
-export default class UserService {
+export default class UsuarioService {
   static getId(documento, token) {
     return fetch(`${caminho}/${documento}`, {
       headers: {

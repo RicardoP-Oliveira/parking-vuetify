@@ -42,11 +42,13 @@ class Usuario extends Model {
   
   static associate(models) { /** Associações requeridas */
     this.belongsTo(models.Orgao, { foreignKey: 'orgao_id', as: 'orgao' })
-    this.belongsTo(models.Trato, { foreignKey: 'trato_id', as: 'trato' })
-    this.belongsTo(models.Unidade, { foreignKey: 'ubm_id', as: 'ubm' })
-    this.belongsTo(models.TipoDoc, { foreignKey: 'tipo_doc_id', as: 'tipoDoc' })
-    this.hasMany(models.Veiculo, { foreignKey: 'user_id', as: 'veiculos' })
+    this.belongsTo(models.Tratamento, { foreignKey: 'tratamento_id', as: 'tratamento' })
+    this.belongsTo(models.Unidade, { foreignKey: 'ubm_id', as: 'unidade' })
+    this.belongsTo(models.Tipo_Documento, { foreignKey: 'tipo_doc_id', as: 'tipoDoc' })
+    this.hasMany(models.Veiculo, { foreignKey: 'usuario_id', as: 'veiculos' })
     this.hasMany(models.Movimentacao, { foreignKey: 'user_entrada_id', as: 'movimentacaoEntrada' })
     this.hasMany(models.Movimentacao, { foreignKey: 'user_saida_id', as: 'movimentacaoSaida' })  
   }
 }
+
+export default Usuario

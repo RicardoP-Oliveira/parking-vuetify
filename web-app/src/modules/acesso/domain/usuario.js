@@ -3,7 +3,6 @@ import { calcularDestino } from "./destinos"
 export function buildUsuarioData({
   user,
   isEntrada,
-  mapaUnidades,
   mapaDestinos,
   mapUser,
   destinoAtual
@@ -12,18 +11,22 @@ export function buildUsuarioData({
 
   const mapped = mapUser(user)
 
-  const destinoCalculado = isEntrada && !destinoAtual
-    ? calcularDestino({
+  if (!isEntrada) {
+    return {
+      ...mapped,
+      destino_id: destinoAtual ?? mapped.destino_id ?? null
+    }
+  }
+
+  const destinoCalculado =  calcularDestino({
         data: user,
         isEntrada,
-        mapaUnidades,
         mapaDestinos
       })
-    : null
 
   return {
     ...mapped,
-    destino_id: destinoAtual ?? destinoCalculado ?? mapped.destino_id ?? null
+    destino_id: destinoCalculado ?? null
   }
 }
 

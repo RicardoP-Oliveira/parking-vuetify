@@ -20,10 +20,10 @@ export const getTableConfig = (tab) => {
 
   // 2. Definição da Estrutura
   const configs = {
-    carro: {
+    VEICULO: {
       // REGRA: Se a coluna vai ser agrupada, coloque APENAS o nome do grupo aqui.
       // Removi 'eCondutor', 'entrada', etc., da lista principal.
-      order: ['placa', 'marcaModelo', 'entradaGroup', 'destino', 'saidaGroup'], 
+      order: ['placa', 'marcaModelo', 'prefixo','entradaGroup', 'destino', 'saidaGroup'], 
       groups: {
         entradaGroup: {
           title: 'Entrada',
@@ -35,7 +35,7 @@ export const getTableConfig = (tab) => {
         }
       }
     },
-    pedestre: {
+    PEDESTRE: {
       // Para pedestre, o Nome e Docs ficam fora, e as datas dentro dos grupos
       order: ['e_tipoDoc', 'e_documento', 'nome', 'destino', 'entradaGroup', 'saidaGroup'],
       groups: {
