@@ -26,7 +26,6 @@ export function useAcessoController({ service, isCarro }) {
 
     try {
       const [info, extra] = await service.buscarServicos(termo, isCarro, tipo)
-      console.log(extra)
 
       if (id !== requestId) return
 

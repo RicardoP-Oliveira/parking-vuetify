@@ -143,7 +143,6 @@ export function useCadastroGeral(props, emit) {
 
   onMounted(async () => {
     await fetchListas()
-
     if (buscaDoc.value) buscarDono()
   })
 

@@ -25,7 +25,7 @@ class Veiculo extends Model {
         type: DataTypes.STRING,
         allowNull: true
       },
-      user_id: {
+      usuario_id: {
         type: DataTypes.INTEGER,
         allowNull: true
       },

@@ -1,6 +1,6 @@
 import ConfigClass from '../../class/configClass';
 
-const caminho = `${ConfigClass.getUrlApi().toString()}/document`;
+const caminho = `${ConfigClass.getUrlApi().toString()}/tipoDoc`;
 
 export default class TipoDocService {
   static getDocs() {

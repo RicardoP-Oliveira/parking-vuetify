@@ -4,14 +4,13 @@ export const mapUsuarioResumo = user => {
   const dados = user.get ({ plain: true })
   
   dados.nomeCompleto = [
-    user.graduaAbrev,
-    user.orgaoSigla,
-    user.nome,
+    dados.graduaAbrev,
+    dados.orgaoSigla,
+    dados.nome,
   ]
     .filter(Boolean)
     .join(' ')
     .trim()
-
   return dados
 }
 

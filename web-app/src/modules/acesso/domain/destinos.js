@@ -1,6 +1,3 @@
-// src/utils/constants.js
-
-
 export const calcularDestino = ({
   data,
   isEntrada,
@@ -11,6 +8,11 @@ export const calcularDestino = ({
   const sigla = data.siglaUbm?.trim().toUpperCase()
 
   if (!sigla) return null
+
+  const destino = mapaDestinos.value.find(
+    d => d.title?.trim().toUpperCase() === sigla
+  )
   
-  return mapaDestinos.get(sigla) ?? null
+  return destino?.id ?? null
+  
 }

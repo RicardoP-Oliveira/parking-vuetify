@@ -1,6 +1,6 @@
 import ConfigClass from '../../class/configClass';
 
-const caminho = `${ConfigClass.getUrlApi().toString()}/carro`;
+const caminho = `${ConfigClass.getUrlApi().toString()}/veiculo`;
 
 export default class VeiculoService {
   static getPlaca(placa, token) {

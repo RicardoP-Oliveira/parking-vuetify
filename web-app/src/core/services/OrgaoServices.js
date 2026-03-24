@@ -1,6 +1,6 @@
 import ConfigClass from '../../class/configClass';
 
-const caminho = `${ConfigClass.getUrlApi().toString()}/ubm/orgaos`;
+const caminho = `${ConfigClass.getUrlApi().toString()}/orgao`;
 
 export default class OrgaoService {
   static getOrgaos() {

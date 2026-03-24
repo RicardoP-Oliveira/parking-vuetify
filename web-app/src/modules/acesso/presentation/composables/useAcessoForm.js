@@ -5,7 +5,6 @@ import { useListasModules } from '../../application/useListasModules'
 import { useListas } from '@/modules/shared/composables/useListas'
 import { useAcessoController } from '@/modules/acesso/application/useAcessoController'
 import { buildUsuarioData, applyUsuario } from '@/modules/acesso/domain/usuario'
-import { createUnidadeMap, createDestinosMap } from '@/core/config/listasConfig'
 import { useCache } from '@/modules/acesso/application/useCache'
 import { mapUser } from '@/modules/acesso/domain/mappers'
 import { FLUXO } from '@/modules/acesso/domain/fluxo'
@@ -23,7 +22,7 @@ export function useAcessoForm(props, emit, modalRef) {
     listas,
     fetchListas,
     destinosOptions,
-    unidadesOptions
+    unidadesOptions,
   } = useListas(listaService)
 
   // ***** STATE *****
@@ -48,8 +47,6 @@ export function useAcessoForm(props, emit, modalRef) {
   const lastData = ref(null)
   const modoCadastro = ref(null)
   
-  const mapaUnidades = computed(() => createUnidadeMap(listas.value?.unidades))
-  const mapaDestinos = computed(() => createDestinosMap(listas.value?.destinos, listas.value?.unidades))
   const isCarro = computed(() => props.tipoForm === 'VEICULO')
   
   const confirmText = computed(() => 
@@ -92,7 +89,7 @@ export function useAcessoForm(props, emit, modalRef) {
     const dados = buildUsuarioData({
       user,
       isEntrada: fluxoAtual.value !== FLUXO.SAIDA,
-      mapaDestinos: mapaDestinos.value,
+      mapaDestinos: destinosOptions,
       destinoAtual: formData.destino_id,
       mapUser
     })

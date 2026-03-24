@@ -6,7 +6,7 @@ export function createServices(deps) {
   } = deps
 
   return {
-    getUsuarioByDoc: UsuarioService.getId,
+    getUsuarioByDoc: UsuarioService.getByDocumento,
     salvarUsuario: UsuarioService.adicionar,
 
     getVeiculoPlaca: VeiculoService.getPlaca,

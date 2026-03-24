@@ -1,8 +1,4 @@
 import { ref, computed } from "vue"
-import { 
-  LISTAS_MAP,
-  transformList,
-  createDestinosOptions} from "@/core/config/listasConfig"
 
 export function useListas(service) {
   const listas = ref({
@@ -10,7 +6,7 @@ export function useListas(service) {
     orgaos: [],
     destinos: [],
     tipo_documentos: [],
-    tratamento: []
+    tratamentos: []
   })
 
   const fetchListas = async () => {
@@ -19,41 +15,30 @@ export function useListas(service) {
       service.getOrgaos(),
       service.getDestinos(),
       service.getDocs(),
-      service.getTratos()
+      service.getTratos(),
     ])
     
     listas.value = {
-      unidades: u?.dados || [],
-      orgaos: o?.dados || [],
+      unidades: u || [],
+      orgaos: o || [],
       destinos: d || [],
-      tipo_documentos: td?.dados || [],
-      tratamento: t || []
+      tipo_documentos: td || [],
+      tratamentos: t || []
     }
   }
 
-  const mapped = computed(() => {
-    const result = {}
-    for (const [key, config] of Object.entries(LISTAS_MAP)) {
-      result[config.key] = transformList(listas.value[key], config)
-    }
-    return result
-  })
-
-  const docOptions = computed(() => mapped.value.docOptions || [])
-  const tratoOptions = computed(() => mapped.value.tratoOptions || [])
-  const orgaosOptions = computed(() => mapped.value.orgaosOptions || [])
-  const unidadesOptions = computed(() => mapped.value.unidadesOptions || [])
-  const destinosOptions = computed(() => 
-    createDestinosOptions(listas.value.destinos, listas.value.unidades)
-  )
-
+  const docOptions = computed(() => listas.value.tipo_documentos || [])
+  const orgaosOptions = computed(() => listas.value.orgaos || [])
+  const unidadesOptions = computed(() => listas.value.unidades || [])
+  const destinosOptions = computed(() => listas.value.destinos || [])
+  const tratoOptions = computed(() => listas.value.tratamentos || [])
   return {
     listas,
     fetchListas,
     docOptions,
-    tratoOptions,
     orgaosOptions,
     unidadesOptions,
-    destinosOptions
+    destinosOptions,
+    tratoOptions
   }
 }

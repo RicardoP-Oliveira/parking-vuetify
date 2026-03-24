@@ -1,4 +1,4 @@
-import UsuarioService from '@/core/services/UserServices'
+import UsuarioService from '@/core/services/UsuarioServices'
 import VeiculoService from '@/core/services/VeiculoService'
 import MovimentacaoService from '@/core/services/MovimentacaoService'
 

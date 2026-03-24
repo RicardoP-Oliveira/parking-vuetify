@@ -1,68 +1,37 @@
 import { Router } from 'express';
-import multer from 'multer';
-import uploadConfig from './config/upload.mjs';
-import auth from './app/middlewares/auth.mjs'
 
 import usuarioRoutes from './modules/usuario/index.mjs'
+import veiculoRoutes from './modules/veiculo/index.mjs'
 
-import VeiculoController from './app/controllers/VeiculoController.mjs';
-import UnidadeController from './app/controllers/UnidadeController.mjs';
+import tratamentoRoutes from './modules/catalagos/tratamento/index.mjs'
+import orgaoRoutes from './modules/catalagos/orgao/index.mjs'
+import tipoDocRoutes from './modules/catalagos/tipo.documento/index.mjs'
+import unidadeRoutes from './modules/catalagos/unidade/index.mjs'
+import destinoRoutes from './modules/catalagos/destino/index.mjs'
+
+
 import MovimentacaoController from './app/controllers/MovimentacaoController.mjs';
-import DestinoController from './app/controllers/DestinoController.mjs';
-import TipoDocController from './app/controllers/TipoDocController.mjs'
-import TratamentoController from './app/controllers/TratamentoController.mjs';
 
 const routes = new Router();
-const upload = multer(uploadConfig.getConfig());
-
-
-
-// -----  Rotas de UBM ---- //
-routes.get('/ubm',  UnidadeController.index);
-
-routes.get('/ubm/orgaos', UnidadeController.getOrgaos);
-
-routes.get('/ubm/:id', UnidadeController.show);
-
-routes.post('/ubm', UnidadeController.store);
-
-routes.put('/ubm/:id', UnidadeController.update);
-
-routes.delete('/ubm/:id', UnidadeController.destroy);
-
 
 // -----  Rotas de USUÁRIOS ---- //
 
 routes.use('/user', usuarioRoutes)
+routes.use('/veiculo', veiculoRoutes)
 
-// -----  Rotas de CARROS ---- //
+routes.use('/tratamento', tratamentoRoutes)
+routes.use('/orgao', orgaoRoutes)
+routes.use('/tipoDoc', tipoDocRoutes)
+routes.use('/unidade', unidadeRoutes)
+routes.use('/destino', destinoRoutes)
 
-routes.get('/carro', VeiculoController.index);
 
-routes.get('/carro/:placa', VeiculoController.show);
-
-// routes.get('/carro/placa/:placa', CarroController.showPlaca);
-
-routes.post('/carro', VeiculoController.store);
-
-routes.put('/carro/:id', VeiculoController.update);
-
-routes.delete('/carro/:id', VeiculoController.destroy);
-
-// -----  Rotas de Estacionamento ---- //
-
-routes.post('/ceics',  auth, MovimentacaoController.cadastrarEntrada);
+routes.post('/ceics',  MovimentacaoController.cadastrarEntrada);
 routes.get('/ceics', MovimentacaoController.index);
 routes.get('/ceics/:identificador', MovimentacaoController.show);
 routes.put('/ceics/', MovimentacaoController.cadastarSaida);
 
 // ----- Rotas de Destino ----- //
-routes.get('/destino', DestinoController.index);
 
-// --- Documentos ----- ///
-routes.get('/document', TipoDocController.index);
-
-// ---- Hierarquia ----- //
-routes.get('/hierarquia', TratamentoController.index);
 
 export default routes;

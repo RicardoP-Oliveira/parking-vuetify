@@ -1,6 +1,6 @@
 import ConfigClass from '../../class/configClass';
 
-const caminho = `${ConfigClass.getUrlApi().toString()}/ubm`;
+const caminho = `${ConfigClass.getUrlApi().toString()}/unidade`;
 
 export default class UnidadeService {
   static getTodos() {
