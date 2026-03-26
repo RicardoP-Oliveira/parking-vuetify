@@ -39,13 +39,13 @@ export default class MovimentacaoService {
   }
 
   static cadastrarSaida(dados, token) {
-    return fetch(caminho, {
+    return fetch(`${caminho}/saida`, {
       headers: {
         'Content-type': 'application/json;charset=UTF-8',
         Authorization: token,
       },
       body: JSON.stringify(dados),
-      method: 'PUT',
+      method: 'PATCH',
     }).then((res) => res.json());
   }
 

@@ -15,7 +15,7 @@ export const getTableConfig = (tab) => {
     // Pedestre
     nome: { width: 250, align: 'center', title: 'Nome' },
     e_tipoDoc: { width: 130, align: 'center', title: 'Tipo Documento' },
-    destino: { width: 110, align: 'center', title: 'Destino' },
+    movDestino: { width: 110, align: 'center', title: 'Destino' },
   };
 
   // 2. Definição da Estrutura
@@ -23,7 +23,7 @@ export const getTableConfig = (tab) => {
     VEICULO: {
       // REGRA: Se a coluna vai ser agrupada, coloque APENAS o nome do grupo aqui.
       // Removi 'eCondutor', 'entrada', etc., da lista principal.
-      order: ['placa', 'marcaModelo', 'prefixo','entradaGroup', 'destino', 'saidaGroup'], 
+      order: ['placa', 'marcaModelo', 'prefixo','entradaGroup', 'movDestino', 'saidaGroup'], 
       groups: {
         entradaGroup: {
           title: 'Entrada',
@@ -37,7 +37,7 @@ export const getTableConfig = (tab) => {
     },
     PEDESTRE: {
       // Para pedestre, o Nome e Docs ficam fora, e as datas dentro dos grupos
-      order: ['e_tipoDoc', 'e_documento', 'nome', 'destino', 'entradaGroup', 'saidaGroup'],
+      order: ['e_tipoDoc', 'e_documento', 'nome', 'movDestino', 'entradaGroup', 'saidaGroup'],
       groups: {
         entradaGroup: { 
           title: 'Entrada', 

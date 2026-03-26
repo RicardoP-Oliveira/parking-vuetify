@@ -8,7 +8,7 @@ export default class UsuarioService {
       headers: {
         Authorization: token,
       }
-    }).then((res) => res.json());
+    }).then((res) => res.json())
   }
 
   static adicionar(formData, token) {

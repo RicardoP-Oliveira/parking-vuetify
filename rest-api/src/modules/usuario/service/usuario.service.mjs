@@ -4,10 +4,7 @@ import {
   mapUsuarioCreatePayload
 } from '../mapper/index.mjs'
 
-const toNumber = (value, fallback) => {
-  const parsed = Number(value)
-  return Number.isNaN(parsed) ? fallback : parsed
-}
+import { toNumber } from '../../../shared/utils/mapperUtils.mjs'
 
 const createUsuarioService = (repository) => ({
   async index({ page = 1, perPage = 50 }) {

@@ -17,7 +17,7 @@ class Usuario extends Model {
         type: DataTypes.BIGINT,
         allowNull: false
       },
-      trato_id: {
+      tratamento_id: {
         type: DataTypes.BIGINT,
         allowNull: false
       },

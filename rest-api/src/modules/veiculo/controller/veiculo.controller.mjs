@@ -19,7 +19,7 @@ const createVeiculoController = service => ({
     const veiculo = await service.show(placa)
 
     if (!veiculo) {
-      return res.status(404).json(
+      return res.json(
         resposta.falha('Veículo não encontrado.')
       )
     } 

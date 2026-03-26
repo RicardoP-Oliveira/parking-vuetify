@@ -20,7 +20,7 @@ const createUsuarioController = service => ({
     const user = await service.show(documento)
 
     if (!user) {
-      return res.status(404).json(
+      return res.json(
         resposta.falha('Usuário não encontrado.')
       )
     }

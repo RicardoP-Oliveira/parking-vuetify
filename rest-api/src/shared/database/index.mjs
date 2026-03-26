@@ -1,14 +1,14 @@
 import Sequelize  from 'sequelize';
 import databaseConfig from '../config/database.mjs';
 
-import Destino from '../app/models/Destino.mjs'
-import Movimentacao from '../app/models/Movimentacao.mjs'
-import Tipo_Documento from '../app/models/Tipo_Documento.mjs'
-import Tratamento from '../app/models/Tratamento.mjs'
-import Unidade from '../app/models/Unidade.mjs'
-import Usuario from '../app/models/Usuario.mjs'
-import Veiculo from '../app/models/Veiculo.mjs'
-import Orgao from '../app/models/Orgao.mjs';
+import Movimentacao from '../../app/models/Movimentacao.mjs'
+import Tipo_Documento from '../../app/models/Tipo_Documento.mjs'
+import Tratamento from '../../app/models/Tratamento.mjs'
+import Unidade from '../../app/models/Unidade.mjs'
+import Usuario from '../../app/models/Usuario.mjs'
+import Veiculo from '../../app/models/Veiculo.mjs'
+import Orgao from '../../app/models/Orgao.mjs';
+import Destino from '../../app/models/Destino.mjs'
 
 
 const models = [
