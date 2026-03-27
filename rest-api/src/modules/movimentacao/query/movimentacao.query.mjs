@@ -204,7 +204,6 @@ export const buildMovimentacaoWhere = ({
       [Op.or]: [
         { '$entradaUser.documento$': busca },
         {'$veiculo.placa$': { [Op.iLike]: `%${busca}%` } },
-        { '$veiculo.marca$': { [Op.iLike]: `%${busca}%`} },
         { '$veiculo.prefixo$': { [Op.iLike]: `%${busca}%`} }
       ]
     })

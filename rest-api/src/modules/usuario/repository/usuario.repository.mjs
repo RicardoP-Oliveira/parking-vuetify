@@ -71,7 +71,7 @@ class UsuarioRepository {
         ['documento', 'doc'],
         'nome',
         'tratamento_id',
-        'ubm_id',
+        'unidade_id',
         'orgao_id',
         'tipo_doc_id',
         [Sequelize.col('tratamento.sigla'), 'graduaAbrev'],

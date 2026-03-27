@@ -27,7 +27,7 @@ class Unidade extends Model {
   }
 
   static associate(models) {
-    this.hasMany(models.Usuario, { foreignKey: "ubm_id", as: "usuarios"});
+    this.hasMany(models.Usuario, { foreignKey: "unidade_id", as: "usuarios"});
   }
 }
 

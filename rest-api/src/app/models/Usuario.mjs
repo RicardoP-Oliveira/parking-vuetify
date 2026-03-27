@@ -21,7 +21,7 @@ class Usuario extends Model {
         type: DataTypes.BIGINT,
         allowNull: false
       },
-      ubm_id: {
+      unidade_id: {
         type: DataTypes.BIGINT,
         allowNull: false
       },
@@ -43,7 +43,7 @@ class Usuario extends Model {
   static associate(models) { /** Associações requeridas */
     this.belongsTo(models.Orgao, { foreignKey: 'orgao_id', as: 'orgao' })
     this.belongsTo(models.Tratamento, { foreignKey: 'tratamento_id', as: 'tratamento' })
-    this.belongsTo(models.Unidade, { foreignKey: 'ubm_id', as: 'unidade' })
+    this.belongsTo(models.Unidade, { foreignKey: 'unidade_id', as: 'unidade' })
     this.belongsTo(models.Tipo_Documento, { foreignKey: 'tipo_doc_id', as: 'tipoDoc' })
     this.hasMany(models.Veiculo, { foreignKey: 'usuario_id', as: 'veiculos' })
     this.hasMany(models.Movimentacao, { foreignKey: 'user_entrada_id', as: 'movimentacaoEntrada' })

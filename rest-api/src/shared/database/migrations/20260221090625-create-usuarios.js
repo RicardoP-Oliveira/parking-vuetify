@@ -36,7 +36,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL'
       },
-      ubm_id: {
+      unidade_id: {
         allowNull: false,
         type: Sequelize.BIGINT,
         references: {

@@ -30,11 +30,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
-      user_id: {
+      usuario_id: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'users',
+          model: 'usuarios',
           key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -64,12 +64,17 @@ module.exports = {
 
     // Adicionando constraint para garantir exclusividade user_id x orgao_id
     await queryInterface.addConstraint('veiculos', {
-      fields: ['user_id', 'orgao_id'],
+      fields: ['usuario_id', 'orgao_id'],
       type: 'check',
       where: {
-        user_id: { [Sequelize.Op.or]: [Sequelize.literal('NULL'), Sequelize.literal('NOT orgao_id IS NOT NULL')] }
+        usuario_id: { 
+          [Sequelize.Op.or]: [
+            Sequelize.literal('NULL'), 
+            Sequelize.literal('NOT orgao_id IS NOT NULL')
+          ]
+        }
       },
-      name: 'chk_user_or_orgao_exclusivo'
+      name: 'chk_usuario_or_orgao_exclusivo'
     });
   },
 
