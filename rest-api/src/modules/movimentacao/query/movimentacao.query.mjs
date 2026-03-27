@@ -84,6 +84,28 @@ export const buildMovimentacaoInclude = ({
   })
 }
 
+const normalizeDate = value => {
+  if (!value) return null
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+const normalizeTime = value => {
+  if (!value) return null
+
+  const time = String(value).trim()
+  if (!time) return null
+
+  return time.length === 5 ? `${time}:00` : time.slice(0, 8)
+}
+
 const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
   const conditions = []
 
@@ -91,22 +113,28 @@ const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
     `("${columnName}" AT TIME ZONE 'America/Sao_Paulo')`
   )
 
-  if (start) {
+  const normalizedStart =
+    castType === 'DATE' ? normalizeDate(start) : normalizeTime(start)
+
+  const normalizedEnd =
+    castType === 'DATE' ? normalizeDate(end) : normalizeTime(end)
+
+  if (normalizedStart) {
     conditions.push(
       Sequelize.where(
         Sequelize.cast(columnWithTz, castType),
         Op.gte,
-        start
+        normalizedStart
       )
     )
   }
 
-  if (end) {
+  if (normalizedEnd) {
     conditions.push(
       Sequelize.where(
         Sequelize.cast(columnWithTz, castType),
         Op.lte,
-        end
+        normalizedEnd
       )
     )
   }
@@ -117,7 +145,7 @@ const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
 export const buildMovimentacaoWhere = ({
   placa,
   documento,
-  modelo,
+  prefixo,
   condutor,
   dataInicio,
   dataFim,
@@ -156,12 +184,9 @@ export const buildMovimentacaoWhere = ({
     })
   }
 
-  if (modelo) {
+  if (prefixo) {
     conditions.push({
-      [Op.or]: [
-        { '$veiculo.marca$': { [Op.iLike]: `%${modelo}%`} },
-        { '$veiculo.prefixo$': { [Op.iLike]: `%${modelo}%`} }
-      ]
+     '$veiculo.prefixo$': { [Op.iLike]: `%${prefixo}%` }
     })
   }
 

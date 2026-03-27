@@ -10,7 +10,7 @@ export function useVeiculoTable(VeiculoService) {
       documento: filters.documento,
       placa: filters.placa,
       condutor: filters.condutor,
-      modelo: filters.modelo,
+      prefixo: filters.prefixo,
       dataInicio: filters.dataInicio
         ? filters.dataInicio.toISOString().split('T')[0]
         : null,

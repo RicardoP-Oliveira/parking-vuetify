@@ -9,10 +9,13 @@
       <v-list-item nav class="text-center">
         <v-icon size="40">mdi-account-circle</v-icon>
       </v-list-item>
+
       <v-divider class="my-2"></v-divider>
             
-      <v-list-item v-for="(config, key) in dynamicFilters" :key="key">
-
+      <v-list-item
+        v-for="(config, key) in dynamicFilters"
+        :key="key"
+      >
         <v-text-field
           v-if="config.type === 'text'" 
           v-model="filters[key]"
@@ -73,21 +76,47 @@
             @update:model-value="menus[key] = false" />
         </v-menu>
       </v-list-item>
-      
-      <v-btn color="grey-darken-2" block @click="$emit('clear-all')"> Limpar Filtros </v-btn>
+      <v-btn
+        color="primary"
+        block
+        class="mb-2"
+        @click="$emit('gerar-pdf')"
+      >
+        Gerar PDF
+      </v-btn>
+      <v-btn
+        color="grey-darken-2"
+        block
+        @click="$emit('clear-all')"
+      > 
+        Limpar Filtros
+      </v-btn>
     </v-list>
   </v-navigation-drawer>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
 import { getFiltersByTab } from '@/core/config/filtersConfig'
-import { watch } from 'vue'
 
-const props = defineProps(['modelValue', 'tab', 'filters'])
+const props = defineProps({
+  modelValue: Boolean,
+  tab: String,
+  filters: {
+    type: Object,
+    required: true
+  }
+})
+
 const modelValue= defineModel()
-const emit = defineEmits(['clearl-all'])
+
+const emit = defineEmits([
+  'update:modelValue',
+  'clearl-all',
+  'gerar-pdf'
+])
+
 const menus = ref({})
 const dynamicFilters = computed(() => getFiltersByTab(props.tab))
 

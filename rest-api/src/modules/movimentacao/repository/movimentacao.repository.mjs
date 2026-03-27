@@ -19,6 +19,21 @@ class MovimentacaoRepository {
     })
   }
 
+  async findAll(filters = {}) {
+    const tab = filters.query || filters.tab
+
+    return Movimentacao.findAll({
+      order: [['updated_at', 'DESC']],
+      where: buildMovimentacaoWhere(filters),
+      attributes: buildMovimentacaoAttributes({ resumo: true, tab }),
+      include: buildMovimentacaoInclude({
+        resumo: true,
+        exclude: tab === 'VEICULO' ? [] : ['veiculo'],
+      }),
+      subQuery: false
+    })
+  }
+
   async findAndCountAll({ page, perPage, ...filters }) {
     const tab = filters.query || filters.tab
 

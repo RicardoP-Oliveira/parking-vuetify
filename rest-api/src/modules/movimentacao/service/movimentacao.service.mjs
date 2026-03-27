@@ -14,7 +14,7 @@ const createMovimentacaoService = repository => ({
     let finalPerPage = toNumber(perPage, 50)
 
     if (finalPerPage <= 0) {
-      finalPerPage = await respository.cout(filters)
+      finalPerPage = await repository.count(filters)
     }
     
     const result = await repository.findAndCountAll({
@@ -76,6 +76,11 @@ const createMovimentacaoService = repository => ({
       invalid: false,
       movimentacao: updatedMovimentacao
     }
+  },
+
+  async gerarRelatorioPdf(filters) {
+    const rows = await repository.findAll(filters)
+    return rows.map(mapMovimentacaoResumoLista)
   }
 })
 

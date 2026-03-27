@@ -12,7 +12,7 @@ export const getFiltersByTab = (tab) => {
   if (tab === 'VEICULO') {
     return {
       placa: { label: 'Placa', type: 'text', icon: 'mdi-car-back' },
-      modelo: { label: 'Modelo', type: 'text', icon: 'mdi-car-info' },
+      prefixo: { label: 'Prefixo', type: 'text', icon: 'mdi-car-info' },
       ...commonFilters
     }
   }
@@ -23,7 +23,7 @@ export const getFiltersByTab = (tab) => {
 export const getAllFiltersSchema = () => {
   return {
     placa: null,
-    modelo: null,
+    prefixo: null,
     documento: null,
     condutor: null,
     dataInicio: null,

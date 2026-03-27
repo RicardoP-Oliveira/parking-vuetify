@@ -1,15 +1,45 @@
 <template>
   <v-app>
-    <FilterDrawer v-model="drawer" :tab="tab" :filters="filters" @clear-all="clearAllFilters" />
+    <FilterDrawer
+      v-model="drawer"
+      :tab="tab"
+      :filters="filters"
+      @clear-all="clearAllFilters"
+      @gerar-pdf="gerarRelatorioPdf"
+    />
 
     <v-app-bar color="white" flat elevation="2" density="compact">
       <template v-slot:extension>
-        <v-app-bar-nav-icon icon="mdi-dots-vertical" @click="drawer = !drawer" />
-        <v-tabs v-model="tab" fixed-tabs class="flex-grow-1">
-          <v-tab value="VEICULO" prepend-icon="mdi-car">Veículos</v-tab>
-          <v-tab value="PEDESTRE" prepend-icon="mdi-walk">Pedestres</v-tab>
+        <v-app-bar-nav-icon
+          icon="mdi-dots-vertical"
+          @click="drawer = !drawer"
+        />
+        
+        <v-tabs
+          v-model="tab"
+          fixed-tabs
+          class="flex-grow-1"
+        >
+          <v-tab
+            value="VEICULO"
+            prepend-icon="mdi-car"
+          >
+            Veículos
+          </v-tab>
+          <v-tab
+            value="PEDESTRE"
+            prepend-icon="mdi-walk"
+          >
+            Pedestres
+          </v-tab>
         </v-tabs>
-        <v-btn v-if="hasActiveFilters" icon="mdi-printer" variant="text" />
+        
+        <v-btn
+          v-if="hasActiveFilters"
+          icon="mdi-printer"
+          variant="text"
+          @click="gerarRelatorioPdf"
+        />
       </template>
     </v-app-bar>
 
@@ -46,9 +76,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, provide } from 'vue';
+import { ref, computed, provide } from 'vue';
 import FilterDrawer from '@/modules/shared/components/FilterDrawer.vue';
 import { getAllFiltersSchema } from '@/core/config/filtersConfig';
+import ConfigClass from '@/class/configClass';
 
 const snackbar = ref({
   show: false,
@@ -83,5 +114,21 @@ const changeTable = (val) => {
   if (!val || val === 'cancel' || typeof val !== 'string') return
   tab.value = val
 };
+
+const gerarRelatorioPdf = () => {
+  const params =  new URLSearchParams()
+
+  Object.entries(filters.value).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') {
+      params.append(key, value)
+    }
+  })
+
+  params.append('query', tab.value)
+
+  const baseUrl = ConfigClass.getUrlApi().toString()
+  const url = `${baseUrl}/ceics/relatorio/pdf?${params.toString()}`
+  window.open(url, '_blank')
+}
 
 </script>
