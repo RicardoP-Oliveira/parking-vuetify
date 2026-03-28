@@ -260,35 +260,46 @@ export const drawPdfFooter = (doc, { data, pageNumber, totalPages, total, showTo
 
 export const buildRelatorioFiltrosTexto = (filters = {}) => {
   const partes = []
-  console.log('filters:', filters)
 
-  if (filters.placa) {
-    partes.push(`Placa: ${filters.placa}`)
-  }
+  const {
+    placa,
+    prefixo,
+    documento,
+    condutor,
+    dataInicio,
+    dataFim,
+    horaInicio,
+    horaFim
+  } = filters
 
-  if (filters.prefixo) {
-    partes.push(`Prefixo: ${filters.prefixo}`)
-  }
+  if (placa) partes.push(`Placa: ${placa}`)
+  if (prefixo) partes.push(`Prefixo: ${prefixo}`)
+  if (documento) partes.push(`Documento: ${documento}`)
+  if (condutor) partes.push(`Condutor/Nome: ${condutor}`)
+  
+  if (dataInicio || dataFim) {
+    const inicio = formatPdfDate(dataInicio)
+    const fim = formatPdfDate(dataFim)
 
-  if (filters.documento) {
-    partes.push(`Documento: ${filters.documento}`)
-  }
-
-  if (filters.condutor) {
-    partes.push(`Condutor/Nome: ${filters.condutor}`)
-  }
-
-  if (filters.dataInicio || filters.dataFim) {
-    const inicio = filters.dataInicio | '...'
-    const fim = filters.dataFim || '...'
-    partes.push(`Período: ${inicio} a ${fim}`)
-  }
-
-  if (filters.horaInicio || filters.horaFim) {
-    const inicio = filters.horaInicio | '...'
-    const fim = filters.horaFim || '...'
-    partes.push(`Hora: ${inicio} a ${fim}`)
+    if (dataInicio && dataFim) {
+      partes.push(`Período: ${inicio} a ${fim}`)
+    } else {
+      partes.push(`Data: ${inicio || fim}`)
+    }
   } 
+  
+  if (horaInicio || horaFim) {
+    const inicio = horaInicio || '...'
+    const fim = horaFim || '...'
 
-  return partes.length? partes.join(' • ') : 'Sem filtros específicos'
+    if (horaInicio && horaFim) {
+      partes.push(`Hora: ${inicio} a ${fim}`)
+    } else {
+      partes.push(`Hora: ${inicio || fim}`)
+    }
+  }
+
+  return partes.length
+    ? partes.join(' • ')
+    : 'Sem filtros específicos'
 }

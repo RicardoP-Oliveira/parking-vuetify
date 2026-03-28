@@ -87,6 +87,16 @@ export const buildMovimentacaoInclude = ({
 const normalizeDate = value => {
   if (!value) return null
 
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    console.log('typeof:',value)
+    return value
+  }
+
+  if (typeof value === 'string') {
+    const match = value.match(/\d{4}-\d{2}-\d{2}/)
+    if (match) return match[0]
+  }
+
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return null
 
@@ -119,7 +129,15 @@ const buildDateTimeFilter = (columnName, start, end, castType = 'DATE') => {
   const normalizedEnd =
     castType === 'DATE' ? normalizeDate(end) : normalizeTime(end)
 
-  if (normalizedStart) {
+    if (normalizedStart && !normalizedEnd) {
+      conditions.push(
+        Sequelize.where(
+          Sequelize.cast(columnWithTz,castType),
+          Op.eq,
+          normalizedStart
+        )
+      )
+    } else if (normalizedStart) {
     conditions.push(
       Sequelize.where(
         Sequelize.cast(columnWithTz, castType),
