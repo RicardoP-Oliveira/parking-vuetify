@@ -41,10 +41,10 @@ class Veiculo extends Model {
       timestamps: true,
       validate: {
         onlyOneOwner() {
-          if (this.user_id && this.orgao_id) {
+          if (this.usuario_id && this.orgao_id) {
             throw new Error('Veículo deve ter apenas user_id ou orgao_id, não ambos.')
           }
-          if (!this.user_id && !this.orgao_id) {
+          if (!this.usuario_id && !this.orgao_id) {
             throw new Error('Veículo deve ter user_id ou orgao_id.')
           }
         }

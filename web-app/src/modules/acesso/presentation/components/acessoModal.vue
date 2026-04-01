@@ -3,7 +3,7 @@
     v-if="dialog"
     :isOpen="dialog.isDialog"
     :hide-actions="isNovoCadastro"
-    :title="isCarro ? 'Acesso Veicular' : 'Acesso Pedestre'"
+    :title="isVeiculo ? 'Acesso Veicular' : 'Acesso Pedestre'"
     :confirmText="confirmText"
     ref="modalRef"
     @confirm="salvar"
@@ -21,7 +21,7 @@
       @cancelar="cancelarCadastro"
     />
     
-    <template v-if="isCarro && !isNovoCadastro">
+    <template v-if="isVeiculo && !isNovoCadastro">
       <v-row dense>
         <v-col cols="6">
           <v-text-field
@@ -38,7 +38,7 @@
         </v-col>
         <v-col cols="6">
           <v-text-field
-            v-model="formData.marca"
+            :model-value="modelPrefix"
             label="Modelo/Prefixo"
             readonly
             variant="filled"
@@ -111,7 +111,7 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="isCarro && formData.placa && !isNovoCadastro" class="mt-4">
+    <v-row v-if="isVeiculo && formData.placa && !isNovoCadastro" class="mt-4">
       <v-col align="center"><vue-barcode :value="formData.placa" :height="30" /></v-col>
     </v-row>
     
@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref} from 'vue'
+import { computed, ref} from 'vue'
 import BaseModal from '@/modules/shared/components/BaseModal.vue'
 import formAcessoCadastro from './formAcessoCadastro.vue'
 import { useAcessoForm } from '@/modules/acesso/presentation/composables/useAcessoForm'
@@ -133,6 +133,10 @@ const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 const modalRef = ref(null)
 
 const { state, ui, actions } = useAcessoForm(props, emit, modalRef)
+
+const modelPrefix = computed(() => {
+  return formData.prefixo || formData.marca || ''
+})
 
 const {
   formData,
@@ -150,7 +154,7 @@ const {
   destinosOptions,
   unidadesOptions,
   modoCadastro,
-  isCarro
+  isVeiculo
 } = ui
 
 const {

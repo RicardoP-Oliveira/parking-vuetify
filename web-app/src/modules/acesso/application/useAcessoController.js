@@ -2,7 +2,7 @@ import { ref } from "vue"
 import { detectarFluxo } from "../domain/fluxo"
 import { acessoStates } from "../domain/stateMachine"
 
-export function useAcessoController({ service, isCarro }) {
+export function useAcessoController({ service, isVeiculo }) {
   const loading = ref(false)
   let requestId = 0
 
@@ -15,7 +15,7 @@ export function useAcessoController({ service, isCarro }) {
       return
     }
 
-    await state.onEnter({ payload, ctx, isCarro})
+    await state.onEnter({ payload, ctx, isVeiculo})
   }
 
   const buscar = async (termo, ctx, tipo) => {
@@ -25,12 +25,13 @@ export function useAcessoController({ service, isCarro }) {
     loading.value = true
 
     try {
-      const [info, extra] = await service.buscarServicos(termo, isCarro, tipo)
+
+      const [info, extra] = await service.buscarServicos(termo, isVeiculo, tipo)
 
       if (id !== requestId) return
 
-      const fluxo = detectarFluxo({ info, extra, isCarro })
-      await executarFluxo(fluxo, { info, extra }, ctx, isCarro)
+      const fluxo = detectarFluxo({ info, extra, isVeiculo })
+      await executarFluxo(fluxo, { info, extra }, ctx, isVeiculo)
     } catch (e) {
       console.error('Erro controller:', e)
     } finally {

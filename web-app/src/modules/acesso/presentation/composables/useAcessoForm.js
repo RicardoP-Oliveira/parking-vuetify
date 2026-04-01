@@ -31,6 +31,7 @@ export function useAcessoForm(props, emit, modalRef) {
     nome: '',
     placa: '',
     marca: '',
+    prefixo: '',
     user_id: null,
     veiculo_id: null,
     registro_id: null,
@@ -47,7 +48,7 @@ export function useAcessoForm(props, emit, modalRef) {
   const lastData = ref(null)
   const modoCadastro = ref(null)
   
-  const isCarro = computed(() => props.tipoForm === 'VEICULO')
+  const isVeiculo = computed(() => props.tipoForm === 'VEICULO')
   
   const confirmText = computed(() => 
     fluxoAtual.value === FLUXO.SAIDA ? 'SAÍDA' : 'ENTRADA'
@@ -57,16 +58,16 @@ export function useAcessoForm(props, emit, modalRef) {
   const buscando = computed(() => loading.value)
   const isReadOnly = computed(() => isSaida.value)
   const contexto = computed(() => ({
-    carroCadastrado: !!formData.veiculo_id,
+    veiculoCadastrado: !!formData.veiculo_id,
     veiculo_id: formData.veiculo_id,
     usuarioCadastrado: !!formData.user_id,
     user_id: formData.user_id,
-    isCarro: isCarro.value
+    isVeiculo: isVeiculo.value
   }))
   
   const controller = useAcessoController({
     service: { buscarServicos },
-    isCarro: isCarro.value
+    isVeiculo: isVeiculo.value
   })
 
   const { loading } = controller
@@ -79,7 +80,7 @@ export function useAcessoForm(props, emit, modalRef) {
       !!formData.destino_id && 
       formData.documento?.length > 3
 
-    if (isCarro.value) {
+    if (isVeiculo.value) {
       return patternPlaca.test(formData.placa) && baseOk
     }
     return baseOk
@@ -109,6 +110,7 @@ export function useAcessoForm(props, emit, modalRef) {
   const limparUsuario = () => {
     formData.user_id = null
     formData.nome = ''
+    formData.prefixo = ''
     formData.orgao_id = null
     formData.gradua_id = null
     formData.ubm_id = null
@@ -118,7 +120,7 @@ export function useAcessoForm(props, emit, modalRef) {
   const close = (from) => emit('closeModal', from)
 
   const buscarDados = async () => {
-    const termo =  isCarro.value ? formData.placa : formData.documento
+    const termo =  isVeiculo.value ? formData.placa : formData.documento
 
     if (!termo || termo.length < 4) return
     if (termo === lastData.value) return
@@ -189,9 +191,9 @@ export function useAcessoForm(props, emit, modalRef) {
   }
 
   const abrirNovoCadastro = () => {
-    if (contexto.value.isCarro && contexto.value.carroCadastrado) {
+    if (contexto.value.isVeiculo && contexto.value.veiculoCadastrado) {
       modoCadastro.value = 'condutor'
-    } else if (contexto.value.isCarro) {
+    } else if (contexto.value.isVeiculo) {
       modoCadastro.value = 'completo'
     } else {
       modoCadastro.value = null
@@ -221,9 +223,8 @@ export function useAcessoForm(props, emit, modalRef) {
 
   onMounted(async () => {
     await fetchListas()
-
     if (props.dialog?.novoCadastro) {
-      if (isCarro.value) {
+      if (isVeiculo.value) {
         formData.placa = props.dialog?.idPlaca || ''
         modoCadastro.value = 'completo'
       } else {
@@ -236,7 +237,7 @@ export function useAcessoForm(props, emit, modalRef) {
     const inicial = props.dialog?.idPlaca || props.dialog?.documento
 
     if (inicial) {
-      if (isCarro.value) {
+      if (isVeiculo.value) {
         formData.placa = inicial
       } else {
         formData.documento = inicial
@@ -275,7 +276,7 @@ export function useAcessoForm(props, emit, modalRef) {
       destinosOptions,
       unidadesOptions,
       modoCadastro,
-      isCarro
+      isVeiculo
     },
     actions: {
       close,

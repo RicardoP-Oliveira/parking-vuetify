@@ -94,7 +94,7 @@ class VeiculoRepository {
         'renavam',
         'usuario_id',
         'orgao_id',
-        [Sequelize.col('user.ubm_id'), 'ubm_id'],
+        [Sequelize.col('user.unidade_id'), 'ubm_id'],
         [Sequelize.col('user.documento'), 'documento'],
         [Sequelize.col('user.nome'), 'condutor'],
         [Sequelize.col('user.tipo_doc_id'), 'doc_id'],

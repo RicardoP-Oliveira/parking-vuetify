@@ -27,14 +27,14 @@ const saveCache = (key, data) => {
   }
 }
 
-const getExtra = (service, key, isCarro) => {
+const getExtra = (service, key, isVeiculo) => {
   const cached = getFromCache(key)
 
   if (cached?.extraPromise) {
     return cached.extraPromise
   }
 
-  const extraPromise = isCarro
+  const extraPromise = isVeiculo
     ? service.getVeiculoPlaca(key)
     : service.getUsuarioByDoc(key)
 
@@ -43,11 +43,11 @@ const getExtra = (service, key, isCarro) => {
 }
 
 export function useCache(service) {
-  const buscarServicos = async (valor, isCarro, tipoTab) => {
+  const buscarServicos = async (valor, isVeiculo, tipoTab) => {
     const key = getKey(valor)
 
     const infoPromise = service.getInfo({ ident: key, tab: tipoTab })
-    const extraPromise = getExtra(service, key, isCarro)
+    const extraPromise = getExtra(service, key, isVeiculo)
 
     return Promise.all([infoPromise, extraPromise])
   }

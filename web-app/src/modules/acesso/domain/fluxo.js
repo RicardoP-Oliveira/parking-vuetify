@@ -6,11 +6,11 @@ export const FLUXO = {
     NOVO: 'novo'
   }
 
-export function detectarFluxo({ info, extra, isCarro }) {
+export function detectarFluxo({ info, extra, isVeiculo }) {
     if (info?.dados) return FLUXO.SAIDA
 
     if (extra?.dados) {
-      if (isCarro) {
+      if (isVeiculo) {
         return extra.dados.documento
           ? FLUXO.ENTRADA_CARRO_USUARIO
           : FLUXO.CARRO_SEM_CONDUTOR

@@ -2,18 +2,21 @@ import { FLUXO } from "./fluxo"
 
 export const acessoStates = {
   [FLUXO.SAIDA] : {
-    onEnter: ({ payload, ctx, isCarro }) => {
+    onEnter: ({ payload, ctx, isVeiculo }) => {
       const saida = payload.info.dados
+      const veiculo = saida.veiculo
       const { formData } = ctx
+
       formData.registro_id = saida.id
       formData.destino_id = saida.destino_id
       formData.nome = saida.nomeCompleto
       formData.documento = saida.documento
       formData.user_id = saida.user_entrada_id
 
-      if (isCarro) {        
+      if (isVeiculo) {        
         formData.veiculo_id = saida.veiculo_id
-        formData.marca = saida.marca
+        formData.marca = veiculo.marca
+        formData.prefixo = veiculo.prefixo
         formData.placa = saida.placa
       }
     }
@@ -53,13 +56,14 @@ export const acessoStates = {
       formData.veiculo_id = veiculo.id ?? veiculo.veiculo_id ?? null
       formData.placa = veiculo.placa ?? ''
       formData.marca = veiculo.marca ?? ''
+      formData.prefixo = veiculo.prefixo ?? ''
       formData.destino_id = null
     }
   },
 
   [FLUXO.NOVO]: {
-    onEnter: ({ ctx , isCarro}) => {
-      ctx.limparForm(isCarro ? 'placa' : 'documento')
+    onEnter: ({ ctx , isVeiculo}) => {
+      ctx.limparForm(isVeiculo ? 'placa' : 'documento')
       ctx.abrirNovoCadastro?.()
     }
   }

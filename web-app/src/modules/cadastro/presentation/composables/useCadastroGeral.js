@@ -27,9 +27,10 @@ export function useCadastroGeral(props, emit) {
   const valorInicial = props.placaInicial || ''
   const isPrefixo = PREFIXO.test(valorInicial)
 
-  const carro = ref({
+  const veiculo = ref({
     placa: isPrefixo ? '' : valorInicial,
-    marca: props.marca || (isPrefixo ? valorInicial : ''),
+    marca: props.marca,
+    prefixo: isPrefixo ? valorInicial : '',
     user_id: null,
     orgao_id: null
   })
@@ -49,12 +50,12 @@ export function useCadastroGeral(props, emit) {
       const res = await service.getUsuarioByDoc(valor)
       if (res?.dados) {
         donoEncontrado.value = res.dados
-        carro.value.user_id = res.dados.user_id
-        carro.value.orgao_id = null
+        veiculo.value.user_id = res.dados.user_id
+        veiculo.value.orgao_id = null
         nome.value = ''
       } else {
         donoEncontrado.value = null
-        carro.value.user_id = null
+        veiculo.value.user_id = null
       }
     } catch (e) {
       console.error("Erro ao buscar", e)
@@ -62,24 +63,24 @@ export function useCadastroGeral(props, emit) {
       loading.value = false
     }
   }
-  
+
   const contexto = computed(() => props.contexto ?? {
-    carroCadastrado: false,
-    carro_id: null,
+    veiculoCadastrado: false,
+    veiculo_id: null,
     usuarioCadastrado: false,
     user_id: null,
-    isCarro: false
+    isVeiculo: false
   })
 
   const podeSalvar = computed(() => {
-    const temPlaca = !!carro.value.placa
-    const temOrgao = !!carro.value.orgao_id
+    const temPlaca = !!veiculo.value.placa
+    const temOrgao = !!veiculo.value.orgao_id
     const temDono = !!donoEncontrado.value
     const temNome = !!nome.value
     const temDestino = !!destino_id.value
     const temDoc = !!pedestre.value.doc_id
 
-    if (contexto.value.isCarro && contexto.value.carroCadastrado) {
+    if (contexto.value.isVeiculo && contexto.value.veiculoCadastrado) {
       return temDestino && (temDono || (temNome && temDoc))
     }
 
@@ -93,7 +94,7 @@ export function useCadastroGeral(props, emit) {
     loading.value = true
     try {
       let userIdFinal = donoEncontrado.value?.user_id || null
-      let carroIdFinal = null
+      let veiculoIdFinal = null
       if (!userIdFinal && buscaDoc.value && buscaDoc.value.length > 3) {
         const payloadUser = {
           n_guerra: nome.value,
@@ -101,36 +102,33 @@ export function useCadastroGeral(props, emit) {
           ubm_id: pedestre.value.unidade_id,
           gradua_id: pedestre.value.gradua_id,
           doc_id: pedestre.value.doc_id,
-          orgao_id: carro.value.orgao_id,
-          destino_id: destino_id.value,
+          orgao_id: veiculo.value.orgao_id,
         }
         const resUser = await service.salvarUsuario(payloadUser)
         userIdFinal = resUser?.dados?.id || null
       }
 
-      if (contexto.value.isCarro && !contexto.value.carroCadastrado) {
+      if (contexto.value.isVeiculo && !contexto.value.veiculoCadastrado) {
         const payload = {
-          placa: carro.value.placa || props.placaInicial,
-          marca: carro.value.marca,
-          orgao_id: userIdFinal ? null : carro.value.orgao_id,
-          user_id: userIdFinal || null,
-          destino_id: destino_id.value
+          placa: veiculo.value.placa || props.placaInicial,
+          marca: veiculo.value.marca,
+          orgao_id: userIdFinal ? null : veiculo.value.orgao_id,
+          usuario_id: userIdFinal || null,
         }
-
-        const resCarro = await service.salvarCarro(payload)
-        carroIdFinal = resCarro?.dados?.id || null
-
+        console.log('[PAYLOAD]', payload)
+        const resVeiculo = await service.salvarVeiculo(payload)
+        veiculoIdFinal = resVeiculo?.dados?.id || null
       }
 
       emit(
         'sucesso', {
-          placa: carro.value.placa,
-          user_id: userIdFinal || null,
+          placa: veiculo.value.placa,
+          usuario_id: userIdFinal || null,
           destino_id: destino_id.value,
-          carro_id: contexto.value.carroCadastrado 
-            ? contexto.value.carro_id 
-            : carroIdFinal,
-          orgao_id: carro.value.orgao_id,
+          veiculo_id: contexto.value.veiculoCadastrado 
+            ? contexto.value.veiculo_id 
+            : veiculoIdFinal,
+          orgao_id: veiculo.value.orgao_id,
           finalizar: true,
           documento: buscaDoc.value
         }
@@ -149,7 +147,7 @@ export function useCadastroGeral(props, emit) {
 
   return {
     state: {
-      carro,
+      veiculo,
       pedestre,
       buscaDoc,
       nome,

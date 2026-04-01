@@ -9,8 +9,8 @@
         <template v-if="mostrarCadastroVeiculo">
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="carro.placa"
-              @update:model-value="v => carro.placa = (v || '').toUpperCase()"
+              v-model="veiculo.placa"
+              @update:model-value="v => veiculo.placa = (v || '').toUpperCase()"
               label="Placa"
               variant="outlined"
               density="compact"
@@ -18,8 +18,8 @@
           </v-col>
           <v-col cols="12" md="6">
             <v-text-field
-              v-model="carro.marca"
-              @update:model-value="v => carro.marca = (v || '').toUpperCase()"
+              v-model="veiculo.marca"
+              @update:model-value="v => veiculo.marca = (v || '').toUpperCase()"
               label="Modelo/Prefixo (Opcional)"
               variant="outlined"
               density="compact"
@@ -107,7 +107,7 @@
         <v-col cols="6">
 
           <v-autocomplete
-            v-model="carro.orgao_id"
+            v-model="veiculo.orgao_id"
             :items="orgaosOptions"
             item-title="title"
             item-value="id"
@@ -134,7 +134,7 @@
       </v-row>
       <v-expand-transition>
             <v-alert 
-              v-if="carro.orgao_id" 
+              v-if="veiculo.orgao_id" 
               type="info" 
               variant="tonal" 
               class="mb-3"
@@ -142,13 +142,13 @@
               <template v-if="!buscaDoc || buscaDoc.length < 4">
                 <v-icon start>mdi-car-estate</v-icon>
                 <strong>Veículo Oficial</strong> pertencente ao órgão: <br>
-                {{ orgaosOptions.find(o => o.id === carro.orgao_id)?.title }}
+                {{ orgaosOptions.find(o => o.id === veiculo.orgao_id)?.title }}
               </template>
 
               <template v-else>
                 <v-icon start>mdi-account-hard-hat</v-icon>
                 Veículo Particular. <br>
-                <strong>Pedestre (Visitante)</strong> vinculado ao órgão: {{ orgaosOptions.find(o => o.id === carro.orgao_id)?.title }}
+                <strong>Pedestre (Visitante)</strong> vinculado ao órgão: {{ orgaosOptions.find(o => o.id === veiculo.orgao_id)?.title }}
               </template>
             </v-alert>
           </v-expand-transition>
@@ -179,7 +179,7 @@ const emit = defineEmits(['sucesso', 'cancelar'])
 const { state, ui, actions } = useCadastroGeral(props, emit)
 
 const {
-  carro,
+  veiculo,
   pedestre,
   buscaDoc,
   nome,

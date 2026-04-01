@@ -23,7 +23,7 @@ export const getTableConfig = (tab) => {
     VEICULO: {
       // REGRA: Se a coluna vai ser agrupada, coloque APENAS o nome do grupo aqui.
       // Removi 'eCondutor', 'entrada', etc., da lista principal.
-      order: ['placa', 'marcaModelo', 'prefixo','entradaGroup', 'destino_sigla', 'saidaGroup'], 
+      order: ['placa', 'marca', 'prefixo','entradaGroup', 'destino_sigla', 'saidaGroup'], 
       groups: {
         entradaGroup: {
           title: 'Entrada',
