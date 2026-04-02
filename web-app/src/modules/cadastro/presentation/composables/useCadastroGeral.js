@@ -87,7 +87,7 @@ export function useCadastroGeral(props, emit) {
 
   const podeSalvar = computed(() => {
     const temPlaca = !!veiculo.value.placa
-    const temOrgao = !!veiculo.value.v_orgao_id
+    const temOrgao = !!veiculo.value.orgao_id
     const temDono = !!donoEncontrado.value
     const temNome = !!nome.value
     const temDestino = !!destino_id.value
@@ -117,9 +117,9 @@ export function useCadastroGeral(props, emit) {
           tipo_doc_id: pedestre.value.tipo_doc_id,
           orgao_id: pedestre.value.orgao_id,
         }
-        console.log('user:', payloadUser)
-        // const resUser = await service.salvarUsuario(payloadUser)
-        userIdFinal =  3 //resUser?.dados?.id || null
+        
+        const resUser = await service.salvarUsuario(payloadUser)
+        userIdFinal = resUser?.dados?.id || null
       }
 
       if (contexto.value.isVeiculo && !contexto.value.veiculoCadastrado) {
@@ -128,12 +128,10 @@ export function useCadastroGeral(props, emit) {
           marca: veiculo.value.marca,
           prefixo: veiculo.value.prefixo,
           orgao_id: veiculo.value.orgao_id,
-          usuario_id: isVtr.value ? null : veiculo.value.usuario_id,
+          usuario_id: isVtr.value ? null : userIdFinal,
         }
-        // const resVeiculo = await service.salvarVeiculo(payload)
-        // veiculoIdFinal = resVeiculo?.dados?.id || null
-        veiculoIdFinal = 4
-        console.log('[PAYLOAD]', { ...payload, veiculoIdFinal, destino_id: destino_id.value })
+        const resVeiculo = await service.salvarVeiculo(payload)
+        veiculoIdFinal = resVeiculo?.dados?.id || null
       }
 
       emit(
@@ -144,7 +142,7 @@ export function useCadastroGeral(props, emit) {
           veiculo_id: contexto.value.veiculoCadastrado 
             ? contexto.value.veiculo_id 
             : veiculoIdFinal,
-          orgao_id: userIdFinal ? userIdFinal : orgao_id.value,
+          orgao_id: userIdFinal ? pedestre.value.orgao_id : veiculo.value.orgao_id,
           finalizar: true,
           documento: buscaDoc.value,
           prefixo: veiculo.value.prefixo

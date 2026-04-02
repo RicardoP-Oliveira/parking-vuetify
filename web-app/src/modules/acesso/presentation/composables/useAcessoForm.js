@@ -211,14 +211,12 @@ export function useAcessoForm(props, emit, modalRef) {
       formData.veiculo_id = dadosCadastro.veiculo_id
       formData.destino_id = dadosCadastro.destino_id
       formData.prefixo = dadosCadastro.prefixo
-      
       const user = await getUser(dadosCadastro.documento)
       if (user) {
         preencherUsuario(user)
-      }
-      
+      }    
       await nextTick()
-      // await salvar()
+      await salvar()
     }
   }
 

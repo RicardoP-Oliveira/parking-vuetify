@@ -7,11 +7,12 @@ export function buildUsuarioData({
   mapUser,
   destinoAtual
 }) {
+
   if (!user) return null
 
   const mapped = mapUser(user)
 
-  if (!isEntrada) {
+  if (!isEntrada || destinoAtual) {
     return {
       ...mapped,
       destino_id: destinoAtual ?? mapped.destino_id ?? null

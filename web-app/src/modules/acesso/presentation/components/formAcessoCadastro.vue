@@ -51,7 +51,6 @@
             label="Órgão da viatura."
             variant="outlined"
             clearable
-            :disabled="modoEfetivo === 'condutor'"
             :hint="hintOrgao"
             persistent-hint
             density="compact"
@@ -71,7 +70,7 @@
           <v-divider class="my-2 w-100" />
         </template>
         
-        <v-col cols="4" md="4" v-if="!donoEncontrado">
+        <v-col cols="4" v-if="!donoEncontrado">
           <v-select 
             v-model="pedestre.tipo_doc_id"
             :items="docOptions"
@@ -82,7 +81,22 @@
             density="compact"
           />
         </v-col>
-        <v-col cols="6">
+        <v-col cols="4">
+          <v-autocomplete
+            v-model="pedestre.orgao_id"
+            :items="orgaosOptions"
+            item-title="title"
+            item-value="id"
+            label="Órgão Emissor"
+            variant="outlined"
+            clearable
+            :disabled="isOrgaoDisabled"
+            
+            persistent-hint
+            density="compact"
+          />
+        </v-col>
+        <v-col cols="4">
           <v-text-field
             v-model="buscaDoc"
             @input="buscaDoc = buscaDoc.replace(/\D/g, '')"
@@ -92,8 +106,6 @@
             :label="mostrarCadastroVeiculo ? 'Documento do Condutor' : 'Documento'"
             variant="outlined"
             clearable
-            append-inner-icon="mdi-magnify"
-            persistent-hint
             density="compact"
           />
         </v-col>
@@ -105,7 +117,7 @@
               key="dono"
             >
               <v-alert
-                v-if="info" 
+                v-if="info && mostrarCadastroVeiculo" 
                 type="success"
                 variant="tonal"
                 icon="mdi-account-check"
@@ -155,19 +167,7 @@
 
         <v-col cols="6">
 
-          <v-autocomplete
-            v-model="pedestre.orgao_id"
-            :items="orgaosOptions"
-            item-title="title"
-            item-value="id"
-            label="Órgão do pedestre."
-            variant="outlined"
-            clearable
-            :disabled="donoEncontrado || buscaDoc?.length < 4 || !buscaDoc"
-            :hint="hintPedestre"
-            persistent-hint
-            density="compact"
-          />
+
         </v-col>
         <v-col cols="6">
           <v-autocomplete 
@@ -180,17 +180,7 @@
             density="compact"
           />
         </v-col>
-        <v-col cols="12">
-          <v-alert 
-          v-if="pedestre.orgao_id" 
-          type="info" 
-          variant="tonal" 
-        >
-          <v-icon start>mdi-account-hard-hat</v-icon>
-          <strong>Pedestre (Visitante)</strong> vinculado ao órgão: 
-          <strong>{{ orgaosOptions.find(o => o.id === pedestre.orgao_id)?.title }}</strong>
-        </v-alert>
-        </v-col>
+    
       </v-row>  
     </v-card-text>
 
@@ -241,7 +231,15 @@ const {
 const { salvar, buscarDono } = actions
 
 const modoEfetivo = computed(() => {
-  return props.modo || (props.placaInicial ? 'parcial' : 'completo')
+
+  if (props.placaInicial) {
+    return 'parcial'
+  } else if (props.documentoInicial) {
+    return 'completo'
+  } else {
+    return props.modo
+  }
+  // return props.modo || (props.placaInicial ? 'parcial' : 'completo')
 })
 
 const mostrarCadastroVeiculo = computed(() => {
@@ -254,12 +252,12 @@ const tituloCadastro = computed(() => {
     : 'Cadastro de Pedestre/Condutor'
 })
 
-const hintOrgao = computed(() => {
-  return 'O órgao será vinculado à viatura.'
+const isOrgaoDisabled = computed(() => {
+  return !!donoEncontrado.value || !buscaDoc.value || buscaDoc.value.length < 4
 })
 
-const hintPedestre = computed(() => {
-  return 'O órgao será vinculado ao pedestre.'
+const hintOrgao = computed(() => {
+  return 'O órgao será vinculado à viatura.'
 })
 
 const info = computed(() => {
