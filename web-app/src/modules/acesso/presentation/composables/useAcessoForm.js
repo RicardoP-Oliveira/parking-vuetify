@@ -35,10 +35,10 @@ export function useAcessoForm(props, emit, modalRef) {
     user_id: null,
     veiculo_id: null,
     registro_id: null,
-    doc_id: null,
+    tipo_doc_id: null,
     orgao_id: null,
-    ubm_id: null,
-    gradua_id: null,
+    unidade_id: null,
+    tratamento_id: null,
     destino_id: null
   }
 
@@ -112,8 +112,8 @@ export function useAcessoForm(props, emit, modalRef) {
     formData.nome = ''
     formData.prefixo = ''
     formData.orgao_id = null
-    formData.gradua_id = null
-    formData.ubm_id = null
+    formData.tratamento_id = null
+    formData.unidade_id = null
     formData.destino_id = null
   }
 
@@ -210,6 +210,7 @@ export function useAcessoForm(props, emit, modalRef) {
       formData.user_id = dadosCadastro.user_id
       formData.veiculo_id = dadosCadastro.veiculo_id
       formData.destino_id = dadosCadastro.destino_id
+      formData.prefixo = dadosCadastro.prefixo
       
       const user = await getUser(dadosCadastro.documento)
       if (user) {
@@ -217,7 +218,7 @@ export function useAcessoForm(props, emit, modalRef) {
       }
       
       await nextTick()
-      await salvar()
+      // await salvar()
     }
   }
 

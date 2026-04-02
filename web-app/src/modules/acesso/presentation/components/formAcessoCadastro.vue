@@ -7,7 +7,7 @@
     <v-card-text class="pt-4">
       <v-row dense>
         <template v-if="mostrarCadastroVeiculo">
-          <v-col cols="12" md="6">
+          <v-col cols="3">
             <v-text-field
               v-model="veiculo.placa"
               @update:model-value="v => veiculo.placa = (v || '').toUpperCase()"
@@ -16,21 +16,64 @@
               density="compact"
             />
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col cols="3">
+            <v-text-field
+              v-model="veiculo.prefixo"
+              @update:model-value="v => veiculo.prefixo = (v || '').toUpperCase()"
+              label="Prefixo (Se viatura)"
+              variant="outlined"
+              density="compact"
+            />  
+          </v-col>
+          <v-col cols="6">
             <v-text-field
               v-model="veiculo.marca"
               @update:model-value="v => veiculo.marca = (v || '').toUpperCase()"
-              label="Modelo/Prefixo (Opcional)"
+              label="Modelo (Opcional)"
               variant="outlined"
               density="compact"
             />
+          </v-col>
+          <v-col cols="4" class="pt-0 mt-n1">
+            <v-switch
+              v-model="isVtr"
+              color="primary"
+              label="Viatura Oficial"
+              class="mt-0"
+            />
+          </v-col>
+          <v-col cols="6" v-if="isVtr">
+            <v-autocomplete
+            v-model="veiculo.orgao_id"
+            :items="orgaosOptions"
+            item-title="title"
+            item-value="id"
+            label="Órgão da viatura."
+            variant="outlined"
+            clearable
+            :disabled="modoEfetivo === 'condutor'"
+            :hint="hintOrgao"
+            persistent-hint
+            density="compact"
+          />
+          </v-col>
+          <v-col cols="12">
+            <v-alert 
+            v-if="veiculo.orgao_id" 
+            type="info" 
+            variant="tonal" 
+            >
+              <v-icon start>mdi-car-estate</v-icon>
+                <strong>Viatura Oficial</strong> pertencente ao órgão: 
+                <strong>{{ orgaosOptions.find(o => o.id === veiculo.orgao_id)?.title }}</strong>
+            </v-alert>
           </v-col>
           <v-divider class="my-2 w-100" />
         </template>
         
         <v-col cols="4" md="4" v-if="!donoEncontrado">
           <v-select 
-            v-model="pedestre.doc_id"
+            v-model="pedestre.tipo_doc_id"
             :items="docOptions"
             item-title="title"
             item-value="id"
@@ -61,8 +104,14 @@
               v-if="donoEncontrado && buscaDoc?.length"
               key="dono"
             >
-              <v-alert type="success" variant="tonal" icon="mdi-account-check" density="compact">
-                Vinculado a: <strong>{{ donoEncontrado.nomeCompleto }}</strong>
+              <v-alert
+                v-if="info" 
+                type="success"
+                variant="tonal"
+                icon="mdi-account-check"
+                density="compact"
+              >
+              {{ info.prefixo }} <strong>{{ info.nome }}</strong>
               </v-alert>
             </div>
 
@@ -70,7 +119,7 @@
               <v-row dense>
                 <v-col cols="3">
                   <v-select
-                    v-model="pedestre.gradua_id"
+                    v-model="pedestre.tratamento_id"
                     :items="tratoOptions"
                     item-title="title"
                     item-value="id"
@@ -107,15 +156,15 @@
         <v-col cols="6">
 
           <v-autocomplete
-            v-model="veiculo.orgao_id"
+            v-model="pedestre.orgao_id"
             :items="orgaosOptions"
             item-title="title"
             item-value="id"
-            :label="labelOrgao"
+            label="Órgão do pedestre."
             variant="outlined"
             clearable
-            :disabled="modoEfetivo === 'condutor'"
-            :hint="hintOrgao"
+            :disabled="donoEncontrado || buscaDoc?.length < 4 || !buscaDoc"
+            :hint="hintPedestre"
             persistent-hint
             density="compact"
           />
@@ -131,27 +180,18 @@
             density="compact"
           />
         </v-col>
-      </v-row>
-      <v-expand-transition>
-            <v-alert 
-              v-if="veiculo.orgao_id" 
-              type="info" 
-              variant="tonal" 
-              class="mb-3"
-            >
-              <template v-if="!buscaDoc || buscaDoc.length < 4">
-                <v-icon start>mdi-car-estate</v-icon>
-                <strong>Veículo Oficial</strong> pertencente ao órgão: <br>
-                {{ orgaosOptions.find(o => o.id === veiculo.orgao_id)?.title }}
-              </template>
-
-              <template v-else>
-                <v-icon start>mdi-account-hard-hat</v-icon>
-                Veículo Particular. <br>
-                <strong>Pedestre (Visitante)</strong> vinculado ao órgão: {{ orgaosOptions.find(o => o.id === veiculo.orgao_id)?.title }}
-              </template>
-            </v-alert>
-          </v-expand-transition>
+        <v-col cols="12">
+          <v-alert 
+          v-if="pedestre.orgao_id" 
+          type="info" 
+          variant="tonal" 
+        >
+          <v-icon start>mdi-account-hard-hat</v-icon>
+          <strong>Pedestre (Visitante)</strong> vinculado ao órgão: 
+          <strong>{{ orgaosOptions.find(o => o.id === pedestre.orgao_id)?.title }}</strong>
+        </v-alert>
+        </v-col>
+      </v-row>  
     </v-card-text>
 
     <v-card-actions>
@@ -163,7 +203,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, watch} from 'vue'
 import { useCadastroGeral } from '@/modules/cadastro/presentation/composables/useCadastroGeral'
 
 const props = defineProps({
@@ -185,7 +225,8 @@ const {
   nome,
   destino_id,
   donoEncontrado,
-  loading
+  loading,
+  isVtr
 } = state
 
 const {
@@ -213,15 +254,32 @@ const tituloCadastro = computed(() => {
     : 'Cadastro de Pedestre/Condutor'
 })
 
-const labelOrgao = computed(() => {
-  return (!buscaDoc.value || buscaDoc.value.length < 4)
-    ? 'Órgão Proprietário do Veículo'
-    : 'Órgao do Pedestre / Condutor'
+const hintOrgao = computed(() => {
+  return 'O órgao será vinculado à viatura.'
 })
 
-const hintOrgao = computed(() => {
-  return (!buscaDoc.value || buscaDoc.value.length < 4)
-    ? 'Deixe o documento em branco para cadastrar como Veículo Oficial.'
-    : ' O órgao será vinculado ao perfil do militar/visitante'
+const hintPedestre = computed(() => {
+  return 'O órgao será vinculado ao pedestre.'
 })
+
+const info = computed(() => {
+  const nome = donoEncontrado.value?.nomeCompleto
+
+  if (!nome) return null
+
+  return {
+    prefixo: isVtr.value && veiculo.value.orgao_id
+    ? 'Condutor autorizado:'
+    : 'Veículo vinculado a:',
+    nome
+  } 
+})
+
+watch(isVtr, () => {
+  if (!isVtr.value) {
+   return  veiculo.value.orgao_id = null
+  }
+  return veiculo.value.orgao_id = 1
+})
+
 </script>

@@ -23,7 +23,7 @@
     
     <template v-if="isVeiculo && !isNovoCadastro">
       <v-row dense>
-        <v-col cols="6">
+        <v-col cols="3">
           <v-text-field
             v-model="formData.placa"
             label="Placa"
@@ -36,14 +36,22 @@
             density="compact"
           />
         </v-col>
+        <v-col cols="3">
+          <v-text-field
+          v-model="formData.prefixo"
+          label="Prefixo se Vtr"
+          readonly
+          variant="filled"
+          density="compact"
+          />
+        </v-col>
         <v-col cols="6">
           <v-text-field
-            :model-value="modelPrefix"
-            label="Modelo/Prefixo"
+            :model-value="formData.marca"
+            label="Modelo"
             readonly
             variant="filled"
             density="compact"
-            placeholder="Opcional"
           />
         </v-col>
         <v-col cols="12">
@@ -133,10 +141,6 @@ const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 const modalRef = ref(null)
 
 const { state, ui, actions } = useAcessoForm(props, emit, modalRef)
-
-const modelPrefix = computed(() => {
-  return formData.prefixo || formData.marca || ''
-})
 
 const {
   formData,
