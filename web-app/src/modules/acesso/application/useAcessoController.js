@@ -7,19 +7,26 @@ export function useAcessoController({ service, isVeiculo }) {
   let requestId = 0
 
   const executarFluxo = async (fluxo, payload, ctx) => {
-    ctx.setFluxo?.(fluxo)
     const state = acessoStates[fluxo]
 
-    if (!state) {
+    ctx.setFluxo?.(fluxo)
+
+    if (!state?.onEnter) {
       console.warn('Fluxo não tratado:', fluxo)
-      return
+      return null
     }
 
-    await state.onEnter({ payload, ctx, isVeiculo})
+    return await state.onEnter({ 
+      payload,
+      state: ctx.state,
+      actions: ctx.actions,
+      services: ctx.services,
+      isVeiculo
+    })
   }
 
   const buscar = async (termo, ctx, tipo) => {
-    if (!termo || termo.length < 4) return
+    if (!termo || termo.length < 4) return null
 
     const id = ++requestId
     loading.value = true
@@ -28,14 +35,23 @@ export function useAcessoController({ service, isVeiculo }) {
 
       const [info, extra] = await service.buscarServicos(termo, isVeiculo, tipo)
 
-      if (id !== requestId) return
+      if (id !== requestId) return null
 
       const fluxo = detectarFluxo({ info, extra, isVeiculo })
-      await executarFluxo(fluxo, { info, extra }, ctx, isVeiculo)
+      const result = await executarFluxo(fluxo, { info, extra }, ctx)
+
+      return {
+        fluxo,
+        result,
+        payload: { info, extra }
+      }
     } catch (e) {
       console.error('Erro controller:', e)
+      return null
     } finally {
-      loading.value = false
+      if (id === requestId) {
+        loading.value = false
+      }
     }
   }
 

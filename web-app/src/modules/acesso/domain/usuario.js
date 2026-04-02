@@ -5,17 +5,25 @@ export function buildUsuarioData({
   isEntrada,
   mapaDestinos,
   mapUser,
-  destinoAtual
+  destinoAtual,
+  preservarDestino = false
 }) {
 
   if (!user) return null
 
   const mapped = mapUser(user)
 
-  if (!isEntrada || destinoAtual) {
+  if (!isEntrada) {
     return {
       ...mapped,
       destino_id: destinoAtual ?? mapped.destino_id ?? null
+    }
+  }
+
+  if (preservarDestino && destinoAtual) {
+    return {
+      ...mapped,
+      destino_id: destinoAtual
     }
   }
 
@@ -27,7 +35,7 @@ export function buildUsuarioData({
 
   return {
     ...mapped,
-    destino_id: destinoCalculado ?? null
+    destino_id: destinoCalculado ?? mapped.destino_id ?? null
   }
 }
 

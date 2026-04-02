@@ -7,15 +7,22 @@ export const FLUXO = {
   }
 
 export function detectarFluxo({ info, extra, isVeiculo }) {
-    if (info?.dados) return FLUXO.SAIDA
+  const temSaida = !!info?.dados
+  const temEntrada = !!extra?.dados
+  const temCondutor = !!extra?.dados?.documento
+    
+  if (temSaida) {
+    return FLUXO.SAIDA
+  }
 
-    if (extra?.dados) {
-      if (isVeiculo) {
-        return extra.dados.documento
-          ? FLUXO.ENTRADA_CARRO_USUARIO
-          : FLUXO.CARRO_SEM_CONDUTOR
-      }
+  if (temEntrada) {
+    if (!isVeiculo) {
       return FLUXO.ENTRADA_USUARIO
     }
-    return FLUXO.NOVO
+    
+    return temCondutor
+      ? FLUXO.ENTRADA_CARRO_USUARIO
+      : FLUXO.CARRO_SEM_CONDUTOR
   }
+    return FLUXO.NOVO
+}

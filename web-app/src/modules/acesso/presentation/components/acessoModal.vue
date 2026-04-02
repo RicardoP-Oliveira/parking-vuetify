@@ -2,17 +2,17 @@
   <BaseModal
     v-if="dialog"
     :isOpen="dialog.isDialog"
-    :hide-actions="isNovoCadastro"
+    :hide-actions="isCadastroNovo"
     :title="isVeiculo ? 'Acesso Veicular' : 'Acesso Pedestre'"
     :confirmText="confirmText"
+    :confirmButton="loading || !isFormValid"
     ref="modalRef"
     @confirm="salvar"
     @close="close(props.tipo)"
-    :confirmButton ="loading || buscando || !isFormValid"
   >
     <formAcessoCadastro
-      v-if="isNovoCadastro"
-      :placa-inicial="formData.placa" 
+      v-if="isCadastroNovo"
+      :placa-inicial="formData.placa"
       :documento-inicial="formData.documento"
       :marca="formData.marca"
       :modo="modoCadastro"
@@ -20,8 +20,8 @@
       @sucesso="voltarParaAcesso"
       @cancelar="cancelarCadastro"
     />
-    
-    <template v-if="isVeiculo && !isNovoCadastro">
+
+    <template v-else-if="isVeiculo">
       <v-row dense>
         <v-col cols="3">
           <v-text-field
@@ -30,21 +30,23 @@
             @update:model-value="v => formData.placa = (v || '').toUpperCase()"
             @keyup.enter.stop="onPlacaEnter"
             @blur.stop="onPlacaEnter"
-            :loading="loading || buscando"
+            :loading="loading"
             :maxlength="7"
             variant="outlined"
             density="compact"
           />
         </v-col>
+
         <v-col cols="3">
           <v-text-field
-          v-model="formData.prefixo"
-          label="Prefixo se Vtr"
-          readonly
-          variant="filled"
-          density="compact"
+            v-model="formData.prefixo"
+            label="Prefixo se Vtr"
+            readonly
+            variant="filled"
+            density="compact"
           />
         </v-col>
+
         <v-col cols="6">
           <v-text-field
             :model-value="formData.marca"
@@ -54,31 +56,33 @@
             density="compact"
           />
         </v-col>
+
         <v-col cols="12">
           <v-text-field
             v-model="formData.documento"
             label="CPF / RG do Condutor"
             @keyup.enter.stop="onDocEnter"
             @blur.stop="onDocEnter"
-            :loading="loading || buscando"
+            :loading="loading"
             variant="underlined"
             density="compact"
-            />
+          />
         </v-col>
+
         <v-col cols="12">
           <v-text-field
             v-model="formData.nome"
             label="Nome do Condutor"
+            readonly
             variant="underlined"
             density="compact"
-            readonly
-            :placeholder="buscando ? 'Buscando...' : 'Aguardando documento...'"
+            :placeholder="loading ? 'Buscando...' : 'Aguardando documento...'"
           />
         </v-col>
       </v-row>
     </template>
 
-    <template v-else-if="!isNovoCadastro">
+    <template v-else>
       <v-row dense>
         <v-col cols="4">
           <v-text-field
@@ -88,10 +92,11 @@
             density="compact"
             @keyup.enter.prevent="onDocEnter"
             @blur="onDocEnter"
-            :loading="loading || buscando"
-            :readOnly="isReadOnly"
+            :loading="loading"
+            :readonly="isReadOnly"
           />
         </v-col>
+
         <v-col cols="8">
           <v-text-field
             v-model="formData.nome"
@@ -103,9 +108,9 @@
         </v-col>
       </v-row>
     </template>
-    
-    <v-row dense>
-      <v-col cols="6" v-if="!isNovoCadastro && !isSaida">
+
+    <v-row dense v-if="!isCadastroNovo && !isSaida">
+      <v-col cols="6">
         <v-select
           v-model="formData.destino_id"
           :items="destinosOptions"
@@ -119,44 +124,57 @@
         />
       </v-col>
     </v-row>
-    <v-row v-if="isVeiculo && formData.placa && !isNovoCadastro" class="mt-4">
-      <v-col align="center"><vue-barcode :value="formData.placa" :height="30" /></v-col>
+
+    <v-row
+      v-if="isVeiculo && formData.placa && !isCadastroNovo"
+      class="mt-4"
+    >
+      <v-col align="center">
+        <vue-barcode :value="formData.placa" :height="30" />
+      </v-col>
     </v-row>
-    
+
+    <v-row v-if="isErro" dense>
+      <v-col cols="12">
+        <v-alert type="error" variant="tonal" density="compact">
+          Ocorreu um erro ao processar o fluxo.
+        </v-alert>
+      </v-col>
+    </v-row>
   </BaseModal>
 </template>
 
 <script setup>
-import { computed, ref} from 'vue'
+import { computed, ref } from 'vue'
 import BaseModal from '@/modules/shared/components/BaseModal.vue'
 import formAcessoCadastro from './formAcessoCadastro.vue'
-import { useAcessoForm } from '@/modules/acesso/presentation/composables/useAcessoForm'
+import { useAcessoModal } from '@/modules/acesso/presentation/composables/useAcessoModal'
 
 const props = defineProps({
   dialog: Object,
   tipoForm: String,
   tipo: String
 })
+
 const emit = defineEmits(['closeModal', 'update:options', 'changeTable'])
 const modalRef = ref(null)
 
-const { state, ui, actions } = useAcessoForm(props, emit, modalRef)
+const { state, ui, actions } = useAcessoModal(props, emit, modalRef)
 
 const {
   formData,
   loading,
-  buscando,
-  isNovoCadastro,
+  isCadastroNovo,
   isFormValid,
   isSaida,
   contexto,
-  isReadOnly
+  isReadOnly,
+  machine
 } = state
 
 const {
   confirmText,
   destinosOptions,
-  unidadesOptions,
   modoCadastro,
   isVeiculo
 } = ui
@@ -167,6 +185,8 @@ const {
   onPlacaEnter,
   onDocEnter,
   cancelarCadastro,
-  voltarParaAcesso,
+  voltarParaAcesso
 } = actions
+
+const isErro = computed(() => machine?.status === 'erro')
 </script>

@@ -65,7 +65,7 @@ const createMovimentacaoController = service => ({
       resposta.sucesso(result.movimentacao, 'Saída registrada com sucesso.')
     )
   },
-
+ 
   async relatorioPdf(req, res) {
     const tipo = req.query.query || req.query.tab || 'PEDESTRE'
     const filtros = req.query
