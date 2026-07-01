@@ -6,7 +6,8 @@ import { useListas } from '@/modules/shared/composables/useListas'
 import { useAcessoController } from '@/modules/acesso/application/useAcessoController'
 import { useAcessoFormState, useAcessoUsuario, useAcessoCadastroNovo,
          useAcessoResultado, useAcessoBusca, useAcessoSalvar, useAcessoUiState,
-         useAcessoDocumento, useAcessoMachine, useAcessoLifecycle } from './'
+         useAcessoDocumento, useAcessoMachine, useAcessoLifecycle 
+        } from '@/modules/acesso/presentation/composables'
 import { buildUsuarioData, applyUsuario } from '@/modules/acesso/domain/usuario'
 import { useCache } from '@/modules/acesso/application/useCache'
 import { mapUser } from '@/modules/acesso/domain/mappers'

@@ -67,18 +67,31 @@ const createMovimentacaoController = service => ({
   },
  
   async relatorioPdf(req, res) {
-    const tipo = req.query.query || req.query.tab || 'PEDESTRE'
-    const filtros = req.query
+    try {
+      const tipo = req.query.query || req.query.tab || 'PEDESTRE'
+      const filtros = req.query
 
-    const dados = await service.gerarRelatorioPdf(filtros)
+      const dados = await service.gerarRelatorioPdf(filtros)
 
-    const { doc, nomeArquivo } = buildMovimentacaoPdfReport({ tipo, dados, filtros })
+      const { doc, nomeArquivo } = buildMovimentacaoPdfReport({
+        tipo,
+        dados,
+        filtros
+      })
 
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename="${nomeArquivo}"`)
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader('Content-Disposition', `inline; filename="${nomeArquivo}"`)
 
-    doc.pipe(res)
-    doc.end()
+      doc.pipe(res)
+      doc.end()
+    } catch (error) {
+        console.error('Erro ao gerar relatório PDF:', error)
+        res.status(500).json({
+          success: false,
+          message: `Erro ao gerar relatório PDF.\n ` + error.message
+        })
+    }
+    
   }
 })
 

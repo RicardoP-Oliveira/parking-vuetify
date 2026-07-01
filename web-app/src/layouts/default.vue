@@ -58,20 +58,20 @@
         </v-fade-transition>
       </router-view>
     </v-main>
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="snackbar.timeout"
-      location="center"
-    >
-      {{ snackbar.message }}
+      <v-snackbar
+        v-model="snackbar.show"
+        :color="snackbar.color"
+        :timeout="snackbar.timeout"
+        location="center"
+      >
+        <div style="white-space: pre-line">{{ snackbar.message }}</div>
 
-      <template v-slot:actions>
-        <v-btn variant="text" @click="snackbar.show = false">
-          Fechar
-        </v-btn>
-      </template>
-    </v-snackbar>
+        <template v-slot:actions>
+          <v-btn variant="text" @click="snackbar.show = false">
+            Fechar
+          </v-btn>
+        </template>
+      </v-snackbar>
   </v-app>
 </template>
 
@@ -115,7 +115,7 @@ const changeTable = (val) => {
   tab.value = val
 };
 
-const gerarRelatorioPdf = () => {
+const gerarRelatorioPdf = async () => {
   const params =  new URLSearchParams()
 
   Object.entries(filters.value).forEach(([key, value]) => {
@@ -128,6 +128,18 @@ const gerarRelatorioPdf = () => {
 
   const baseUrl = ConfigClass.getUrlApi().toString()
   const url = `${baseUrl}/ceics/relatorio/pdf?${params.toString()}`
+
+  const res = await fetch(url)
+
+  if (!res.ok) {
+    const errorData = await res.json()
+    handleShowSnackbar({
+      message: errorData.message || 'Erro ao gerar relatório PDF.',
+      color: 'error',
+      timeout: 25000
+    })
+    return
+  }
   window.open(url, '_blank')
 }
 

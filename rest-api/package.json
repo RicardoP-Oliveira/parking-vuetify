@@ -2,9 +2,11 @@
   "name": "rest-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "license": "MIT",
+  "main": "src/server.mjs",
+  "type": "module",
   "scripts": {
+    "start": "node src/server.mjs",
+
     "dev": "nodemon src/server.mjs"
   },
   "dependencies": {

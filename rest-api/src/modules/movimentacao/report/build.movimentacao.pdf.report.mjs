@@ -15,7 +15,7 @@ export const buildMovimentacaoPdfReport = ({ tipo, dados, filtros }) => {
     size: 'A4',
     layout: tipo === 'VEICULO' ? 'landscape' : 'portrait',
     margin: 30,
-    bufferPages: true,
+    bufferPages: false,
   })
 
   const cabecalho = getRelatorioCabecalho()
@@ -54,6 +54,23 @@ export const buildMovimentacaoPdfReport = ({ tipo, dados, filtros }) => {
     )
   }
 
+  const footerReserve = 40
+  const rowHeight = 14
+
+  const bottomLimit =
+    doc.page.height -
+    doc.page.margins.bottom -
+    footerReserve
+  
+  const linhasPorPagina = Math.floor(
+    (bottomLimit - y) / rowHeight
+  )
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(dados.length / linhasPorPagina)
+  )
+
   if (!dados.length) {
     doc.fontSize(12).text(
       'Nenhum registro encontrado para os filtros informados.',
@@ -69,13 +86,20 @@ export const buildMovimentacaoPdfReport = ({ tipo, dados, filtros }) => {
   }
 
   let rowIndex = 0
-  const rowHeight = 14
-  const footerReserve = 40
 
   for (const item of dados) {
     const bottomLimit = doc.page.height - doc.page.margins.bottom - footerReserve
 
     if (y + rowHeight > bottomLimit) {
+      
+      drawPdfFooter(doc, {
+        data: dataGeracao,
+        pageNumber,
+        total: dados.length,
+        totalPages,
+        showTotal: false
+      })
+
       pageNumber += 1
 
       doc.addPage({
@@ -112,21 +136,16 @@ export const buildMovimentacaoPdfReport = ({ tipo, dados, filtros }) => {
     }
     y = drawPdfTableRow(doc, columns, item, y, mapRelatorioRowValue, rowIndex)
     rowIndex += 1
+
   }
 
-  const range = doc.bufferedPageRange()
-  const totalPages = range.count
-
-  for (let i = 0; i < range.count; i += 1) {
-    doc.switchToPage(range.start + i)
-    drawPdfFooter(doc, {
-      data: dataGeracao,
-      pageNumber: i + 1,
-      totalPages,
-      total: dados.length,
-      showTotal: i === 0
-    })
-  }
+  drawPdfFooter(doc, {
+    data: dataGeracao,
+    pageNumber,
+    total: dados.length,
+    totalPages,
+    showTotal: pageNumber === totalPages
+  })
 
   return { doc, nomeArquivo }
 }

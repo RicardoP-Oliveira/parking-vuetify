@@ -79,7 +79,19 @@ const createMovimentacaoService = repository => ({
   },
 
   async gerarRelatorioPdf(filters) {
+    const LIMITE_PDF = 5000
+    const total = await repository.count(filters)
+
+    if (total > LIMITE_PDF) {
+      throw new Error(
+        `Foram encontrados ${total.toLocaleString('pt-BR')} registros.\n` +
+        `O limite para geração de PDF é ${LIMITE_PDF.toLocaleString('pt-BR')} registros.\n` +
+        `Refine os filtros da consulta.`
+      )
+    }
+
     const rows = await repository.findAll(filters)
+
     return rows.map(mapMovimentacaoResumoLista)
   }
 })

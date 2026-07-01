@@ -1,3 +1,5 @@
+import { FLUXO } from '../../domain/fluxo'
+
 export function useAcessoSalvar({
   service,
   formData,
