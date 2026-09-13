@@ -10,7 +10,7 @@ const createMovimentacaoController = service => ({
 
     resposta.dados = result.rows
     return res.json([
-      resposta, result.count
+      resposta, result.total
     ]
     )
   },
@@ -40,13 +40,10 @@ const createMovimentacaoController = service => ({
   async store(req, res) {
     const resposta = new Resposta()
 
-    const result = await service.store({
-      tab: req.headers.tab,
-      body: req.body
-    })
+    const movimentacao = await service.store(req.body)
 
     return res.status(201).json(
-      resposta.sucesso(service.movimentacao, 'Movimentação criada com sucesso.')
+      resposta.sucesso(movimentacao, 'Movimentação criada com sucesso.')
     )
   },
 
@@ -55,8 +52,8 @@ const createMovimentacaoController = service => ({
 
     const result = await service.registrarSaida(req.body)
 
-    if (result.ivalid) {
-      return res.json(
+    if (!result.found) {
+      return res.status(404).json(
         resposta.falha('Registro não encontrado.')
       )
     }
@@ -67,6 +64,7 @@ const createMovimentacaoController = service => ({
   },
  
   async relatorioPdf(req, res) {
+    const resposta = new Resposta()
     try {
       const tipo = req.query.query || req.query.tab || 'PEDESTRE'
       const filtros = req.query
@@ -86,11 +84,12 @@ const createMovimentacaoController = service => ({
       doc.end()
     } catch (error) {
         console.error('Erro ao gerar relatório PDF:', error)
-        res.status(500).json({
-          success: false,
-          message: `Erro ao gerar relatório PDF.\n ` + error.message
-        })
-    }
+        res.status(500).json(
+          resposta.falha(
+            `Erro ao gerar relatório PDF.\n ` + error.message
+          )
+        )
+      }
     
   }
 })

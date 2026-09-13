@@ -1,11 +1,11 @@
 import Resposta from '../../../shared/utils/Resposta.mjs'
 
+const resposta = new Resposta()
+
 const createVeiculoController = service => ({
   async index(req, res) {
-    const resposta = new Resposta()
-    
-    const { page = 1, perPage = 50 } = req.query
-    const result = await service.index({ page, perPage })
+  
+    const result = await service.index(req.query)
     
     return res.json(
       resposta.sucesso(result)
@@ -13,7 +13,6 @@ const createVeiculoController = service => ({
   },
 
   async show(req, res) {
-    const resposta = new Resposta()
     const { placa } = req.params
 
     const veiculo = await service.show(placa)
@@ -30,7 +29,6 @@ const createVeiculoController = service => ({
   },
 
   async store(req, res) {
-    const resposta = new Resposta()
 
     const result = await service.store(req.body)
 
@@ -46,7 +44,6 @@ const createVeiculoController = service => ({
   },
 
   async update(req, res) {
-    const resposta = new Resposta()
     const { id } = req.params
 
     const result = await service.update(id, req.body)
@@ -63,7 +60,6 @@ const createVeiculoController = service => ({
   },
 
   async destroy(req, res) {
-    const resposta = new Resposta()
     const { id } = req.params
 
     const result = await service.destroy(id)

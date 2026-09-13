@@ -261,7 +261,7 @@ const hintOrgao = computed(() => {
 })
 
 const info = computed(() => {
-  const nome = donoEncontrado.value?.nomeCompleto
+  const nome = donoEncontrado.value?.e_nomeCompleto
 
   if (!nome) return null
 

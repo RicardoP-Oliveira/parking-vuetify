@@ -50,6 +50,7 @@
         isDialog: modal.isOpen,
         idPlaca: modal.idPlaca,
         documento: modal.documento,
+        dados: modal.dados
       }"
       :tipoForm="modal.type"
       :tipo="modal.type"

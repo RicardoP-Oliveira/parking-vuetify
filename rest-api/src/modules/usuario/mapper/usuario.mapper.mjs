@@ -1,7 +1,9 @@
 import { hasValue, buildNomeCompleto } from '../../../shared/utils/mapperUtils.mjs'
 
 export const mapUsuarioResumo = user => {
-  const dados = user.get ({ plain: true })
+  //const dados = user.get ({ plain: true })
+
+  const dados = { ...user}
   
   dados.nomeCompleto = buildNomeCompleto(
     dados.graduaAbrev,

@@ -20,14 +20,14 @@ const createVeiculoService = repository => ({
       finalPerPage = await repository.count()
     }
 
-    const { count, rows } = await repository.findAndCountAll({
+    const result = await repository.findAndCountAll({
       page: finalPage,
       perPage: finalPerPage,
     })
 
     return {
-      total: count,
-      rows,
+      total: result.count,
+      rows: result.rows.map(mapVeiculoResumo),
     }
   },
 
@@ -50,7 +50,7 @@ const createVeiculoService = repository => ({
     if (veiculoExists) {
       return {
         created: false,
-        veiculo: veiculoExists,
+        veiculo: mapVeiculoResumo(veiculoExists),
       }
     }
 
@@ -63,7 +63,7 @@ const createVeiculoService = repository => ({
 
     return {
       created: true,
-      veiculo,
+      veiculo: mapVeiculoResumo(veiculo),
     }
   },
 
@@ -81,7 +81,7 @@ const createVeiculoService = repository => ({
 
     return {
       found: true,
-      veiculo: updatedVeiculo,
+      veiculo: mapVeiculoResumo(updatedVeiculo),
     }
   },
 
@@ -94,7 +94,7 @@ const createVeiculoService = repository => ({
       }
     }
 
-    await repository.destroy(veiculo)
+    await repository.destroy(id)
 
     return {
       found: true,

@@ -1,6 +1,36 @@
 const hasValue = value => value !== undefined
 
-export const mapVeiculoResumo = veiculo => veiculo.get({ plain: true })
+const mapVeiculoBase = veiculo => ({
+  id: veiculo.id,
+  placa: veiculo.placa,
+  marca: veiculo.marca,
+  modelo: veiculo.modelo,
+  prefixo: veiculo.prefixo,
+  renavam: veiculo.renavam,
+  usuario_id: veiculo.usuario_id,
+  orgao_id: veiculo.orgao_id,
+})
+
+export const mapVeiculoResumo = veiculo => { 
+  if (!veiculo) {
+    return null
+  }
+
+  return {
+    ...mapVeiculoBase(veiculo),
+    
+    ubm_id: veiculo.usuarios?.unidade_id,
+    documento: veiculo.usuarios?.documento,
+    condutor: veiculo.usuarios?.nome,
+    doc_id: veiculo.usuarios?.tipo_doc_id,
+    gradua_id: veiculo.usuarios?.tratamento_id,
+
+    docSigla: veiculo.usuarios?.tipo_documentos?.tipo,
+    nomeUbm: veiculo.usuarios?.unidades?.unidade,
+    graduaAbrev: veiculo.usuarios?.tratamentos?.sigla,
+    orgaoSigla: veiculo.usuarios?.orgaos?.sigla_curta,
+  }
+}
 
 export const mapVeiculoCreatePayload = body => {
   const payload = {}

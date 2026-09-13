@@ -25,7 +25,8 @@ export function useBaseTable(props, emit) {
     isOpen: false,
     type: null,
     documento: null,
-    idPlaca: null, 
+    idPlaca: null,
+    dados: null, 
   })
 
   const token = `Bearer ${localStorage.getItem('token')}`
@@ -145,6 +146,7 @@ export function useBaseTable(props, emit) {
             default: filteredItem[column] = item[column] ?? ''
           }
         })
+        console.log(filteredItem)
         return filteredItem
       })
 

@@ -1,9 +1,13 @@
 export {
-  mapMovimentacaoResumoLista,
-  mapMovimentacaoResumoAberto,
+  mapMovimentacaoDetalhe,
+  mapMovimentacaoResumo,
   mapMovimentacaoCreatePayload,
-  mapMovimentacaoSaidaPayload,
+  mapMovimentacaoUpdatePayload,
 } from './movimentacao.mapper.mjs'
+
+export {
+  adaptMovimentacao,
+} from './movimentacao.adapter.mjs'
 
 export {
   getRelatorioCabecalho,

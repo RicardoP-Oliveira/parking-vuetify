@@ -4,8 +4,6 @@ import path from 'path';
 import cors from 'cors';
 import routes from './routes.mjs';
 
-import './shared/database/index.mjs'
-
 process.env.TZ = 'America/Sao_Paulo';
 
 class App{

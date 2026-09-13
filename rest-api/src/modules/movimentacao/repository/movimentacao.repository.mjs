@@ -1,91 +1,86 @@
-import Movimentacao from '../../../app/models/Movimentacao.mjs'
+import prisma from '../../../shared/database/prisma.mjs';
 import {
   buildMovimentacaoWhere,
-  buildMovimentacaoAttributes,
-  buildMovimentacaoInclude
-} from '../query/index.mjs'
+  buildMovimentacaoInclude,
+  buildMovimentacaoListInclude,
+  movimentacaoResumoSelect,
+} from '../query/index.mjs';
+
 
 class MovimentacaoRepository {
   async count(filters = {}) {
-    const tab = filters.query || filters.tab
-    
-    return Movimentacao.count({
+    return prisma.movimentacoes.count({
       where: buildMovimentacaoWhere(filters),
-      include: buildMovimentacaoInclude({
-        resume: true,
-        exlude: tab === 'VEICULO' ? [] : ['veiculo']
-      }),
-      distinct: true
-    })
+    });
   }
 
   async findAll(filters = {}) {
-    const tab = filters.query || filters.tab
-
-    return Movimentacao.findAll({
-      order: [['updated_at', 'DESC']],
+    return prisma.movimentacoes.findMany({
       where: buildMovimentacaoWhere(filters),
-      attributes: buildMovimentacaoAttributes({ resumo: true, tab }),
-      include: buildMovimentacaoInclude({
-        resumo: true,
-        exclude: tab === 'VEICULO' ? [] : ['veiculo'],
-      }),
-      subQuery: false
-    })
+      select: movimentacaoResumoSelect,
+      orderBy: {
+        updated_at: 'desc',
+      },
+    });
   }
 
-  async findAndCountAll({ page, perPage, ...filters }) {
-    const tab = filters.query || filters.tab
-
-    return Movimentacao.findAndCountAll({
-      order: [['updated_at', 'DESC']],
-      where: buildMovimentacaoWhere(filters),
-      attributes: buildMovimentacaoAttributes({ resumo: true, tab }),
-      include: buildMovimentacaoInclude({
-        resume: true,
-        exclude: tab === 'VEICULO' ? [] : ['veiculo']
+  async findAndCountAll({ page = 1, perPage = 10, ...filters }) {
+    const where = buildMovimentacaoWhere(filters)
+    
+    const [count, rows] = await prisma.$transaction([
+      prisma.movimentacoes.count({ where }),
+      prisma.movimentacoes.findMany({
+        where,
+        select: movimentacaoResumoSelect,
+        skip: (Number(page) - 1) * Number(perPage),
+        take: Number(perPage),
+        orderBy: {
+          updated_at: 'desc',
+        },
       }),
-      offset: (page -1) * perPage,
-      limit: perPage,
-      subQuery: false,
-      distinct: true
-    })
+    ]);
+
+    return { count, rows };
   }
 
   async findResumoByIdentificador({ identificador, tab }) {
-    return Movimentacao.findOne({
-      order: [['updated_at', 'DESC']],
+
+    return prisma.movimentacoes.findFirst({
       where: buildMovimentacaoWhere({
         identificador,
         tab,
-        emAberto: true
+        emAberto: true,
       }),
-      attributes: buildMovimentacaoAttributes({ show: true }),
       include: buildMovimentacaoInclude({
-        resume: true,
-        only: ['entradaUser', 'destino', 'veiculo']
-      })
-    })
+        only: ['entradaUser', 'destino', 'veiculo'],
+      }),
+      orderBy: {
+        updated_at: 'desc',
+      },
+    });
   }
 
   async findByPk(id) {
-    return Movimentacao.findByPk(id, {
-      include: buildMovimentacaoInclude()
-    })
+    return prisma.movimentacoes.findUnique({
+      where: { id: BigInt(id) },
+      include: buildMovimentacaoInclude(),
+    });
   }
 
   async updateById(id, payload) {
-    await Movimentacao.update(payload, {
-      where: { id }
-    })
-    return Movimentacao.findByPk(id, {
-      include: buildMovimentacaoInclude()
-    })
+    return prisma.movimentacoes.update({
+      where: { id: BigInt(id) },
+      data: payload,
+      include: buildMovimentacaoInclude(),
+    });
   }
 
   async create(payload) {
-    return Movimentacao.create(payload)
+    return prisma.movimentacoes.create({
+      data: payload,
+      include: buildMovimentacaoInclude(),
+    });
   }
 }
 
-export default MovimentacaoRepository
+export default MovimentacaoRepository;

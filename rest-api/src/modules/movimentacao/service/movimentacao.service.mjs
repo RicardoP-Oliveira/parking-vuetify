@@ -1,12 +1,40 @@
 import {
-  mapMovimentacaoResumoLista,
-  mapMovimentacaoResumoAberto,
+  mapMovimentacaoDetalhe,
+  mapMovimentacaoResumo,
   mapMovimentacaoCreatePayload,
-  mapMovimentacaoSaidaPayload
+  mapMovimentacaoUpdatePayload,
+  adaptMovimentacao,
 } from '../mapper/index.mjs'
 
 import { toNumber } from '../../../shared/utils/mapperUtils.mjs'
 
+const validateMovimentacao = payload => {
+ if (payload.entrada && payload.saida) {
+  const entrada = new Date(payload.entrada)
+  const saida = new Date(payload.saida)
+    if (saida < entrada) {    
+      throw new Error(
+          'A saída deve ser igual ou posterior à entrada.'
+        )
+    }
+  }
+  if (
+    payload.tipo === 'PEDESTRE' &&
+    payload.veiculo_id
+  ) {
+    throw new Error(
+      'Movimentação PEDESTRE não pode possuir veículo.'
+    )
+  }
+  if (
+    payload.tipo === 'VEICULO' &&
+    !payload.veiculo_id
+  ) {
+    throw new Error(
+      'Movimentação VEICULO deve possuir veículo.'
+    )
+  }
+}
 
 const createMovimentacaoService = repository => ({
   async index({ page = 1, perPage = 50, ...filters}) {
@@ -25,7 +53,9 @@ const createMovimentacaoService = repository => ({
 
     return {
       count: result.count,
-      rows: result.rows.map(mapMovimentacaoResumoLista)
+      rows: result.rows
+        .map(adaptMovimentacao)
+        .map(mapMovimentacaoResumo)
     }
   },
 
@@ -38,17 +68,19 @@ const createMovimentacaoService = repository => ({
     if (!movimentacao) {
       return null
     }
-    return mapMovimentacaoResumoAberto(movimentacao)
+
+    return mapMovimentacaoDetalhe(movimentacao)
+    
   },
 
-  async store({ tab, body }){
-    const payload = mapMovimentacaoCreatePayload({ tab, body })
-    const createMovimentacao = await repository.create(payload)
+  async store(body){
+    const payload = mapMovimentacaoCreatePayload(body)
 
-    return {
-      created: true,
-      movimentacao: createMovimentacao
-    }
+    payload.entrada ??= new Date()
+
+    validateMovimentacao(payload)
+   
+    return repository.create(payload)
   },
 
   async registrarSaida(body) {
@@ -68,8 +100,21 @@ const createMovimentacaoService = repository => ({
       }
     }
 
-    const payload = mapMovimentacaoSaidaPayload(body)
-    const updatedMovimentacao = await repository.updateById(body.registro_id, payload)
+    const payload = mapMovimentacaoUpdatePayload({
+      ...body,
+      saida: body.saida ?? new Date()
+    })
+
+    validateMovimentacao({
+      ...movimentacao,
+      ...payload
+    })
+
+    const updatedMovimentacao = 
+      await repository.updateById(
+        body.registro_id,
+        payload
+      )
 
     return {
       found: true,
@@ -92,7 +137,9 @@ const createMovimentacaoService = repository => ({
 
     const rows = await repository.findAll(filters)
 
-    return rows.map(mapMovimentacaoResumoLista)
+    return rows
+      .map(adaptMovimentacao)
+      .map(mapMovimentacaoResumo)
   }
 })
 

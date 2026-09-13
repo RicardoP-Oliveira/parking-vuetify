@@ -3,7 +3,7 @@ import { Router } from 'express';
 import usuarioRoutes from './modules/usuario/routes/index.mjs'
 import veiculoRoutes from './modules/veiculo/index.mjs'
 
-import catalogos from './modules/catalagos/index.mjs'
+import catalogosRoutes from './modules/catalogos/index.mjs'
 
 import movimentacaoRoutes from './modules/movimentacao/routes/index.mjs'
 
@@ -16,6 +16,6 @@ routes.use('/veiculo', veiculoRoutes)
 
 routes.use('/ceics', movimentacaoRoutes)
 
-routes.use('/', catalogos.routes)
+routes.use('/', catalogosRoutes)
 
 export default routes;
