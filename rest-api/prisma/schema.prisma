@@ -7,49 +7,18 @@ datasource db {
   schemas  = ["public"]
 }
 
-model SequelizeMeta {
-  name String @id @db.VarChar(255)
-
-  @@schema("public")
-}
-
-model destinos {
-  id            BigInt          @id @default(autoincrement())
-  unidade_id    BigInt          @unique
-  ativo         Boolean         @default(true)
-  created_at    DateTime        @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime        @default(now()) @db.Timestamptz(6)
-  unidades      unidades        @relation(fields: [unidade_id], references: [id])
-  movimentacoes movimentacoes[]
-
-  @@schema("public")
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model movimentacoes {
-  id              BigInt                  @id @default(autoincrement())
-  tipo            enum_movimentacoes_tipo
-  entrada         DateTime                @db.Timestamptz(6)
-  saida           DateTime?               @db.Timestamptz(6)
-  user_entrada_id BigInt
-  user_saida_id   BigInt?
-  veiculo_id      BigInt?
-  destino_id      BigInt
-  created_at      DateTime                @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime                @default(now()) @db.Timestamptz(6)
-  destino         destinos                @relation(fields: [destino_id], references: [id])
-  entradaUser     usuarios                @relation("movimentacoes_user_entrada_idTousuarios", fields: [user_entrada_id], references: [id])
-  saidaUser       usuarios?               @relation("movimentacoes_user_saida_idTousuarios", fields: [user_saida_id], references: [id])
-  veiculos        veiculos?               @relation(fields: [veiculo_id], references: [id])
+enum enum_movimentacoes_tipo {
+  VEICULO
+  PEDESTRE
 
   @@schema("public")
 }
 
 model orgaos {
   id          BigInt     @id @default(autoincrement())
-  sigla       String     @db.VarChar(255)
-  sigla_curta String?    @db.VarChar(255)
-  orgao       String     @db.VarChar(255)
+  sigla       String     @unique @db.VarChar(255)
+  sigla_curta String?    @unique @db.VarChar(255)
+  orgao       String     @unique @db.VarChar(255)
   created_at  DateTime   @default(now()) @db.Timestamptz(6)
   updated_at  DateTime   @default(now()) @db.Timestamptz(6)
   usuarios    usuarios[]
@@ -92,6 +61,30 @@ model unidades {
   @@schema("public")
 }
 
+model destinos {
+  id            BigInt          @id @default(autoincrement())
+  unidade_id    BigInt          @unique
+  ativo         Boolean         @default(true)
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime        @default(now()) @db.Timestamptz(6)
+  unidades      unidades        @relation(fields: [unidade_id], references: [id])
+  movimentacoes movimentacoes[]
+
+  @@schema("public")
+}
+
+model roles {
+  id 		     BigInt   @id @default(autoincrement())
+  nome		   String   @unique @db.VarChar(50)
+  descricao  String?  @db.VarChar(255)
+  nivel      Int      @default(1)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  acessos	   acessos[]
+  
+  @@schema("public")
+}
+
 model usuarios {
   id                   BigInt          @id @default(autoincrement())
   documento            String          @unique @db.VarChar(50)
@@ -105,16 +98,15 @@ model usuarios {
   movimentacoesEntrada movimentacoes[] @relation("movimentacoes_user_entrada_idTousuarios")
   movimentacoesSaida   movimentacoes[] @relation("movimentacoes_user_saida_idTousuarios")
   orgaos               orgaos?         @relation(fields: [orgao_id], references: [id])
-  tipo_documentos      tipo_documentos @relation(fields: [tipo_doc_id], references: [id], onDelete: SetNull)
-  tratamentos          tratamentos     @relation(fields: [tratamento_id], references: [id], onDelete: SetNull)
-  unidades             unidades        @relation(fields: [unidade_id], references: [id], onDelete: SetNull)
+  tipo_documentos      tipo_documentos @relation(fields: [tipo_doc_id], references: [id])
+  tratamentos          tratamentos     @relation(fields: [tratamento_id], references: [id])
+  unidades             unidades        @relation(fields: [unidade_id], references: [id])
   veiculos             veiculos[]
-  acessos 			   acessos?
+  acessos 			       acessos?
 
   @@schema("public")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model veiculos {
   id            BigInt          @id @default(autoincrement())
   placa         String          @unique @db.VarChar(255)
@@ -130,6 +122,39 @@ model veiculos {
   orgaos        orgaos?         @relation(fields: [orgao_id], references: [id])
   usuarios      usuarios?       @relation(fields: [usuario_id], references: [id])
 
+  @@schema("public")
+}
+
+model movimentacoes {
+  id              BigInt                  @id @default(autoincrement())
+  tipo            enum_movimentacoes_tipo
+  entrada         DateTime                @db.Timestamptz(6)
+  saida           DateTime?               @db.Timestamptz(6)
+  user_entrada_id BigInt
+  user_saida_id   BigInt?
+  veiculo_id      BigInt?
+  destino_id      BigInt
+  created_at      DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime                @default(now()) @db.Timestamptz(6)
+  destino         destinos                @relation(fields: [destino_id], references: [id])
+  entradaUser     usuarios                @relation("movimentacoes_user_entrada_idTousuarios", fields: [user_entrada_id], references: [id])
+  saidaUser       usuarios?               @relation("movimentacoes_user_saida_idTousuarios", fields: [user_saida_id], references: [id])
+  veiculos        veiculos?               @relation(fields: [veiculo_id], references: [id])
+
+  @@schema("public")
+}
+
+model acessos {
+  id		     BigInt	  @id @default(autoincrement())
+  usuario_id BigInt	  @unique
+  senha_hash String   @db.VarChar(255)
+  role_id	   BigInt
+  ativo		   Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  usuarios   usuarios @relation(fields: [usuario_id], references: [id])
+  roles      roles	  @relation(fields: [role_id], references: [id])
+  
   @@schema("public")
 }
 
@@ -151,36 +176,3 @@ model ceics {
   
   @@schema("public")
 }
-
-enum enum_movimentacoes_tipo {
-  VEICULO
-  PEDESTRE
-
-  @@schema("public")
-}
-
-model roles {
-  id 		 BigInt   @id @default(autoincrement())
-  nome		 String   @unique @db.VarChar(50)
-  descricao  String?  @db.VarChar(255)
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
-  acessos	 acessos[]
-  
-  @@schema("public")
-}
-
-model acessos {
-  id		 BigInt	  @id @default(autoincrement())
-  usuario_id BigIn	  @unique
-  senha_hash String   @db.VarChar(255)
-  role_id	 BigInt
-  ativo		 Boolean  @default(true)
-  created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
-  usuarios   usuarios @relation(fields: [usuario_id], references: [id])
-  roles      roles	  @relation(fields: [role_id], references: [id])
-  
-  @@schema("public")
-}
-

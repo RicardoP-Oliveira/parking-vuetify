@@ -1,11 +1,10 @@
 import prisma from '../../../../shared/database/prisma.mjs'
 
 class DestinoRepository {
-  async findAll() {
+  async findAll(filters = {}) {
     const destinos = await prisma.destinos.findMany({
       where: { 
-        ativo: 
-        true
+        ativo: filters.ativo ?? true,
       },
       include: {
         unidades: {
