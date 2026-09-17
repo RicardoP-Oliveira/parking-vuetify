@@ -20,7 +20,7 @@ class DestinoRepository {
 
     return destinos.map(destino => ({
       ...destino,
-      unidade: destino.unidades.sigla
+      unidade: destino.unidades?.sigla ?? null
     }))
   }
 }

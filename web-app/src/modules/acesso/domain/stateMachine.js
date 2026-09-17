@@ -3,27 +3,22 @@ import { FLUXO } from "./fluxo"
 export const acessoStates = {
   [FLUXO.SAIDA] : {
     async onEnter({ payload, isVeiculo }) {
-      console.log('PAYLOAD COMPLETO:', JSON.stringify(payload, null, 2))
       const saida = payload.info.dados
       const usuario = saida.entradaUser || {}
       const veiculo = saida.veiculo || {}
-      
+
       return {
         formPatch: {
           registro_id: saida.id,
           destino_id: saida.destino_id,
-
+          user_saida_id: usuario.id,
           nome: usuario.nome,
-          documento: usuario.documento,
-          user_id: usuario.id,
-          ...(isVeiculo
-            ? {
-                veiculo_id: veiculo.id,
-                marca: veiculo.marca,
-                prefixo: veiculo.prefixo,
-                placa: veiculo.placa,
-              }
-            : {})
+          documento: usuario.documento,          
+          ...(isVeiculo ? { 
+            veiculo_id: veiculo.id,
+            placa: veiculo.placa,
+            prefixo: veiculo.prefixo,
+           } : {})
         }
       }
     }
@@ -39,7 +34,7 @@ export const acessoStates = {
   },
 
   [FLUXO.ENTRADA_CARRO_USUARIO]: {
-    async onEnter({ payload, services }) {
+    async onEnter({ payload, services, isVeiculo }) {
       const veiculo = payload.extra.dados.veiculos
         ?? payload.extra.dados
 
@@ -60,7 +55,7 @@ export const acessoStates = {
           veiculo_id: veiculo.id ?? veiculo.veiculo_id ?? null,
           placa: veiculo.placa ?? '',
           marca: veiculo.marca ?? '',
-          ...dadosUsuario
+          ...dadosUsuario,
         }
       }
     }
@@ -68,7 +63,7 @@ export const acessoStates = {
 
   [FLUXO.CARRO_SEM_CONDUTOR]: {
     async onEnter({ payload }) {
-      const veiculo = payload.extra.dados.veiculos
+      const veiculo = payload.extra.dados
 
       return {
         formPatch: {

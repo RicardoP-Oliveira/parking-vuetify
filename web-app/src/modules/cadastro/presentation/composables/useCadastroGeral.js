@@ -62,6 +62,7 @@ export function useCadastroGeral(props, emit) {
         if (isVtr.value) {
           veiculo.value.usuario_id = null
         } else {
+          console.log("Dono encontrado", res.dados)
           veiculo.value.usuario_id = res.dados.user_id
           veiculo.value.orgao_id = null
           nome.value = ''

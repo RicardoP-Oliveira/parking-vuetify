@@ -2,7 +2,7 @@ export {
   mapMovimentacaoDetalhe,
   mapMovimentacaoResumo,
   mapMovimentacaoCreatePayload,
-  mapMovimentacaoUpdatePayload,
+  mapMovimentacaoSaidaPayload,
 } from './movimentacao.mapper.mjs'
 
 export {

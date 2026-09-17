@@ -146,7 +146,6 @@ export function useBaseTable(props, emit) {
             default: filteredItem[column] = item[column] ?? ''
           }
         })
-        console.log(filteredItem)
         return filteredItem
       })
 

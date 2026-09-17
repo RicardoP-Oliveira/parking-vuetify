@@ -11,7 +11,8 @@ export function buildUsuarioData({
 
   if (!user) return null
 
-  const mapped = mapUser(user)
+  const campoUsuario = isEntrada ? 'user_entrada_id' : 'user_saida_id'
+  const mapped = mapUser(user, campoUsuario)
 
   if (!isEntrada) {
     return {

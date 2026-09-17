@@ -2,7 +2,7 @@ import {
   mapMovimentacaoDetalhe,
   mapMovimentacaoResumo,
   mapMovimentacaoCreatePayload,
-  mapMovimentacaoUpdatePayload,
+  mapMovimentacaoSaidaPayload,
   adaptMovimentacao,
 } from '../mapper/index.mjs'
 
@@ -100,7 +100,7 @@ const createMovimentacaoService = repository => ({
       }
     }
 
-    const payload = mapMovimentacaoUpdatePayload({
+    const payload = mapMovimentacaoSaidaPayload({
       ...body,
       saida: body.saida ?? new Date()
     })

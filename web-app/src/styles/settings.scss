@@ -5,6 +5,19 @@
  */
 
 // https://vuetifyjs.com/features/sass-variables/`
-// @use 'vuetify/settings' with (
-//   $color-pack: false
-// );
+@use 'vuetify/settings' with (
+  $border-radius-root: 4px
+);
+
+// Tipografia
+$font-family: 'Roboto', 'Helvetica', Arial, sans-serif;
+
+// Raio padrão (16px - cantos modernos)
+// $border-radius-root: 16px;
+
+// Sombras suaves: redeuz a opacidade das sombras padrão do Vuetify
+.v-theme--light {
+  --v-shadow-key-umbra-opacity: 0.06;
+  --v-shadow-key-penumbra-opacity: 0.04;
+  --v-shadow-key-ambient-opacity: 0.04;
+}

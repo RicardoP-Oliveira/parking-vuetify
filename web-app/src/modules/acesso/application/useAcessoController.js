@@ -8,7 +8,6 @@ export function useAcessoController({ service, isVeiculo }) {
 
   const executarFluxo = async (fluxo, payload, ctx) => {
     const state = acessoStates[fluxo]
-
     ctx.setFluxo?.(fluxo)
 
     if (!state?.onEnter) {
@@ -35,15 +34,10 @@ export function useAcessoController({ service, isVeiculo }) {
 
       const [info, extra] = await service.buscarServicos(termo, isVeiculo, tipo)
 
-      console.log('Resultado:', { info, extra })
-      
       if (id !== requestId) return null
 
       const fluxo = detectarFluxo({ info, extra, isVeiculo })
-      console.log('Fluxo detectado:', fluxo)
       const result = await executarFluxo(fluxo, { info, extra }, ctx)
-
-      console.log(result)
 
       return {
         fluxo,

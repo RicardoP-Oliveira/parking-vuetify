@@ -85,19 +85,20 @@ const formatHora = data =>
 export const mapMovimentacaoCreatePayload = body => {
   const payload = {}
 
-  if (hasValue(body.tipo)) payload.tipo = body.tipo
+  if (hasValue(body.tab)) payload.tipo = body.tab
   if (hasValue(body.entrada)) payload.entrada = body.entrada
-  if (hasValue(body.saida)) payload.saida = body.saida
-
   if (hasValue(body.user_entrada_id)) payload.user_entrada_id = body.user_entrada_id
-
-  if (hasValue(body.user_saida_id)) payload.user_saida_id = body.user_saida_id
-
   if (hasValue(body.veiculo_id)) payload.veiculo_id = body.veiculo_id
-
   if (hasValue(body.destino_id)) payload.destino_id = body.destino_id
 
   return payload
 }
 
-export const mapMovimentacaoUpdatePayload = mapMovimentacaoCreatePayload
+export const mapMovimentacaoSaidaPayload = body => {
+  const payload = {}
+
+  if (hasValue(body.saida)) payload.saida = body.saida
+  if (hasValue(body.user_saida_id)) payload.user_saida_id = body.user_saida_id
+
+  return payload
+}

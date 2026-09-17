@@ -10,20 +10,25 @@ export function useListas(service) {
   })
 
   const fetchListas = async () => {
-    const [u, o, d, td, t] = await Promise.all([
+    const results = await Promise.allSettled([
       service.getUnidades(),
       service.getOrgaos(),
       service.getDestinos(),
       service.getDocs(),
       service.getTratos(),
     ])
+
+    const [u, o, d, td, t] = results.map(r =>
+      r.status === 'fulfilled' ? r.value || [] : []
+    )
+
     
     listas.value = {
-      unidades: u || [],
-      orgaos: o || [],
-      destinos: d || [],
-      tipo_documentos: td || [],
-      tratamentos: t || []
+      unidades: u,
+      orgaos: o,
+      destinos: d,
+      tipo_documentos: td,
+      tratamentos: t
     }
   }
 
@@ -32,6 +37,7 @@ export function useListas(service) {
   const unidadesOptions = computed(() => listas.value.unidades || [])
   const destinosOptions = computed(() => listas.value.destinos || [])
   const tratoOptions = computed(() => listas.value.tratamentos || [])
+
   return {
     listas,
     fetchListas,

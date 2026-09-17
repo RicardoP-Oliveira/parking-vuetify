@@ -28,7 +28,6 @@ export function usePedestreTable(pedestreService) {
 			cleanFilters
 		);
 	};
-
 	return {
 		loadPedestreData
 	};

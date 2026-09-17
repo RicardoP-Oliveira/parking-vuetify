@@ -127,7 +127,7 @@ model veiculos {
 
 model movimentacoes {
   id              BigInt                  @id @default(autoincrement())
-  tipo            enum_movimentacoes_tipo
+  tipo            enum_movimentacoes_tipo @default(VEICULO)
   entrada         DateTime                @db.Timestamptz(6)
   saida           DateTime?               @db.Timestamptz(6)
   user_entrada_id BigInt

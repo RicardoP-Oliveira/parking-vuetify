@@ -1,5 +1,5 @@
 <template>
-  <div class="base-table-container">
+    <div class="base-table-container">
     <v-data-table-server
     :items-per-page="pageSize"
     :page="pageNow"
@@ -17,6 +17,7 @@
     ]"
     >
       <template v-slot:top>
+     
         <v-row class="px-4 pt-4">
           <v-col :cols="tab === 'VEICULO' ? 2 : 3">
             <v-text-field
@@ -59,12 +60,12 @@
       @changeTable="changeTable"
     />
   </div>
-  
 </template>
 
 <script setup>
 import { useBaseTable } from '@/modules/shared/composables/useBaseTable'
 import acessoModal from '@/modules/acesso/presentation/components/acessoModal.vue'
+import Cadastro from './cadastro.vue'
 
 const props = defineProps({
   dataService: Function,

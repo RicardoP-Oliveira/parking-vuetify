@@ -28,8 +28,8 @@ export function useAcessoModal(props, emit, modalRef) {
   const contexto = computed(() => ({
     veiculoCadastrado: !!formData.veiculo_id,
     veiculo_id: formData.veiculo_id,
-    usuarioCadastrado: !!formData.user_id,
-    user_id: formData.user_id,
+    usuarioCadastrado: !!formData.user_entrada_id,
+    user_entrada_id: formData.user_entrada_id,
     isVeiculo: isVeiculo.value
   }))
 
@@ -119,7 +119,7 @@ export function useAcessoModal(props, emit, modalRef) {
       return
     }
 
-    formData.user_id = dadosCadastro.user_id
+    formData.user_entrada_id = dadosCadastro.user_entrada_id
     formData.veiculo_id = dadosCadastro.veiculo_id
     formData.destino_id = dadosCadastro.destino_id
     formData.prefixo = dadosCadastro.prefixo

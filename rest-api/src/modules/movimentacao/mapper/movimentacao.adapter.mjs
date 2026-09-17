@@ -39,10 +39,10 @@ export const adaptMovimentacao = movimentacao => {
       : null,
 
   destino:
-    movimentacao.destinos
+    movimentacao.destino
       ? {
-        ...movimentacao.destinos,
-        unidade: movimentacao.destinos.unidades,
+        ...movimentacao.destino,
+        unidade: movimentacao.destino?.unidades?.sigla,
       }
       : null,
 

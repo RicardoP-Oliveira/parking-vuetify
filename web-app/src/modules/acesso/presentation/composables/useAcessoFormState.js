@@ -5,7 +5,8 @@ export function useAcessoFormState() {
     placa: '',
     marca: '',
     prefixo: '',
-    user_id: null,
+    user_entrada_id: null,
+    user_saida_id: null,
     veiculo_id: null,
     registro_id: null,
     tipo_doc_id: null,
@@ -30,7 +31,8 @@ export function useAcessoFormState() {
   }
 
   const limparUsuario = () => {
-    formData.user_id = null
+    formData.user_entrada_id = null
+    formData.user_saida_id = null
     formData.nome = ''
     formData.prefixo = ''
     formData.orgao_id = null
