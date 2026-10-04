@@ -22,7 +22,7 @@ export function useListas(service) {
       r.status === 'fulfilled' ? r.value || [] : []
     )
 
-    
+
     listas.value = {
       unidades: u,
       orgaos: o,

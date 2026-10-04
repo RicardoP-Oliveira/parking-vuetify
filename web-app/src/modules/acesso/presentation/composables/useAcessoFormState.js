@@ -1,25 +1,21 @@
-export function useAcessoFormState() {
+export function useAcessoFormState({ machine }) {
   const formDefault = {
     documento: '',
     nome: '',
-    placa: '',
+    placa: null,
     marca: '',
     prefixo: '',
-    user_entrada_id: null,
-    user_saida_id: null,
-    veiculo_id: null,
     registro_id: null,
-    tipo_doc_id: null,
-    orgao_id: null,
-    unidade_id: null,
-    tratamento_id: null,
-    destino_id: null
+    tipo_doc: '',
+    destino: ''
   }
 
   const formData = reactive({ ...formDefault })
 
   const limparForm = (preservar = null) => {
     const backup = preservar ? formData[preservar] : null
+
+    machine.lastTermo = ''
 
     Object.keys(formDefault).forEach((key) => {
       formData[key] = formDefault[key]
@@ -31,14 +27,12 @@ export function useAcessoFormState() {
   }
 
   const limparUsuario = () => {
-    formData.user_entrada_id = null
-    formData.user_saida_id = null
+    formData.placa = null
+    formData.destino = ''
+    formData.tipo_doc = ''
+    formData.marca = ''
     formData.nome = ''
     formData.prefixo = ''
-    formData.orgao_id = null
-    formData.tratamento_id = null
-    formData.unidade_id = null
-    formData.destino_id = null
   }
 
   return {

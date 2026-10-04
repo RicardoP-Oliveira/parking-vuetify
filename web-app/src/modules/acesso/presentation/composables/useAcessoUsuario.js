@@ -9,16 +9,17 @@ export function useAcessoUsuario({
   buildUsuarioData
 }) {
   const preencherUsuario = (user, options = {}) => {
-  const dados = buildUsuarioData({
-    user,
-    isEntrada: machine.fluxo !== FLUXO.SAIDA,
-    mapaDestinos: destinosOptions,
-    destinoAtual: formData.destino_id,
-    mapUser,
-    preservarDestino: options.preservarDestino ?? false
-  })
+    const dados = buildUsuarioData({
+      user,
+      isEntrada: machine.fluxo !== FLUXO.SAIDA,
+      mapaDestinos: destinosOptions,
+      destinoAtual: formData.destino,
+      mapUser,
+      preservarDestino: options.preservarDestino ?? false
+    })
 
-  applyUsuario(formData, dados)
+    if (!dados) return
+    applyUsuario(formData, dados)
   }
 
   return {

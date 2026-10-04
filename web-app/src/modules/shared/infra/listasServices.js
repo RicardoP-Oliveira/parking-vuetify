@@ -18,7 +18,7 @@ export function createListasService(deps) {
   }
 
   return {
-    getDestinos: () => parse (() => DestinoService.getTodos()),
+    getDestinos: () => parse(() => DestinoService.getTodos()),
     getUnidades: () => parse(() => UnidadeService.getTodos()),
     getDocs: () => parse(() => TipoDocService.getDocs()),
     getOrgaos: () => parse(() => OrgaoService.getOrgaos()),

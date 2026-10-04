@@ -83,9 +83,10 @@ const nivel = usuario?.role?.nivel ?? 99;     // sem login ainda: enxerga todos 
 // Menu lateral (padrão do seu exemplo)
 const itensMenu = [
   { titulo: 'Controle', icone: 'mdi-shield-car', rota: 'controle', nivel: 1 },
-  { titulo: 'Movimentações', icone: 'mdi-clipboard-list', rota: 'movimentacoes', nivel: 2 },
+  { titulo: 'Movimentações', icone: 'mdi-clipboard-list', rota: '/movimentacoes', nivel: 2 },
   { titulo: 'Serviço do Dia', icone: 'mdi-account-star', rota: 'servico', nivel: 1 },
   { titulo: 'Cadastros', icone: 'mdi-database-cog', rota: 'cadastros', nivel: 3 },
+  { titulo: 'Atualizações', icone: 'mdi-database-refresh', rota: '/atualizacoes', nivel: 3 },
   { titulo: 'Relatórios', icone: 'mdi-chart-bar', rota: 'relatorios', nivel: 4 },
   { titulo: 'Usuários', icone: 'mdi-account-group', rota: 'usuarios', nivel: 5 },
 ].filter((item) => nivel >= item.nivel);
@@ -113,13 +114,13 @@ function sair() {
 <template>
   <v-app>
     <!-- Drawer de FILTROS (seu FilterDrawer, papel de filtrar) -->
-    <FilterDrawer
+    <!-- <FilterDrawer
       v-model="drawer"
       :tab="tab"
       :filters="filters"
       @clear-all="clearAllFilters"
       @gerar-pdf="gerarRelatorioPdf"
-    />
+    /> -->
 
     <!-- App bar com identidade (cor da Etapa 1) -->
     <v-app-bar color="primary" flat elevation="1" density="comfortable">
@@ -127,41 +128,23 @@ function sair() {
 
       <v-spacer />
 
-      <v-chip
-        variant="flat"
-        color="white"
-        class="text-primary font-weight-medium mr-2"
-        prepend-icon="mdi-account-circle"
-      >
+      <v-chip variant="flat" color="white" class="text-primary font-weight-medium mr-2"
+        prepend-icon="mdi-account-circle">
         {{ nome }}.{{ rotulo }}
       </v-chip>
 
-      <v-btn
-        icon="mdi-filter-variant"
-        variant="text"
-        @click="drawer = !drawer"
-      >
+      <v-btn icon="mdi-filter-variant" variant="text" @click="drawer = !drawer">
         <v-badge v-if="hasActiveFilters" dot color="warning" floating />
       </v-btn>
 
-      <v-btn
-        v-if="hasActiveFilters"
-        icon="mdi-printer"
-        variant="text"
-        @click="gerarRelatorioPdf"
-      />
+      <v-btn v-if="hasActiveFilters" icon="mdi-printer" variant="text" @click="gerarRelatorioPdf" />
 
       <v-btn icon="mdi-logout" variant="text" @click="sair" />
 
       <!-- Tabs permanecem aqui nesta etapa (sem quebrar a troca Veículos/Pedestres).
            Na Etapa 3 elas migram para dentro do card, como na foto. -->
       <template v-slot:extension>
-        <v-tabs
-          v-model="tab"
-          align-tabs="start"
-          density="comfortable"
-          class="flex-grow-1"
-        >
+        <v-tabs v-model="tab" align-tabs="center" density="comfortable" class="flex-grow-1">
           <v-tab value="VEICULO" prepend-icon="mdi-car">Veículos</v-tab>
           <v-tab value="PEDESTRE" prepend-icon="mdi-walk">Pedestres</v-tab>
         </v-tabs>
@@ -169,20 +152,10 @@ function sair() {
     </v-app-bar>
 
     <!-- Drawer de NAVEGAÇÃO (esquerda, padrão da foto) -->
-    <v-navigation-drawer
-      v-model="navDrawer"
-      :permanent="!mobile"
-      width="240"
-      elevation="1"
-    >
+    <v-navigation-drawer v-model="navDrawer" :permanent="!mobile" width="240" elevation="1">
       <v-list density="comfortable" nav>
-        <v-list-item
-          v-for="item in itensMenu"
-          :key="item.rota"
-          :prepend-icon="item.icone"
-          :title="item.titulo"
-          @click="navegar(item)"
-        />
+        <v-list-item v-for="item in itensMenu" :key="item.rota" :prepend-icon="item.icone" :title="item.titulo"
+          @click="navegar(item)" />
       </v-list>
     </v-navigation-drawer>
 
@@ -190,27 +163,15 @@ function sair() {
       <v-container fluid class="pa-6">
         <router-view v-slot="{ Component }">
           <v-fade-transition mode="out-in">
-            <component
-              :is="Component"
-              :tab="tab"
-              :key="tab"
-              :filters="filters"
-              @changeTable="changeTable"
-              @update-btn="updateBtn"
-              @show-snackbar="handleShowSnackbar"
-            />
+            <component :is="Component" :tab="tab" :key="tab" :filters="filters" @changeTable="changeTable"
+              @update-btn="updateBtn" @show-snackbar="handleShowSnackbar" />
           </v-fade-transition>
         </router-view>
       </v-container>
     </v-main>
 
     <!-- Seu snackbar, preservado -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="snackbar.timeout"
-      location="center"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout" location="center">
       <div style="white-space: pre-line">{{ snackbar.message }}</div>
 
       <template v-slot:actions>

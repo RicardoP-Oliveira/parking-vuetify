@@ -15,7 +15,7 @@ export function useAcessoController({ service, isVeiculo }) {
       return null
     }
 
-    return await state.onEnter({ 
+    return await state.onEnter({
       payload,
       state: ctx.state,
       actions: ctx.actions,

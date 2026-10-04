@@ -2,7 +2,8 @@ export function createServices(deps) {
   const {
     UsuarioService,
     VeiculoService,
-    MovimentacaoService
+    MovimentacaoService,
+    AtualizacaoService,
   } = deps
 
   return {
@@ -14,6 +15,9 @@ export function createServices(deps) {
 
     getInfo: MovimentacaoService.getInfo,
     entrada: MovimentacaoService.adicionar,
-    saida: MovimentacaoService.cadastrarSaida
+    saida: MovimentacaoService.cadastrarSaida,
+
+    test: AtualizacaoService.getTest,
+    import: AtualizacaoService.importar
   }
 }

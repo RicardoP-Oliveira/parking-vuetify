@@ -9,13 +9,13 @@ import {
 import { toNumber } from '../../../shared/utils/mapperUtils.mjs'
 
 const validateMovimentacao = payload => {
- if (payload.entrada && payload.saida) {
-  const entrada = new Date(payload.entrada)
-  const saida = new Date(payload.saida)
-    if (saida < entrada) {    
+  if (payload.entrada && payload.saida) {
+    const entrada = new Date(payload.entrada)
+    const saida = new Date(payload.saida)
+    if (saida < entrada) {
       throw new Error(
-          'A saída deve ser igual ou posterior à entrada.'
-        )
+        'A saída deve ser igual ou posterior à entrada.'
+      )
     }
   }
   if (
@@ -37,14 +37,14 @@ const validateMovimentacao = payload => {
 }
 
 const createMovimentacaoService = repository => ({
-  async index({ page = 1, perPage = 50, ...filters}) {
+  async index({ page = 1, perPage = 50, ...filters }) {
     const finalPage = toNumber(page, 1)
     let finalPerPage = toNumber(perPage, 50)
 
     if (finalPerPage <= 0) {
       finalPerPage = await repository.count(filters)
     }
-    
+
     const result = await repository.findAndCountAll({
       page: finalPage,
       perPage: finalPerPage,
@@ -54,8 +54,8 @@ const createMovimentacaoService = repository => ({
     return {
       count: result.count,
       rows: result.rows
-        .map(adaptMovimentacao)
-        .map(mapMovimentacaoResumo)
+        .map(row => adaptMovimentacao(row))
+        .map(row => mapMovimentacaoResumo(row))
     }
   },
 
@@ -70,16 +70,16 @@ const createMovimentacaoService = repository => ({
     }
 
     return mapMovimentacaoDetalhe(movimentacao)
-    
+
   },
 
-  async store(body){
+  async store(body) {
     const payload = mapMovimentacaoCreatePayload(body)
 
     payload.entrada ??= new Date()
 
     validateMovimentacao(payload)
-   
+
     return repository.create(payload)
   },
 
@@ -110,7 +110,7 @@ const createMovimentacaoService = repository => ({
       ...payload
     })
 
-    const updatedMovimentacao = 
+    const updatedMovimentacao =
       await repository.updateById(
         body.registro_id,
         payload

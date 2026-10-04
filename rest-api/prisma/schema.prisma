@@ -20,7 +20,7 @@ model orgaos {
   sigla_curta String?    @unique @db.VarChar(255)
   orgao       String     @unique @db.VarChar(255)
   created_at  DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at  DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
   usuarios    usuarios[]
   veiculos    veiculos[]
 
@@ -32,7 +32,7 @@ model tipo_documentos {
   tipo       String     @unique @db.VarChar(255)
   documento  String     @unique @db.VarChar(255)
   created_at DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
   usuarios   usuarios[]
 
   @@schema("public")
@@ -40,10 +40,10 @@ model tipo_documentos {
 
 model tratamentos {
   id         BigInt     @id @default(autoincrement())
-  sigla      String     @unique @db.VarChar(255)
+  postoGrad      String     @unique @db.VarChar(255)
   nome       String     @unique @db.VarChar(255)
   created_at DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
   usuarios   usuarios[]
 
   @@schema("public")
@@ -54,8 +54,7 @@ model unidades {
   sigla      String?    @unique @db.VarChar(255)
   unidade    String     @unique @db.VarChar(255)
   created_at DateTime   @default(now()) @db.Timestamptz(6)
-  updated_at DateTime   @default(now()) @db.Timestamptz(6)
-  destinos   destinos?
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
   usuarios   usuarios[]
 
   @@schema("public")
@@ -63,11 +62,9 @@ model unidades {
 
 model destinos {
   id            BigInt          @id @default(autoincrement())
-  unidade_id    BigInt          @unique
-  ativo         Boolean         @default(true)
+  destino       String          @unique
   created_at    DateTime        @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime        @default(now()) @db.Timestamptz(6)
-  unidades      unidades        @relation(fields: [unidade_id], references: [id])
+  updated_at    DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
   movimentacoes movimentacoes[]
 
   @@schema("public")
@@ -79,7 +76,7 @@ model roles {
   descricao  String?  @db.VarChar(255)
   nivel      Int      @default(1)
   created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
   acessos	   acessos[]
   
   @@schema("public")
@@ -94,15 +91,15 @@ model usuarios {
   unidade_id           BigInt
   tipo_doc_id          BigInt
   created_at           DateTime        @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime        @default(now()) @db.Timestamptz(6)
-  movimentacoesEntrada movimentacoes[] @relation("movimentacoes_user_entrada_idTousuarios")
-  movimentacoesSaida   movimentacoes[] @relation("movimentacoes_user_saida_idTousuarios")
+  updated_at           DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
   orgaos               orgaos?         @relation(fields: [orgao_id], references: [id])
   tipo_documentos      tipo_documentos @relation(fields: [tipo_doc_id], references: [id])
   tratamentos          tratamentos     @relation(fields: [tratamento_id], references: [id])
   unidades             unidades        @relation(fields: [unidade_id], references: [id])
   veiculos             veiculos[]
   acessos 			       acessos?
+  movimentacoesEntrada movimentacoes[] @relation("MovimentacaoEntrada")
+  movimentacoesSaida movimentacoes[] @relation("MovimentacaoSaida")
 
   @@schema("public")
 }
@@ -117,10 +114,10 @@ model veiculos {
   usuario_id    BigInt?
   orgao_id      BigInt?
   created_at    DateTime        @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime        @default(now()) @db.Timestamptz(6)
-  movimentacoes movimentacoes[]
+  updated_at    DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
   orgaos        orgaos?         @relation(fields: [orgao_id], references: [id])
   usuarios      usuarios?       @relation(fields: [usuario_id], references: [id])
+  movimentacoes movimentacoes[]
 
   @@schema("public")
 }
@@ -130,16 +127,18 @@ model movimentacoes {
   tipo            enum_movimentacoes_tipo @default(VEICULO)
   entrada         DateTime                @db.Timestamptz(6)
   saida           DateTime?               @db.Timestamptz(6)
-  user_entrada_id BigInt
-  user_saida_id   BigInt?
-  veiculo_id      BigInt?
-  destino_id      BigInt
+  user_entrada    String
+  documento_entrada String
+  user_saida      String?
+  documento_saida String?
+  placa           String?
+  destino         String
   created_at      DateTime                @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime                @default(now()) @db.Timestamptz(6)
-  destino         destinos                @relation(fields: [destino_id], references: [id])
-  entradaUser     usuarios                @relation("movimentacoes_user_entrada_idTousuarios", fields: [user_entrada_id], references: [id])
-  saidaUser       usuarios?               @relation("movimentacoes_user_saida_idTousuarios", fields: [user_saida_id], references: [id])
-  veiculos        veiculos?               @relation(fields: [veiculo_id], references: [id])
+  updated_at      DateTime                @default(now()) @updatedAt @db.Timestamptz(6)
+  entradaUser usuarios @relation("MovimentacaoEntrada", fields: [documento_entrada], references: [documento])
+  saidaUser usuarios? @relation("MovimentacaoSaida", fields: [documento_saida], references: [documento])
+  veiculos veiculos? @relation(fields: [placa], references: [placa])
+  destinos  destinos @relation(fields: [destino], references: [destino]) 
 
   @@schema("public")
 }
@@ -151,7 +150,7 @@ model acessos {
   role_id	   BigInt
   ativo		   Boolean  @default(true)
   created_at DateTime @default(now()) @db.Timestamptz(6)
-  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
   usuarios   usuarios @relation(fields: [usuario_id], references: [id])
   roles      roles	  @relation(fields: [role_id], references: [id])
   

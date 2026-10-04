@@ -7,6 +7,7 @@ export const STATUS = {
   ACESSO: 'acesso',
   CADASTRO_NOVO: 'cadastro_novo',
   SALVANDO: 'salvando',
+  SALVO: 'salvo',
   ERRO: 'erro'
 }
 
@@ -31,13 +32,17 @@ const transitions = {
     SALVAR: STATUS.SALVANDO
   },
   [STATUS.SALVANDO]: {
-    SALVO: STATUS.IDLE,
+    SALVO: STATUS.SALVO,
     FALHA: STATUS.ERRO
   },
   [STATUS.ERRO]: {
     BUSCAR: STATUS.CARREGANDO,
     ABRIR_CADASTRO_NOVO: STATUS.CADASTRO_NOVO,
     CANCELAR_CADASTRO: STATUS.IDLE
+  },
+  [STATUS.SALVO]: {
+    BUSCAR: STATUS.CARREGANDO,
+    RESET: STATUS.IDLE
   }
 }
 

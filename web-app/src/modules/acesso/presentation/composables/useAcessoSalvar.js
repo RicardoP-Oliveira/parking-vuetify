@@ -13,18 +13,17 @@ export function useAcessoSalvar({
 
     try {
       const payload = { ...formData, tab: props.tipo }
-
       if (machine.fluxo === FLUXO.SAIDA) {
         await service.saida(payload)
       } else {
         await service.entrada({
           dados: payload,
-          tab: props.tipo
         })
       }
 
       send('SALVO')
-      emit('closeModal', props.tipo)
+      send('RESET')
+      emit('changeTable', props.tipo)
     } catch (e) {
       console.error('Erro ao salvar:', e)
       send('FALHA', { error: e })

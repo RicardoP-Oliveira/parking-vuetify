@@ -47,7 +47,7 @@ export function useAcessoLifecycle({
     async (val) => {
       if (!val) return
       await nextTick()
-      modalRef.value?.getConfirmButtonEl()?.focus()
+      // modalRef.value?.getConfirmButtonEl()?.focus()
     }
   )
 }

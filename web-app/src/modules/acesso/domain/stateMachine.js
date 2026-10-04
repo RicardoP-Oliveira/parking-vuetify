@@ -1,24 +1,26 @@
 import { FLUXO } from "./fluxo"
 
 export const acessoStates = {
-  [FLUXO.SAIDA] : {
-    async onEnter({ payload, isVeiculo }) {
+  [FLUXO.SAIDA]: {
+    async onEnter({ payload, isVeiculo, services }) {
       const saida = payload.info.dados
       const usuario = saida.entradaUser || {}
       const veiculo = saida.veiculo || {}
 
+      const usuarioFinal = await services.getUser(usuario.documento)
+
       return {
         formPatch: {
           registro_id: saida.id,
-          destino_id: saida.destino_id,
-          user_saida_id: usuario.id,
-          nome: usuario.nome,
-          documento: usuario.documento,          
-          ...(isVeiculo ? { 
-            veiculo_id: veiculo.id,
-            placa: veiculo.placa,
-            prefixo: veiculo.prefixo,
-           } : {})
+          destino: saida.destino,
+          nome: usuarioFinal.nomeCompleto,
+          user_saida: usuarioFinal.nomeCompleto,
+          documento: usuario.documento,
+          ...(isVeiculo.value
+            ? {
+              placa: veiculo.placa,
+              prefixo: veiculo.prefixo,
+            } : {})
         }
       }
     }
@@ -28,7 +30,8 @@ export const acessoStates = {
     async onEnter({ payload, services }) {
       const usuario = payload.extra.dados
       const dadosUsuarios = services.buildUsuarioPayload(usuario)
-      
+      console.log('onEnter ENTRADA_USUARIO', { usuario, dadosUsuarios })
+
       return { formPatch: dadosUsuarios }
     }
   },
@@ -39,17 +42,17 @@ export const acessoStates = {
         ?? payload.extra.dados
 
       let usuarioFinal = null
-      
+
       if (veiculo.documento && services.getUser) {
         usuarioFinal = await services.getUser(veiculo.documento)
       }
 
       if (!usuarioFinal) {
-          usuarioFinal = veiculo
+        usuarioFinal = veiculo
       }
 
       const dadosUsuario = services.buildUsuarioPayload(usuarioFinal)
-      
+
       return {
         formPatch: {
           veiculo_id: veiculo.id ?? veiculo.veiculo_id ?? null,

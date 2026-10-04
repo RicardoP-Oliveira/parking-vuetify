@@ -1,7 +1,5 @@
 export function useVeiculoTable(VeiculoService) {
   const loadCarData = async (
-    page,
-    itemsPerPage,
     token,
     tab,
     filters
@@ -28,8 +26,6 @@ export function useVeiculoTable(VeiculoService) {
     });
 
     return VeiculoService.getTodos(
-      page,
-      itemsPerPage,
       token,
       tab,
       apiFilters

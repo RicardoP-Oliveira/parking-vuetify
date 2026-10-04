@@ -5,7 +5,7 @@ const createMovimentacaoController = service => ({
   async index(req, res) {
     const resposta = new Resposta()
 
-    const { page = 1, perPage = 50, ...filters} = req.query
+    const { page = 1, perPage = 50, ...filters } = req.query
     const result = await service.index({ page, perPage, ...filters })
 
     resposta.dados = result.rows
@@ -47,7 +47,7 @@ const createMovimentacaoController = service => ({
     )
   },
 
-  async registrarSaida(req, res){
+  async registrarSaida(req, res) {
     const resposta = new Resposta()
 
     const result = await service.registrarSaida(req.body)
@@ -62,7 +62,7 @@ const createMovimentacaoController = service => ({
       resposta.sucesso(result.movimentacao, 'Saída registrada com sucesso.')
     )
   },
- 
+
   async relatorioPdf(req, res) {
     const resposta = new Resposta()
     try {
@@ -83,14 +83,14 @@ const createMovimentacaoController = service => ({
       doc.pipe(res)
       doc.end()
     } catch (error) {
-        console.error('Erro ao gerar relatório PDF:', error)
-        res.status(500).json(
-          resposta.falha(
-            `Erro ao gerar relatório PDF.\n ` + error.message
-          )
+      console.error('Erro ao gerar relatório PDF:', error)
+      res.status(500).json(
+        resposta.falha(
+          `Erro ao gerar relatório PDF.\n ` + error.message
         )
-      }
-    
+      )
+    }
+
   }
 })
 

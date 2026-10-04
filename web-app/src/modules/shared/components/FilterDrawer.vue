@@ -97,7 +97,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { VTimePicker } from 'vuetify/labs/VTimePicker'
+import { VTimePicker } from 'vuetify/components'
 import { getFiltersByTab } from '@/core/config/filtersConfig'
 
 const props = defineProps({

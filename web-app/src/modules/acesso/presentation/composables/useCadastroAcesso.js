@@ -1,41 +1,39 @@
 // src/modules/acesso/presentation/composables/useAcessoModal.js
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useServices } from '@/modules/acesso/application/useServices'
 import { useListasModules } from '../../application/useListasModules'
 import { useListas } from '@/modules/shared/composables/useListas'
 import { useAcessoController } from '@/modules/acesso/application/useAcessoController'
-import { useAcessoFormState, useAcessoUsuario, useAcessoCadastroNovo,
-         useAcessoResultado, useAcessoBusca, useAcessoSalvar, useAcessoUiState,
-         useAcessoDocumento, useAcessoMachine, useAcessoLifecycle 
-        } from '@/modules/acesso/presentation/composables'
+import {
+  useAcessoFormState, useAcessoUsuario, useAcessoCadastroNovo,
+  useAcessoResultado, useAcessoBusca, useAcessoSalvar, useAcessoUiState,
+  useAcessoDocumento, useAcessoMachine, useAcessoLifecycle
+} from '@/modules/acesso/presentation/composables'
 import { buildUsuarioData, applyUsuario } from '@/modules/acesso/domain/usuario'
 import { useCache } from '@/modules/acesso/application/useCache'
 import { mapUser } from '@/modules/acesso/domain/mappers'
 
-const patternPlaca = /^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/
-
-export function useAcessoModal(props, emit, modalRef) {
+export function useCadastroAcesso(props, emit, modalRef = ref(null)) {
   const listaService = useListasModules()
   const service = useServices()
   const { buscarServicos, getUser } = useCache(service)
   const { fetchListas, destinosOptions, unidadesOptions } = useListas(listaService)
 
   const { machine, send, isCadastroNovo, isBusy, isErro } = useAcessoMachine()
-  const { formData,limparForm ,limparUsuario} = useAcessoFormState()
+  const { formData, limparForm, limparUsuario } = useAcessoFormState({ machine })
 
   const isVeiculo = computed(() => props.tipoForm === 'VEICULO')
 
   const contexto = computed(() => ({
     veiculoCadastrado: !!formData.veiculo_id,
-    veiculo_id: formData.veiculo_id,
-    usuarioCadastrado: !!formData.user_entrada_id,
-    user_entrada_id: formData.user_entrada_id,
+    usuarioCadastrado: !!formData.documento_entrada,
+    tipo_doc: formData.tipo_doc,
     isVeiculo: isVeiculo.value
   }))
 
   const controller = useAcessoController({
     service: { buscarServicos },
-    isVeiculo: isVeiculo.value
+    isVeiculo
   })
 
   const { preencherUsuario } = useAcessoUsuario({
@@ -98,18 +96,20 @@ export function useAcessoModal(props, emit, modalRef) {
     isBusy
   })
 
-  const  { onDocEnter } = useAcessoDocumento({
+  const { onDocEnter } = (useAcessoDocumento({
     formData,
     machine,
     isCadastroNovo,
+    controller,
+    contexto,
     getUser,
+    buscarServicos,
     preencherUsuario,
     limparUsuario,
     abrirNovoCadastro,
     send,
     isFormValid,
-    modalRef
-  })
+  }))
 
   const onPlacaEnter = () => buscarDados()
 
@@ -119,21 +119,18 @@ export function useAcessoModal(props, emit, modalRef) {
       return
     }
 
-    formData.user_entrada_id = dadosCadastro.user_entrada_id
-    formData.veiculo_id = dadosCadastro.veiculo_id
-    formData.destino_id = dadosCadastro.destino_id
+    formData.placa = dadosCadastro.placa
+    formData.destino = dadosCadastro.destino
     formData.prefixo = dadosCadastro.prefixo
 
     const user = await getUser(dadosCadastro.documento)
     if (user) {
-      preencherUsuario(user, { preservarDestino: true})
+      preencherUsuario(user, { preservarDestino: true })
     }
 
     await nextTick()
     await salvar()
   }
-
-  const close = (from) => emit('closeModal', from)
 
   useAcessoLifecycle({
     fetchListas,
@@ -143,12 +140,12 @@ export function useAcessoModal(props, emit, modalRef) {
     send,
     buscarDados,
     isFormValid,
-    modalRef
   })
 
   return {
     state: {
       formData,
+      modalRef,
       loading,
       isCadastroNovo,
       isFormValid,
@@ -166,7 +163,7 @@ export function useAcessoModal(props, emit, modalRef) {
       isVeiculo
     },
     actions: {
-      close,
+      limparForm,
       salvar,
       buscarDados,
       onPlacaEnter,

@@ -11,32 +11,32 @@ export function buildUsuarioData({
 
   if (!user) return null
 
-  const campoUsuario = isEntrada ? 'user_entrada_id' : 'user_saida_id'
+  const campoUsuario = isEntrada ? 'documento_entrada' : 'documento_saida'
   const mapped = mapUser(user, campoUsuario)
 
   if (!isEntrada) {
     return {
       ...mapped,
-      destino_id: destinoAtual ?? mapped.destino_id ?? null
+      destino: destinoAtual ?? mapped.destino ?? null
     }
   }
 
   if (preservarDestino && destinoAtual) {
     return {
       ...mapped,
-      destino_id: destinoAtual
+      destino: destinoAtual
     }
   }
 
-  const destinoCalculado =  calcularDestino({
-        data: user,
-        isEntrada,
-        mapaDestinos
-      })
+  const destinoCalculado = calcularDestino({
+    data: user,
+    isEntrada,
+    mapaDestinos
+  })
 
   return {
     ...mapped,
-    destino_id: destinoCalculado ?? mapped.destino_id ?? null
+    destino: destinoCalculado ?? mapped.destino ?? null
   }
 }
 

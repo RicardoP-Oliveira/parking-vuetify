@@ -3,40 +3,18 @@ export const movimentacaoResumoSelect = {
   tipo: true,
   entrada: true,
   saida: true,
-  destino_id: true,
 
-  destino: {
-    select: {
-      unidades: {
-        select: {
-          sigla: true,
-        },
-      },
-    },
-  },
+  user_entrada: true,
+  documento_entrada: true,
+  user_saida: true,
+  documento_saida: true,
+  destino: true,
 
   entradaUser: {
     select: {
-      nome: true,
       documento: true,
-
-      tipo_documentos: {
-        select: {
-          tipo: true,
-        },
-      },
-
-      tratamentos: {
-        select: {
-          sigla: true,
-        },
-      },
-
-      orgaos: {
-        select: {
-          sigla_curta: true,
-        },
-      },
+      nome: true,
+      tipo_documentos: { select: { tipo: true } },
     },
   },
 
@@ -44,18 +22,6 @@ export const movimentacaoResumoSelect = {
     select: {
       nome: true,
       documento: true,
-
-      tratamentos: {
-        select: {
-          sigla: true,
-        },
-      },
-
-      orgaos: {
-        select: {
-          sigla_curta: true,
-        },
-      },
     },
   },
 

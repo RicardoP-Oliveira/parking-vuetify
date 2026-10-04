@@ -1,20 +1,20 @@
-import ConfigClass from '../../class/configClass';
+import ConfigClass from '../../class/configClass'
 
-const caminho = `${ConfigClass.getUrlApi().toString()}/ceics`;
+const caminho = `${ConfigClass.getUrlApi().toString()}/ceics`
 
 export default class MovimentacaoService {
-  static getTodos(page, perPage, token, key='', filters = {}) {
-    let queryString = `page=${page}&perPage=${perPage}`;
+  static getTodos(token, key = '', filters = {}) {
+    let queryString = ''
 
-    if(key) {
-      queryString += `&query=${key}`;
+    if (key) {
+      queryString += `query=${encodeURIComponent(key)}`
     }
 
     for (const filterKey in filters) {
       const filterValue = filters[filterKey];
-      if (filterKey !== null && filterKey !== undefined && filterKey !== ''){
+      if (filterKey !== null && filterKey !== undefined && filterKey !== '') {
         if (filterKey.startsWith('data') && filterValue instanceof Date) {
-          queryString += `&${filterKey}=${filterValue.toISOString.split('T')[0]}`;
+          queryString += `&${filterKey}=${filterValue.toISOString().split('T')[0]}`;
         } else if (filterKey.startsWith('hora') && typeof filterValue === 'string') {
           queryString += `&${filterKey}=${encodeURIComponent(filterValue)}`;
         } else {
@@ -29,7 +29,7 @@ export default class MovimentacaoService {
     }).then((res) => res.json());
   }
 
-  static getInfo({ident, tab}, token) {
+  static getInfo({ ident, tab }, token) {
     return fetch(`${caminho}/${ident}`, {
       headers: {
         Authorization: token,
@@ -49,7 +49,7 @@ export default class MovimentacaoService {
     }).then((res) => res.json());
   }
 
-  static adicionar({dados, tab}, token) {
+  static adicionar({ dados, tab }, token) {
     return fetch(caminho, {
       headers: {
         'Content-type': 'application/json;charset=UTF-8',

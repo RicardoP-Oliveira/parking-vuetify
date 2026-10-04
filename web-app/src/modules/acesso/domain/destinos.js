@@ -12,7 +12,7 @@ export const calcularDestino = ({
   const destino = mapaDestinos.value.find(
     d => d.title?.trim().toUpperCase() === sigla
   )
-  
-  return destino?.id ?? null
-  
+
+  return destino?.destino ?? null
+
 }

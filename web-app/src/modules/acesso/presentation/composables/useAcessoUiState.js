@@ -15,9 +15,15 @@ export function useAcessoUiState({ machine, formData, isVeiculo, isBusy }) {
   const isFormValid = computed(() => {
     if (loading.value) return false
 
+    if (isSaida.value) {
+      return !!formData.registro_id &&
+        !!formData.destino &&
+        !!formData.destino
+    }
+
     const baseOk =
       !!formData.nome &&
-      !!formData.destino_id &&
+      !!formData.destino &&
       formData.documento?.length > 3
 
     if (isVeiculo.value) {

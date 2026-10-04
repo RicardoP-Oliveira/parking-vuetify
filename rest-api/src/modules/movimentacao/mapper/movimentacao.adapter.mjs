@@ -6,49 +6,34 @@ export const adaptMovimentacao = movimentacao => {
   return {
     ...movimentacao,
 
-  entradaUser:
-    movimentacao.entradaUser
-      ? { 
-        ...movimentacao.entradaUser,
-        orgao: movimentacao.entradaUser.orgaos,
-        tratamento: movimentacao.entradaUser.tratamentos,
-        tipo_documento: movimentacao.entradaUser.tipo_documentos,
+    entradaUser:
+      movimentacao.entradaUser
+        ? {
+          ...movimentacao.entradaUser,
+          orgao: movimentacao.entradaUser.orgaos,
+          tratamento: movimentacao.entradaUser.tratamentos,
 
-        nomeCompleto: buildNomeCompleto(
-          movimentacao.entradaUser.tratamentos?.sigla,
-          movimentacao.entradaUser.orgaos?.sigla_curta,
-          movimentacao.entradaUser.nome,
-        ),
-      }
-      : null,
+          nomeCompleto: buildNomeCompleto(
+            movimentacao.entradaUser.tratamentos?.sigla,
+            movimentacao.entradaUser.orgaos?.sigla_curta,
+            movimentacao.entradaUser.nome,
+          ),
+        }
+        : null,
 
-  saidaUser:
-    movimentacao.saidaUser
-      ? { 
-        ...movimentacao.saidaUser,
-        orgao: movimentacao.saidaUser.orgaos,
-        tratamento: movimentacao.saidaUser.tratamentos,
-        tipo_documento: movimentacao.saidaUser.tipo_documentos,
- 
-      nomeCompleto: buildNomeCompleto(
-          movimentacao.saidaUser.tratamentos?.sigla,
-          movimentacao.saidaUser.orgaos?.sigla_curta,
-          movimentacao.saidaUser.nome,
-        ),
-      }
-      : null,
+    saidaUser:
+      movimentacao.saidaUser
+        ? {
+          ...movimentacao.saidaUser,
+          orgao: movimentacao.saidaUser.orgaos,
+          tratamento: movimentacao.saidaUser.tratamentos,
 
-  destino:
-    movimentacao.destino
-      ? {
-        ...movimentacao.destino,
-        unidade: movimentacao.destino?.unidades?.sigla,
-      }
-      : null,
-
-  veiculo:
-    movimentacao.veiculos
-      ? movimentacao.veiculos
-      : null,
+          nomeCompleto: buildNomeCompleto(
+            movimentacao.saidaUser.tratamentos?.sigla,
+            movimentacao.saidaUser.orgaos?.sigla_curta,
+            movimentacao.saidaUser.nome,
+          ),
+        }
+        : null,
   }
 }

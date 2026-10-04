@@ -22,15 +22,6 @@ export const buildMovimentacaoInclude = ({
         },
       },
     },
-
-    destino: {
-      destino: {
-        include: {
-          unidades: true,
-        },
-      },
-    },
-
     veiculo: {
       veiculos: {
         include: {
@@ -64,9 +55,9 @@ export const buildMovimentacaoInclude = ({
   }, {})
 }
 
-export const buildMovimentacaoListInclude = filters => 
+export const buildMovimentacaoListInclude = filters =>
   buildMovimentacaoInclude({
     exclude: (filters.query || filters.tab) === 'VEICULO'
-    ? []
-    : ['veiculo'],
+      ? []
+      : ['veiculo'],
   })

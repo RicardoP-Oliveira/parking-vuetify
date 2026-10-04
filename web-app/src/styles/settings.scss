@@ -5,9 +5,7 @@
  */
 
 // https://vuetifyjs.com/features/sass-variables/`
-@use 'vuetify/settings' with (
-  $border-radius-root: 4px
-);
+@use 'vuetify/settings' with ($border-radius-root: 8px);
 
 // Tipografia
 $font-family: 'Roboto', 'Helvetica', Arial, sans-serif;

@@ -12,6 +12,9 @@ export function useAcessoServices(rawServices) {
 
     getInfo: withAuth(rawServices.getInfo),
     entrada: withAuth(rawServices.entrada),
-    saida: withAuth(rawServices.saida) 
+    saida: withAuth(rawServices.saida),
+
+    test: withAuth(rawServices.getTest),
+    importar: withAuth(rawServices.importat)
   }
 }

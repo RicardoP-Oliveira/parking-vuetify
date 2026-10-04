@@ -26,14 +26,13 @@ class MovimentacaoRepository {
 
   async findAndCountAll({ page = 1, perPage = 10, ...filters }) {
     const where = buildMovimentacaoWhere(filters)
-    
+
     const [count, rows] = await prisma.$transaction([
       prisma.movimentacoes.count({ where }),
       prisma.movimentacoes.findMany({
         where,
         select: movimentacaoResumoSelect,
-        skip: (Number(page) - 1) * Number(perPage),
-        take: Number(perPage),
+        take: 50,
         orderBy: {
           updated_at: 'desc',
         },
@@ -44,7 +43,7 @@ class MovimentacaoRepository {
   }
 
   async findResumoByIdentificador({ identificador, tab }) {
-
+    console.log('MovimentacaoRepository.findResumoByIdentificador', identificador, tab)
     return prisma.movimentacoes.findFirst({
       where: buildMovimentacaoWhere({
         identificador,

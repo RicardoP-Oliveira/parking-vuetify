@@ -4,7 +4,7 @@ const createTratamentoService = repository => ({
   async index() {
     const items = await repository.findAll()
 
-    return mapToOptions(items, item => item.sigla)
+    return mapToOptions(items, item => item.postoGrad)
   }
 })
 

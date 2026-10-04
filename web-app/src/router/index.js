@@ -18,6 +18,12 @@ const router = createRouter({
   routes: layoutRoutes,
 });
 
+router.beforeEach((to) => {
+  if (to.path === '/') {
+    return '/movimentacoes'
+  }
+})
+
 // Workaround para o problema de importação dinâmica no Vite
 router.onError((err, to) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {

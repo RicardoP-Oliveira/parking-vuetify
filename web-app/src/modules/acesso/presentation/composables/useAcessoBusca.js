@@ -40,7 +40,9 @@ export function useAcessoBusca({
   })
 
   const buscarDados = async () => {
-    const termo = isVeiculo.value ? formData.placa : formData.documento
+    const termo = isVeiculo.value
+      ? (formData.placa || formData.prefixo)
+      : formData.documento
 
     if (!termo || termo.length < 4) return
     if (termo === machine.lastTermo) return

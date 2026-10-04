@@ -1,11 +1,11 @@
 import prisma from "../../../shared/database/prisma.mjs"
 
 const usuarioInclude = {
-    unidades: true,
-    orgaos: true,
-    tipo_documentos: true,
-    tratamentos: true,
-    veiculos: true,
+  unidades: true,
+  orgaos: true,
+  tipo_documentos: true,
+  tratamentos: true,
+  veiculos: true,
 }
 
 class UsuarioRepository {
@@ -32,7 +32,7 @@ class UsuarioRepository {
 
   async findResumoByDocumento(documento) {
     const user = await prisma.usuarios.findUnique({
-      where: { 
+      where: {
         documento
       },
       include: usuarioInclude
@@ -41,18 +41,13 @@ class UsuarioRepository {
     if (!user) {
       return null
     }
-    
+
     return {
       user_id: user.id,
       doc: user.documento,
       nome: user.nome,
 
-      tratamento_id: user.tratamento_id,
-      unidade_id: user.unidade_id,
-      orgao_id: user.orgao_id,
-      tipo_doc_id: user.tipo_doc_id,
-
-      graduaAbrev: user.tratamentos?.sigla,
+      graduaAbrev: user.tratamentos?.postoGrad,
       orgaoSigla: user.orgaos?.sigla_curta,
       siglaUbm: user.unidades?.sigla,
       tipo_doc: user.tipo_documentos?.tipo
@@ -60,8 +55,8 @@ class UsuarioRepository {
   }
 
   async findByDocumento(documento) {
-   return prisma.usuarios.findUnique({
-      where: { 
+    return prisma.usuarios.findUnique({
+      where: {
         documento
       },
       include: usuarioInclude
@@ -70,8 +65,9 @@ class UsuarioRepository {
 
   async findByPk(id) {
     return prisma.usuarios.findUnique({
-      where: { 
-        id: BigInt(id) },
+      where: {
+        id: BigInt(id)
+      },
       include: usuarioInclude
     })
   }
@@ -85,7 +81,7 @@ class UsuarioRepository {
 
   async updateById(id, payload) {
     await prisma.usuarios.update({
-      where: { 
+      where: {
         id: BigInt(id)
       },
       data: payload
@@ -96,10 +92,10 @@ class UsuarioRepository {
 
   async destroy(user) {
     return prisma.usuarios.delete({
-      where: { 
+      where: {
         id: BigInt(user.id)
       }
     })
   }
 }
-export default  UsuarioRepository
+export default UsuarioRepository

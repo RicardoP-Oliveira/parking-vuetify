@@ -1,7 +1,7 @@
 // src/composables/usePedestreTable.js
 export function usePedestreTable(pedestreService) {
 
-	const loadPedestreData = async (page, itemsPerPage, token, tab, filters) => {
+	const loadPedestreData = async (token, tab, filters) => {
 
 		const apiFilters = {
 			documento: filters.documento,
@@ -21,8 +21,6 @@ export function usePedestreTable(pedestreService) {
 		);
 
 		return pedestreService.getTodos(
-			page,
-			itemsPerPage,
 			token,
 			tab,
 			cleanFilters
