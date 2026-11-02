@@ -18,7 +18,6 @@ export function useAcessoResultado({
 
     if (result.formPatch) {
       Object.assign(formData, result.formPatch)
-      send('BUSCA_SUCESSO')
     }
   }
 

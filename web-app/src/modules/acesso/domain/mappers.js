@@ -3,7 +3,7 @@ const nomeResolvido = (val) =>
     .filter(Boolean).join(' ')
 
 export const mapUser = (u, campoUsuario = 'documento_entrada') => ({
-  // [campoUsuario]: u.doc,
+  documento: u.doc,
   nome: u.nomeCompleto || nomeResolvido(u),
   destino: u.siglaUbm
 })

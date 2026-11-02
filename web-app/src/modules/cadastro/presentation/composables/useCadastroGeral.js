@@ -17,8 +17,8 @@ export function useCadastroGeral(props, emit) {
     unidadesOptions,
     tratoOptions,
     destinosOptions,
-  } = useListas(listasService) 
-  
+  } = useListas(listasService)
+
   const buscaDoc = ref(props.documentoInicial || '')
   const nome = ref('')
   const destino_id = ref(null)
@@ -51,7 +51,7 @@ export function useCadastroGeral(props, emit) {
     try {
       const res = await service.getUsuarioByDoc(valor)
       if (res?.dados) {
-        donoEncontrado.value = res.dados
+        donoEncontrado.value = res.dados?.nomeCompleto
         if (donoEncontrado) {
           destino_id.value = calcularDestino({
             data: donoEncontrado.value,
@@ -62,10 +62,9 @@ export function useCadastroGeral(props, emit) {
         if (isVtr.value) {
           veiculo.value.usuario_id = null
         } else {
-          console.log("Dono encontrado", res.dados)
           veiculo.value.usuario_id = res.dados.user_id
           veiculo.value.orgao_id = null
-          nome.value = ''
+          nome.value = donoEncontrado.value
         }
       } else {
         donoEncontrado.value = null
@@ -118,7 +117,7 @@ export function useCadastroGeral(props, emit) {
           tipo_doc_id: pedestre.value.tipo_doc_id,
           orgao_id: pedestre.value.orgao_id,
         }
-        
+
         const resUser = await service.salvarUsuario(payloadUser)
         userIdFinal = resUser?.dados?.id || null
       }
@@ -137,17 +136,17 @@ export function useCadastroGeral(props, emit) {
 
       emit(
         'sucesso', {
-          placa: veiculo.value.placa,
-          usuario_id: userIdFinal || null,
-          destino_id: destino_id.value,
-          veiculo_id: contexto.value.veiculoCadastrado 
-            ? contexto.value.veiculo_id 
-            : veiculoIdFinal,
-          orgao_id: userIdFinal ? pedestre.value.orgao_id : veiculo.value.orgao_id,
-          finalizar: true,
-          documento: buscaDoc.value,
-          prefixo: veiculo.value.prefixo
-        }
+        placa: veiculo.value.placa,
+        usuario_id: userIdFinal || null,
+        destino_id: destino_id.value,
+        veiculo_id: contexto.value.veiculoCadastrado
+          ? contexto.value.veiculo_id
+          : veiculoIdFinal,
+        orgao_id: userIdFinal ? pedestre.value.orgao_id : veiculo.value.orgao_id,
+        finalizar: true,
+        documento: buscaDoc.value,
+        prefixo: veiculo.value.prefixo
+      }
       )
 
     } catch (e) {
@@ -187,7 +186,7 @@ export function useCadastroGeral(props, emit) {
     actions: {
       buscarDono,
       salvar
-    }            
+    }
   }
 }
 

@@ -68,7 +68,6 @@ export function useBaseTable(props) {
 
 			serverItems.value = listaCrua.map(item => {
 				const filteredItem = {}
-
 				allActiveKeys.forEach(column => {
 					switch (column) {
 						case 'nome': filteredItem.nome = item.nome; break

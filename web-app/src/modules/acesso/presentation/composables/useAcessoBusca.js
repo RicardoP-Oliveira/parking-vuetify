@@ -1,4 +1,5 @@
 import { FLUXO } from "../../domain/fluxo"
+import { STATUS } from "./useAcessoMachine"
 
 export function useAcessoBusca({
   props,
@@ -47,7 +48,7 @@ export function useAcessoBusca({
     if (!termo || termo.length < 4) return
     if (termo === machine.lastTermo) return
 
-    send('BUSCAR')
+    if (!send('BUSCAR')) return
 
     try {
       const resposta = await controller.buscar(
@@ -56,15 +57,18 @@ export function useAcessoBusca({
         props.tipo
       )
 
+      if (machine.status !== STATUS.CARREGANDO) return
+
       if (!resposta) {
         send('FALHA', { error: 'Nenhuma resposta do controller' })
         return
       }
-
       machine.fluxo = resposta.fluxo
-      aplicarResultado(resposta.result)
       machine.lastTermo = termo
+      send('BUSCA_SUCESSO')
+      aplicarResultado(resposta.result)
     } catch (err) {
+      if (machine.status !== STATUS.CARREGANDO) return
       console.error('Erro ao buscar:', err)
       send('FALHA', { error: err })
     }

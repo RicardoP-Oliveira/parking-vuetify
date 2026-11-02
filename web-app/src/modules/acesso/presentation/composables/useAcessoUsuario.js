@@ -9,6 +9,7 @@ export function useAcessoUsuario({
   buildUsuarioData
 }) {
   const preencherUsuario = (user, options = {}) => {
+
     const dados = buildUsuarioData({
       user,
       isEntrada: machine.fluxo !== FLUXO.SAIDA,
@@ -17,7 +18,6 @@ export function useAcessoUsuario({
       mapUser,
       preservarDestino: options.preservarDestino ?? false
     })
-
     if (!dados) return
     applyUsuario(formData, dados)
   }

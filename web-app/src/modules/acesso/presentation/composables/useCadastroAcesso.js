@@ -1,5 +1,6 @@
 // src/modules/acesso/presentation/composables/useAcessoModal.js
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watchEffect } from 'vue'
+import { useCadastroGeral } from '@/modules/cadastro/presentation/composables/useCadastroGeral'
 import { useServices } from '@/modules/acesso/application/useServices'
 import { useListasModules } from '../../application/useListasModules'
 import { useListas } from '@/modules/shared/composables/useListas'
@@ -132,6 +133,31 @@ export function useCadastroAcesso(props, emit, modalRef = ref(null)) {
     await salvar()
   }
 
+  const cadastroProps = reactive({
+    placaInicial: '',
+    documentoInicial: '',
+    marca: '',
+    contexto: null,
+    modo: ''
+  })
+
+  watchEffect(() => {
+    cadastroProps.placaInicial = formData.placa || ''
+    cadastroProps.documentoInicial = formData.documento || ''
+    cadastroProps.marca = formData.marca || ''
+    cadastroProps.contexto = contexto.value
+    cadastroProps.modo = machine.modoCadastro || 'pedestre'
+  })
+
+  const cadastroGeral = useCadastroGeral(cadastroProps, (evento, dados) => {
+    if (evento === 'sucesso') {
+      return voltarParaAcesso({
+        ...dados,
+        destino: dados.destino ?? dados.destino_id
+      })
+    }
+  })
+
   useAcessoLifecycle({
     fetchListas,
     props,
@@ -153,7 +179,8 @@ export function useCadastroAcesso(props, emit, modalRef = ref(null)) {
       isReadOnly,
       contexto,
       machine,
-      isErro
+      isErro,
+      cadastroGeral
     },
     ui: {
       confirmText,

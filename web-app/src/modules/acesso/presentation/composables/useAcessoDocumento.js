@@ -19,15 +19,20 @@ export function useAcessoDocumento({
 
     if (valor === machine.lastTermo && !isCadastroNovo.value) return
 
-    send('BUSCAR')
+    const cadastroJaAberto = isCadastroNovo.value
+
+    if (!cadastroJaAberto && !send('BUSCAR')) return
 
     try {
       const user = await getUser(valor)
 
+
       if (!user) {
-        abrirNovoCadastro()
         limparUsuario()
+        abrirNovoCadastro()
+        formData.documento = valor
         machine.lastTermo = valor
+        return
       }
 
       if (!formData.veiculo_id) {
@@ -41,7 +46,6 @@ export function useAcessoDocumento({
         }
 
         const resposta = await controller.buscar(valor, ctx, 'PEDESTRE')
-        console.log(resposta, 'resposta do controller.buscar')
         const dados = resposta?.result?.formPatch ?? null
         if (resposta?.fluxo === FLUXO.SAIDA && dados) {
           Object.assign(formData, {

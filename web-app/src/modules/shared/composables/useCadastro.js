@@ -1,5 +1,5 @@
 // scr/modules/shared/composables/useCadastro.js
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 
 const PATTERNS = {
   PLACA_ANTIGA: /^[A-Z]{3}\d{4}$/,
@@ -8,10 +8,18 @@ const PATTERNS = {
   DOCUMENTO: /^\d{4,11}$/
 }
 
-export function useCadastro({ formData, onPlacaEnter, onDocEnter, limparForm }) {
+export function useCadastro({
+  formData,
+  onPlacaEnter,
+  onDocEnter,
+  limparForm,
+  machine,
+  cancelarCadastro, focarIdent = () => { }
+}) {
   const ident = ref('')
   const erroIdent = ref('')
   const novoTipo = ref({})
+  const identValid = ref(false)
 
   const validarIdentidade = (valor) => {
     if (!valor) return { valido: false, msg: 'Campo obrigatório!' }
@@ -45,7 +53,6 @@ export function useCadastro({ formData, onPlacaEnter, onDocEnter, limparForm }) 
   }
 
   let ultimoProcessado = ''
-  const identValid = ref(false)
 
   function enviarIdent() {
     if (!ident.value) return
@@ -81,6 +88,15 @@ export function useCadastro({ formData, onPlacaEnter, onDocEnter, limparForm }) 
     limparForm()
   }
 
+  async function onCancelar() {
+    if (machine?.status === 'cadastro_novo') {
+      await cancelarCadastro?.({ fecharTudo: true })
+    }
+    limparIdent()
+    await nextTick()
+    focarIdent()
+  }
+
   watch(ident, (v) => {
     if (v) {
       ident.value = v.toUpperCase()
@@ -90,7 +106,6 @@ export function useCadastro({ formData, onPlacaEnter, onDocEnter, limparForm }) 
     }
   })
 
-
   return {
     ident,
     erroIdent,
@@ -99,6 +114,7 @@ export function useCadastro({ formData, onPlacaEnter, onDocEnter, limparForm }) 
     validarIdentidade,
     detectarTipo,
     enviarIdent,
-    limparIdent
+    limparIdent,
+    onCancelar
   }
 }
