@@ -2,9 +2,9 @@ import { hasValue } from "../../../shared/utils/mapperUtils.mjs"
 
 const formatHora = data =>
   data
-    ? data.toLocaleTimeString('pt-BR', {
+    ? new Date(data).toLocaleTimeString('pt-BR', {
       hour12: false,
-      timeZone: 'America/Sao_Paulo',
+      timeZone: 'UTC',
     })
     : null
 

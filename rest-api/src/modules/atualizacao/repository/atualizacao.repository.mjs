@@ -143,11 +143,6 @@ class AtualizacaoRepository {
       semAlteracao: resultado.semAlteracao.length
     }
   }
-
-  async insertAll(tabela, dados) {
-
-  }
-
 }
 
 export default AtualizacaoRepository;

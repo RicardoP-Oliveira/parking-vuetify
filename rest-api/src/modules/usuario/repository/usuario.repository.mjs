@@ -47,7 +47,7 @@ class UsuarioRepository {
       doc: user.documento,
       nome: user.nome,
 
-      graduaAbrev: user.tratamentos?.postoGrad,
+      graduaAbrev: user.tratamentos?.posto_grad,
       orgaoSigla: user.orgaos?.sigla_curta,
       siglaUbm: user.unidades?.sigla,
       tipo_doc: user.tipo_documentos?.tipo
