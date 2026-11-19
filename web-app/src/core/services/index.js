@@ -1,0 +1,8 @@
+export { default as VeiculoService } from './VeiculoService'
+export { default as MovimentacaoServices } from './MovimentacaoService'
+export { default as DestinoService }  from './DestinoService'
+export { default as TipoDocService } from './TipoDocService'
+export { default as OrgaoService } from './OrgaoServices'
+export { default as TratamentoService } from './TratamentoService.mjs'
+export { default as UnidadeService } from './UnidadeServices'
+export { default as UsuarioService } from './UsuarioServices'

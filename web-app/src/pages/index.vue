@@ -1,22 +1,25 @@
+<!-- src/pages/index.vue-->
 <template>
-  <TableCarros v-if="tab === 'carro'"/>
-  <TablePedestres v-else />
-</template>
-<script>
 
- export default {
-  data() {
-    return {
-      tab: null,
-    }
-  },
-   methods: {
-     getInfo() {
-      this.tab = this.$attrs.tab || 'carro';
-     },
-   },
-   mounted() {
-     this.getInfo()
-   }
- }
+</template>
+
+<script setup>
+// import { computed, getCurrentInstance } from 'vue'
+// import BaseTable from '@/modules/shared/components/BaseTable.vue'
+// import { useVeiculoTable } from '@/modules/carro/presentation/composables/useVeiculoTable'
+// import { usePedestreTable } from '@/modules/pedestre/presentation/composables/usePedestreTable'
+
+// const props = defineProps(['tab', 'filters'])
+
+// const emit = defineEmits(['update-btn', 'changeTable', 'show-snackbar'])
+
+// const { proxy } = getCurrentInstance()
+// const movimentacao = proxy.$movimentacaoService
+
+// const { loadCarData } = useVeiculoTable(movimentacao)
+// const { loadPedestreData } = usePedestreTable(movimentacao)
+
+// const currentDataService = computed(() => {
+//   return props.tab === 'VEICULO' ? loadCarData : loadPedestreData
+// })
 </script>

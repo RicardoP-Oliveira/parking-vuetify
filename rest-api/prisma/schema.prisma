@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+enum enum_movimentacoes_tipo {
+  VEICULO
+  PEDESTRE
+
+  @@schema("public")
+}
+
+model orgaos {
+  id          BigInt     @id @default(autoincrement())
+  sigla       String     @unique @db.VarChar(255)
+  sigla_curta String?    @unique @db.VarChar(255)
+  orgao       String     @unique @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
+  usuarios    usuarios[]
+  veiculos    veiculos[]
+
+  @@schema("public")
+}
+
+model tipo_documentos {
+  id         BigInt     @id @default(autoincrement())
+  tipo       String     @unique @db.VarChar(255)
+  documento  String     @unique @db.VarChar(255)
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
+  usuarios   usuarios[]
+
+  @@schema("public")
+}
+
+model tratamentos {
+  id         BigInt     @id @default(autoincrement())
+  posto_grad      String     @unique @db.VarChar(255)
+  nome       String     @unique @db.VarChar(255)
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
+  usuarios   usuarios[]
+
+  @@schema("public")
+}
+
+model unidades {
+  id         BigInt     @id @default(autoincrement())
+  sigla      String?    @unique @db.VarChar(255)
+  unidade    String     @unique @db.VarChar(255)
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  updated_at DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
+  usuarios   usuarios[]
+
+  @@schema("public")
+}
+
+model destinos {
+  id            BigInt          @id @default(autoincrement())
+  destino       String          @unique
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  movimentacoes movimentacoes[]
+
+  @@schema("public")
+}
+
+model roles {
+  id 		     BigInt   @id @default(autoincrement())
+  nome		   String   @unique @db.VarChar(50)
+  descricao  String?  @db.VarChar(255)
+  nivel      Int      @default(1)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  acessos	   acessos[]
+  
+  @@schema("public")
+}
+
+model usuarios {
+  id                   BigInt          @id @default(autoincrement())
+  documento            String          @unique @db.VarChar(50)
+  nome                 String          @db.VarChar(255)
+  orgao_id             BigInt?
+  tratamento_id        BigInt
+  unidade_id           BigInt
+  tipo_doc_id          BigInt
+  created_at           DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  orgaos               orgaos?         @relation(fields: [orgao_id], references: [id])
+  tipo_documentos      tipo_documentos @relation(fields: [tipo_doc_id], references: [id])
+  tratamentos          tratamentos     @relation(fields: [tratamento_id], references: [id])
+  unidades             unidades        @relation(fields: [unidade_id], references: [id])
+  veiculos             veiculos[]
+  acessos 			       acessos?
+  movimentacoesEntrada movimentacoes[] @relation("MovimentacaoEntrada")
+  movimentacoesSaida movimentacoes[] @relation("MovimentacaoSaida")
+
+  @@schema("public")
+}
+
+model veiculos {
+  id            BigInt          @id @default(autoincrement())
+  placa         String          @unique @db.VarChar(255)
+  marca         String?         @db.VarChar(255)
+  modelo        String?         @db.VarChar(255)
+  renavam       String?         @db.VarChar(255)
+  prefixo       String?         @db.VarChar(255)
+  usuario_id    BigInt?
+  orgao_id      BigInt?
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  orgaos        orgaos?         @relation(fields: [orgao_id], references: [id])
+  usuarios      usuarios?       @relation(fields: [usuario_id], references: [id])
+  movimentacoes movimentacoes[]
+
+  @@schema("public")
+}
+
+model movimentacoes {
+  id              BigInt                  @id @default(autoincrement())
+  tipo            enum_movimentacoes_tipo @default(VEICULO)
+  entrada         DateTime                @db.Timestamptz(6)
+  saida           DateTime?               @db.Timestamptz(6)
+  user_entrada    String
+  documento_entrada String
+  user_saida      String?
+  documento_saida String?
+  placa           String?
+  destino         String
+  created_at      DateTime                @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime                @default(now()) @updatedAt @db.Timestamptz(6)
+  entradaUser usuarios @relation("MovimentacaoEntrada", fields: [documento_entrada], references: [documento])
+  saidaUser usuarios? @relation("MovimentacaoSaida", fields: [documento_saida], references: [documento])
+  veiculos veiculos? @relation(fields: [placa], references: [placa])
+  destinos  destinos @relation(fields: [destino], references: [destino]) 
+
+  @@schema("public")
+}
+
+model acessos {
+  id		     BigInt	  @id @default(autoincrement())
+  usuario_id BigInt	  @unique
+  senha_hash String   @db.VarChar(255)
+  role_id	   BigInt
+  ativo		   Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  usuarios   usuarios @relation(fields: [usuario_id], references: [id])
+  roles      roles	  @relation(fields: [role_id], references: [id])
+  
+  @@schema("public")
+}
+
+model ceics {
+  id          BigInt     @id @default(autoincrement())
+  entrada     DateTime?  @default(now()) @db.Timestamp
+  hEntrada    DateTime?  @default(now()) @db.Time(6)
+  saida       DateTime? @db.Timestamp
+  hSaida      DateTime? @db.Time(6)
+  placa       String?   @db.VarChar(50)
+  marcaModelo String?   @db.VarChar(50)
+  eCondutor   String?   @db.VarChar(255)
+  eRg         String?   @db.VarChar(50)
+  sRg         String?   @db.VarChar(50)
+  sCondutor   String?   @db.VarChar(255)
+  destino     String?   @db.VarChar(50)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  
+  @@schema("public")
+}

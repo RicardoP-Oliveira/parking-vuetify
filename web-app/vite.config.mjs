@@ -13,6 +13,19 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  css: {
+    devSourcemap: false, // Desativa os sourcemaps em dev que geram as chamadas 404
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+        silenceDeprecations: ['legacy-js-api'], // Suprime avisos de depreciação do SASS
+      },
+      sass: {
+        api: 'modern-compiler',
+        silenceDeprecations: ['legacy-js-api'],
+      },
+    },
+  },
   plugins: [
     VueRouter(),
     Layouts(),
@@ -23,6 +36,7 @@ export default defineConfig({
     Vuetify({
       autoImport: true,
       styles: {
+        type: 'expose',
         configFile: 'src/styles/settings.scss',
       },
     }),
@@ -64,4 +78,11 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  optimizeDeps: {
+    include: [
+      'vuetify',
+      'webfontloader',
+    ],
+    exclude: [],
+  }
 })
