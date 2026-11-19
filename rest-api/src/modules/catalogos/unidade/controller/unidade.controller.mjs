@@ -13,10 +13,10 @@ const createUnidadeController = service => ({
   },
 
   async show(req, res) {
-      const resposta = new Resposta()
-      const dados = await service.show(req.params.sigla)
-      
-      return res.json(resposta.sucesso(dados))
+    const resposta = new Resposta()
+    const dados = await service.show(req.params.sigla)
+
+    return res.json(resposta.sucesso(dados))
   }
 })
 

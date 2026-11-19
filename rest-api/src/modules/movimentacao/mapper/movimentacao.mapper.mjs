@@ -94,8 +94,6 @@ export const mapMovimentacaoCreatePayload = body => {
   if (hasValue(body.documento)) payload.documento_entrada = body.documento
   if (hasValue(body.destino)) payload.destino = body.destino
 
-  console.log('mapMovimentacaoCreatePayload', { body, payload })
-
   return payload
 }
 

@@ -11,14 +11,14 @@ const mapVeiculoBase = veiculo => ({
   orgao_id: veiculo.orgao_id,
 })
 
-export const mapVeiculoResumo = veiculo => { 
+export const mapVeiculoResumo = veiculo => {
   if (!veiculo) {
     return null
   }
 
   return {
     ...mapVeiculoBase(veiculo),
-    
+
     ubm_id: veiculo.usuarios?.unidade_id,
     documento: veiculo.usuarios?.documento,
     condutor: veiculo.usuarios?.nome,

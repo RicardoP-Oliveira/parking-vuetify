@@ -3,7 +3,7 @@
   <v-card class="mb-4">
     <v-card-title class="d-flex align-center ga-3">
       <v-row>
-        <v-col cols="3">
+        <v-col v-if="!isCadastroNovo" cols="3">
           <v-text-field ref="identField" v-model="ident" label="Placa|RG|CPF|Prefixo"
             :prepend-inner-icon="identValid ? iconIdent : ''" variant="outlined" density="compact" clearable autofocus
             :loading="loading" :error-messages="erroIdent" @click:clear="onCancelar" @keyup.enter.prevent="enviarIdent"
@@ -24,110 +24,34 @@
     <v-card-text>
       <!-- Campos do cadastro novo, antes exibidos por formAcessoCadastro.vue -->
       <v-row v-if="isCadastroNovo" align="center">
-        <template v-if="mostrarCadastroVeiculo">
-          <v-col cols="3">
-            <v-text-field v-model="cadastroVeiculo.placa" label="Placa" variant="outlined" density="compact"
-              @update:model-value="v => cadastroVeiculo.placa = (v || '').toUpperCase()" />
-          </v-col>
+        <CadastroVeiculoForm v-if="mostrarCadastroVeiculo" :veiculo="cadastroVeiculo" :pessoa="cadastroPedestre"
+          :is-vtr="cadastroIsVtr" :documento="cadastroBuscaDoc" :nome="cadastroNome"
+          :dono-encontrado="cadastroDonoEncontrado" :info="info" :orgaos-options="cadastroOrgaosOptions"
+          :doc-options="cadastroDocOptions" :trato-options="cadastroTratoOptions"
+          :unidades-options="cadastroUnidadesOptions" :hint-orgao="hintOrgao" @update:is-vtr="cadastroIsVtr = $event"
+          @update:documento="cadastroBuscaDoc = $event" @update:nome="cadastroNome = $event"
+          @buscar-dono="buscarDono" />
 
-          <v-col cols="3">
-            <v-text-field v-model="cadastroVeiculo.prefixo" label="Prefixo (se viatura)" variant="outlined"
-              density="compact" @update:model-value="v => cadastroVeiculo.prefixo = (v || '').toUpperCase()" />
-          </v-col>
+        <CadastroPedestreForm v-else :pessoa="cadastroPedestre" :documento="cadastroBuscaDoc" :nome="cadastroNome"
+          :dono-encontrado="cadastroDonoEncontrado" :orgaos-options="cadastroOrgaosOptions"
+          :doc-options="cadastroDocOptions" :trato-options="cadastroTratoOptions"
+          :unidades-options="cadastroUnidadesOptions" @update:documento="cadastroBuscaDoc = $event"
+          @update:nome="cadastroNome = $event" @buscar-dono="buscarDono" />
 
-          <v-col cols="6">
-            <v-text-field v-model="cadastroVeiculo.marca" label="Modelo (opcional)" variant="outlined" density="compact"
-              @update:model-value="v => cadastroVeiculo.marca = (v || '').toUpperCase()" />
-          </v-col>
-
-          <v-col cols="4" class="pt-0 mt-n1">
-            <v-switch v-model="cadastroIsVtr" color="primary" label="Viatura Oficial" class="mt-0" />
-          </v-col>
-
-          <v-col v-if="cadastroIsVtr" cols="6">
-            <v-autocomplete v-model="cadastroVeiculo.orgao_id" :items="cadastroOrgaosOptions" item-title="title"
-              item-value="id" label="Órgão da viatura" variant="outlined" clearable :hint="hintOrgao" persistent-hint
-              density="compact" />
-          </v-col>
-
-          <v-col v-if="cadastroVeiculo.orgao_id" cols="12">
-            <v-alert type="info" variant="tonal">
-              <v-icon start>mdi-car-estate</v-icon>
-              <strong>Viatura Oficial</strong> pertencente ao órgão:
-              <strong>
-                {{cadastroOrgaosOptions.find(o => o.id === cadastroVeiculo.orgao_id)?.title}}
-              </strong>
-            </v-alert>
-          </v-col>
-
-          <v-col cols="12">
-            <v-divider class="my-2" />
-          </v-col>
-        </template>
-
-        <v-col v-if="!cadastroDonoEncontrado" cols="4">
-          <v-select v-model="cadastroPedestre.tipo_doc_id" :items="cadastroDocOptions" item-title="title"
-            item-value="id" label="Tipo de documento" variant="outlined" density="compact" />
-        </v-col>
-
-        <v-col cols="4">
-          <v-autocomplete v-model="cadastroPedestre.orgao_id" :items="cadastroOrgaosOptions" item-title="title"
-            item-value="id" label="Órgão emissor" variant="outlined" clearable :disabled="isOrgaoDisabled"
-            persistent-hint density="compact" />
-        </v-col>
-
-        <v-col cols="4">
-          <v-text-field v-model="cadastroBuscaDoc"
-            :label="mostrarCadastroVeiculo ? 'Documento do condutor' : 'Documento'" variant="outlined" clearable
-            density="compact" @input="cadastroBuscaDoc = cadastroBuscaDoc.replace(/\D/g, '')" @keyup.enter="buscarDono"
-            @blur="buscarDono" />
-        </v-col>
-
-        <v-col cols="9">
-          <v-text-field v-model="cadastroNome" label="Nome completo" variant="outlined" density="compact"
-            @update:model-value="v => cadastroNome = (v || '').toUpperCase()" />
-        </v-col>
-
-        <v-col cols="12">
-          <v-fade-transition mode="out-in">
-            <div v-if="cadastroDonoEncontrado && cadastroBuscaDoc?.length" key="dono">
-              <v-alert v-if="info && mostrarCadastroVeiculo" type="success" variant="tonal" icon="mdi-account-check"
-                density="compact">
-                {{ info.prefixo }} <strong>{{ info.nome }}</strong>
-              </v-alert>
-            </div>
-
-            <div v-else-if="cadastroBuscaDoc && cadastroBuscaDoc.length > 3" key="avulso">
-              <v-row>
-                <v-col cols="3">
-                  <v-select v-model="cadastroPedestre.tratamento_id" :items="cadastroTratoOptions" item-title="title"
-                    item-value="id" label="Tratamento" variant="outlined" density="compact" />
-                </v-col>
-
-                <v-col cols="9">
-                  <v-text-field v-model="cadastroNome" label="Nome completo" variant="outlined" density="compact"
-                    @update:model-value="v => cadastroNome = (v || '').toUpperCase()" />
-                </v-col>
-
-                <v-col cols="12">
-                  <v-autocomplete v-model="cadastroPedestre.unidade_id" :items="cadastroUnidadesOptions" label="Unidade"
-                    variant="outlined" item-title="title" item-value="id" density="compact" />
-                </v-col>
-              </v-row>
-            </div>
-          </v-fade-transition>
-        </v-col>
-
-        <v-col cols="6">
+        <v-col cols="3">
           <v-autocomplete v-model="cadastroDestinoId" :items="cadastroDestinosOptions" label="Destino"
-            variant="outlined" item-title="title" item-value="id" density="compact" />
+            variant="outlined" item-title="title" item-value="destino" density="compact" />
         </v-col>
       </v-row>
 
       <!-- Campos do fluxo normal de entrada/saída -->
       <v-row v-else-if="identValid" align="center">
         <template v-if="novoTipo.model === 'PLACA'">
-          <v-col cols="3">
+          <v-col v-if="formData.prefixo" cols="2">
+            <v-text-field v-model="formData.prefixo" label="Prefixo" prepend-inner-icon="mdi-fire-truck" readonly
+              variant="outlined" density="compact" />
+          </v-col>
+          <v-col cols="2">
             <v-text-field v-model="formData.documento" label="Documento do condutor"
               prepend-inner-icon="mdi-card-account-details" variant="outlined" density="compact" :loading="loading"
               @keyup.enter.stop="onDocEnter" @blur.stop="onDocEnter" />
@@ -196,6 +120,8 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { useCadastro } from '@/modules/shared/composables/useCadastro'
 import { useCadastroAcesso } from '@/modules/acesso/presentation/composables/useCadastroAcesso'
+import CadastroVeiculoForm from './CadastroVeiculoForm.vue'
+import CadastroPedestreForm from './CadastroPedestreForm.vue'
 
 const emit = defineEmits(['update:options', 'changeTable'])
 
@@ -311,4 +237,27 @@ const iconIdent = computed(() => {
 watch(novoTipo, (novo) => {
   if (novo?.tipo) tipo.value = novo.tipo
 })
+
+watch(
+  [isCadastroNovo, () => novoTipo.value?.model, ident],
+  ([novo, modelo, valorIdent]) => {
+    if (!novo || !valorIdent) return
+
+    const valor = String(valorIdent).trim().toUpperCase()
+
+    if (modelo === 'DOCUMENTO' && !cadastroBuscaDoc.value) {
+      cadastroBuscaDoc.value = valor
+    }
+
+    if (modelo === 'PLACA' && !cadastroVeiculo.value.placa) {
+      cadastroVeiculo.value.placa = valor
+    }
+
+    if (modelo === 'PREFIXO' && !cadastroVeiculo.value.prefixo) {
+      cadastroVeiculo.value.prefixo = valor
+    }
+  },
+  { immediate: true }
+)
+
 </script>

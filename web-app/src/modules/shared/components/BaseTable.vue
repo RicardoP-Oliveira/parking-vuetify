@@ -3,8 +3,9 @@
   <div class="base-table-container">
     <Cadastro @change-table="handleChangeTable" />
     <v-card class="pt-2">
-      <v-card-title>
-        TESTE TÌTULO
+      <v-card-title align="center" class="px-4">
+        <span class="text-h6 font-weight-bold">Registros de {{ props.tab === 'VEICULO' ? 'Veículos' : 'Pedestres'
+          }}</span>
       </v-card-title>
       <v-card-text>
         <v-data-table :headers="generatedHeaders" :items="serverItems" :loading="loading" density="compact"

@@ -151,10 +151,11 @@ export function useCadastroAcesso(props, emit, modalRef = ref(null)) {
 
   const cadastroGeral = useCadastroGeral(cadastroProps, (evento, dados) => {
     if (evento === 'sucesso') {
-      return voltarParaAcesso({
+      // return 
+      console.log(voltarParaAcesso({
         ...dados,
         destino: dados.destino ?? dados.destino_id
-      })
+      }))
     }
   })
 

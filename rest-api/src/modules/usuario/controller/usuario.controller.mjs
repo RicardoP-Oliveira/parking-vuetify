@@ -14,7 +14,7 @@ const createUsuarioController = service => ({
 
   async show(req, res) {
     const resposta = new Resposta()
-    
+
     const { documento } = req.params
 
     const user = await service.show(documento)
@@ -27,12 +27,12 @@ const createUsuarioController = service => ({
 
     return res.json(
       resposta.sucesso((user))
-  )
+    )
   },
 
   async store(req, res) {
     const resposta = new Resposta()
-    
+
     const { body } = req
 
     const result = await service.store(body)
@@ -50,7 +50,7 @@ const createUsuarioController = service => ({
 
   async update(req, res) {
     const resposta = new Resposta()
-    
+
     const { id } = req.params
     const { body, file } = req
 
@@ -69,7 +69,7 @@ const createUsuarioController = service => ({
 
   async destroy(req, res) {
     const resposta = new Resposta()
-    
+
     const { id } = req.params
 
     const result = await service.destroy(id)
